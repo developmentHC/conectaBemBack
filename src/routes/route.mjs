@@ -8,13 +8,13 @@ import {
   searchProfessionalsHighlightsWeek,
   searchProfessionalBySpeciality,
 } from "./../controller/userController.mjs";
+import authMiddleware from "../utils/authMiddleware.mjs";
 
 const router = express.Router();
 
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      "https://backend-ofx7.onrender.com",
       "http://localhost:3000",
       "https://conecta-bem-visu.vercel.app/",
     ];
@@ -26,6 +26,7 @@ const corsOptions = {
     }
   },
   optionsSuccessStatus: 200,
+  credentials: true,
 };
 
 router.use(cors(corsOptions));
@@ -35,8 +36,8 @@ router.post("/auth/sendOTP", checkUserEmailSendOTP);
 router.post("/auth/checkOTP", checkOTP);
 router.post("/auth/createPatient", completeSignUpPatient);
 router.post("/auth/createProfessional", completeSignUpProfessional);
-router.post("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
-router.post("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
+router.post("/search/highlightsWeek", authMiddleware, searchProfessionalsHighlightsWeek);
+router.post("/search/professionalBySpeciality/:speciality", authMiddleware, searchProfessionalBySpeciality);
 
 router.get("/teste", (req, res) => {
   /*

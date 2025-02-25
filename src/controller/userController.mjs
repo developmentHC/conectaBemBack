@@ -114,8 +114,14 @@ export const checkOTP = async (req, res) => {
       };
       if (userExists.status === "completed") {
         message.email.exists = true;
-        const accessToken = jwt.sign(message, config.ACCESS_TOKEN_SECRET);
-        res.status(200).json({ accessToken: accessToken });
+        const accessToken = jwt.sign(message, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        res.cookie('jwt', accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'Strict',
+          maxAge: 3600000
+        });
+        res.status(200).json({ msg: "Login bem-sucedido!" });
       } else if (userExists.status === "pending") {
         res.status(200).json({ message });
       } else {
