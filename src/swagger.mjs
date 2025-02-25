@@ -1,14 +1,11 @@
 import swaggerAutogen from "swagger-autogen";
 
-let host;
-let schemes;
-if (process.env.NODE_ENV === "production") {
-  host = "https://conecta-bem-back.vercel.app";
-  schemes = ["https"];
-} else {
-  host = "localhost:3000";
-  schemes = ["http"];
-}
+const isProduction = process.env.NODE_ENV === "production";
+const host = isProduction
+  ? "conecta-bem-back.vercel.app"
+  : "localhost:3000";
+
+const schemes = isProduction ? ["https"] : ["http"];
 
 const doc = {
   info: {
@@ -16,7 +13,9 @@ const doc = {
     title: "ConectaBem APIs",
     description: "APIs para o projeto ConectaBem",
   },
-  servers: [{ url: "http://localhost:3000" }, { url: "https://conecta-bem-back.vercel.app" }],
+  host: host,
+  basePath: "/",
+  schemes: schemes,
   tags: [
     {
       name: "User",
@@ -27,9 +26,6 @@ const doc = {
       description: "Endpoints de teste",
     },
   ],
-  host: host,
-  basePath: "/",
-  schemes: schemes,
   definitions: {
     AddUserPaciente: {
       $userId: "1234",
@@ -58,7 +54,7 @@ const doc = {
   },
 };
 
-const outputFile = "./../swagger-output.json";
-const routes = ["./routes/route.mjs"];
+const outputFile = "./swagger-output.json";
+const routes = ["./routes/*.mjs"];
 
 swaggerAutogen({ language: "pt-BR" })(outputFile, routes, doc);
