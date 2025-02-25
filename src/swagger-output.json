@@ -1,0 +1,419 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "ConectaBem APIs",
+    "description": "APIs para o projeto ConectaBem"
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "User",
+      "description": "Endpoints relacionados aos usuários"
+    },
+    {
+      "name": "Test",
+      "description": "Endpoints de teste"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/auth/sendOTP": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Envia o código OTP para o e-mail enviado pelo body",
+        "description": "Envia o código OTP para registro/login da conta no e-mail enviado no body",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário já existente, código OTP enviado por e-mail"
+          },
+          "201": {
+            "description": "Usuário criado com sucesso e código OTP enviado por e-mail"
+          },
+          "422": {
+            "description": "Parâmetros exigidos não estão sendo enviados no body"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/auth/checkOTP": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Checa se OTPs coincidem, e parte para o login/registro do usuário",
+        "description": "Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                },
+                "OTP": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Còdigos OTP coincidem"
+          },
+          "401": {
+            "description": "Códigos OTP não coincidem"
+          },
+          "404": {
+            "description": "Não Encontrado"
+          },
+          "422": {
+            "description": "Parâmetros exigidos não estão sendo enviados no body"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/auth/createPatient": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Completa o cadastro do paciente",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Criar novo paciente.",
+            "schema": {
+              "$ref": "#/definitions/AddUserPaciente"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário encontardo, mas nenhuma alteração realizada no seu cadastro"
+          },
+          "201": {
+            "description": "Usuário encontrado, cadastro completado com sucesso"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          },
+          "422": {
+            "description": "Parâmetros exigidos não estão sendo enviados no body"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/auth/createProfessional": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Completa o cadastro do profissional",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Criar novo paciente.",
+            "schema": {
+              "$ref": "#/definitions/AddUserProfessional"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário encontardo, mas nenhuma alteração realizada no seu cadastro"
+          },
+          "201": {
+            "description": "Usuário encontrado, cadastro completado com sucesso"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          },
+          "422": {
+            "description": "Parâmetros exigidos não estão sendo enviados no body"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/search/highlightsWeek": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Pesquisa os destaques da semana",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Pesquisar pelos profissionais destaques da semana.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "string",
+                  "example": "1"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/search/professionalBySpeciality/{speciality}": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Pesquisa um range de 10 profissionais de uma especialidade específica",
+        "description": "",
+        "parameters": [
+          {
+            "name": "speciality",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Pesquisar pelos profissionais destaques da semana.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "string",
+                  "example": "1"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissional encontrado, retorna um range de 10 profissionais"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/teste": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "summary": "Teste para verificar se API está funcionando",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AddUserPaciente": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "example": "1234"
+        },
+        "name": {
+          "type": "string",
+          "example": "Thiago Cabral"
+        },
+        "birthdayDate": {
+          "type": "string",
+          "example": "20/12/2003"
+        },
+        "userSpecialities": {
+          "type": "array",
+          "example": [
+            "Acumputura",
+            "Aromaterapia"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "userServicePreferences": {
+          "type": "array",
+          "example": [
+            "LGBTQIA+ Friendly",
+            "Pet Friendly"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "userAcessibilityPreferences": {
+          "type": "array",
+          "example": [
+            "Atendimento em Libras",
+            "Audiodescrição"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "profilePhoto": {
+          "type": "string",
+          "example": "https://www.url/url"
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "birthdayDate",
+        "userSpecialities",
+        "userServicePreferences"
+      ]
+    },
+    "AddUserProfessional": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "example": "1234"
+        },
+        "name": {
+          "type": "string",
+          "example": "Ronaldinho Gaúcho"
+        },
+        "birthdayDate": {
+          "type": "string",
+          "example": "20/12/2003"
+        },
+        "cepResidencial": {
+          "type": "string",
+          "example": "12345-678"
+        },
+        "nomeClinica": {
+          "type": "string",
+          "example": "Clinica do seu José"
+        },
+        "CNPJCPFProfissional": {
+          "type": "string",
+          "example": "123.456.789-10"
+        },
+        "cepClinica": {
+          "type": "string",
+          "example": "12345-678"
+        },
+        "enderecoClinica": {
+          "type": "string",
+          "example": "Rua Perto da Qui"
+        },
+        "complementoClinica": {
+          "type": "string",
+          "example": "Casa"
+        },
+        "professionalSpecialities": {
+          "type": "array",
+          "example": [
+            "Acumputura",
+            "Aromaterapia"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "otherProfessionalSpecialities": {
+          "type": "array",
+          "example": [
+            "Yoga na água",
+            "Corrente russa"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "professionalServicePreferences": {
+          "type": "array",
+          "example": [
+            "LGBTQIA+ Friendly",
+            "Pet Friendly"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "profilePhoto": {
+          "type": "string",
+          "example": "https://www.url/url"
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "birthdayDate",
+        "cepResidencial",
+        "nomeClinica",
+        "CNPJCPFProfissional",
+        "cepClinica",
+        "enderecoClinica",
+        "professionalSpecialities",
+        "professionalServicePreferences"
+      ]
+    }
+  }
+}
