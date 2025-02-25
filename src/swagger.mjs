@@ -3,7 +3,7 @@ import swaggerAutogen from "swagger-autogen";
 let host;
 let schemes;
 if (process.env.NODE_ENV === "production") {
-  host = "backend-ofx7.onrender.com";
+  host = "https://conecta-bem-back.vercel.app";
   schemes = ["https"];
 } else {
   host = "localhost:3000";
@@ -16,7 +16,7 @@ const doc = {
     title: "ConectaBem APIs",
     description: "APIs para o projeto ConectaBem",
   },
-  servers: [{ url: "http://localhost:3000" }, { url: "https://backend-ofx7.onrender.com" }],
+  servers: [{ url: "http://localhost:3000" }, { url: "https://conecta-bem-back.vercel.app" }],
   tags: [
     {
       name: "User",
