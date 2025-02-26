@@ -6,7 +6,7 @@
   "scripts": {
     "test": "vitest --run --reporter verbose --globals",
     "test:watch": "vitest",
-    "start": "node ./src/swagger.mjs && nodemon ./src/index.mjs",
+    "start": "node ./src/swagger.mjs && node ./src/index.mjs",
     "swagger": "node ./src/swagger.mjs"
   },
   "keywords": [],
