@@ -1,9 +1,9 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import router from './../routes/route.mjs';
+import router from './routes/route.mjs';
 import swaggerUI from 'swagger-ui-express';
-import swaggerFile from './../../swagger-output.json' with {type: 'json'};
-import config from './../config/config.mjs';
+import swaggerFile from './../swagger-output.json' with {type: 'json'};
+import config from './config/config.mjs';
 import cookieParser from 'cookie-parser';
 import { createServerlessHandler } from '@vercel/node';
 
