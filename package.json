@@ -9,6 +9,9 @@
     "start": "node ./api/swagger.mjs && nodemon ./api/index.mjs",
     "swagger": "node ./api/swagger.mjs"
   },
+  "engines": {
+    "node": "18.x"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -21,11 +24,13 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "global": "^4.4.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.12.0",
     "mongoose": "^8.8.0",
     "swagger-autogen": "^2.23.7",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "vercel": "^41.2.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.7",
