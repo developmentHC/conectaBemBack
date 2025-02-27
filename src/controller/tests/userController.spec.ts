@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { checkUserEmailSendOTP } from "../userController.mjs";
+import { checkUserEmailSendOTP } from "../userController";
 import bcrypt from "bcrypt";
-import User from "../../models/User.mjs"; // Importando o modelo User como default
-import { sendEmail } from "../../utils/sendEmail.mjs";
-import { generateOTP } from "../../utils/generateOTP.mjs";
-import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
+import User from "../../models/User"; // Importando o modelo User como default
+import { sendEmail } from "../../utils/sendEmail";
+import { generateOTP } from "../../utils/generateOTP";
+import { testEmailSyntax } from "../../utils/testEmailSyntax";
 
 vi.mock("bcrypt");
-vi.mock("../../models/User.mjs", async (importOriginal) => {
+vi.mock("../../models/User", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     __esModule: true, // Para garantir que o módulo é tratado como um módulo ES
@@ -20,13 +20,13 @@ vi.mock("../../models/User.mjs", async (importOriginal) => {
   };
 });
 
-vi.mock("../../utils/sendEmail.mjs", () => ({
+vi.mock("../../utils/sendEmail.ts", () => ({
   sendEmail: vi.fn(),
 }));
-vi.mock("../../utils/generateOTP.mjs", () => ({
+vi.mock("../../utils/generateOTP.ts", () => ({
   generateOTP: vi.fn(),
 }));
-vi.mock("../../utils/testEmailSyntax.mjs", () => ({
+vi.mock("../../utils/testEmailSyntax.ts", () => ({
   testEmailSyntax: vi.fn(),
 }));
 

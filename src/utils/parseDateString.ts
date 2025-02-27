@@ -1,4 +1,4 @@
-export function parseDateString(dateString) {
+export function parseDateString(dateString: any) {
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
     console.error("Formato de data inválido. Use DD/MM/AAAA.");
     return { error: "Formato de data inválido. Use DD/MM/AAAA." };
@@ -11,7 +11,7 @@ export function parseDateString(dateString) {
       return { error: "Formato de data inválido. Use DD/MM/AAAA." };
     }
 
-    const date = new Date(Date.UTC(year, month - 1, day));
+    const date = new Date(Date.UTC(year, month - 1, day)) ;
 
     if (isNaN(date)) {
       return { error: "Data inválida." };

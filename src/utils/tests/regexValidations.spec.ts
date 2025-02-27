@@ -1,4 +1,4 @@
-import { testEmailSyntax } from "../testEmailSyntax.mjs";
+import { testEmailSyntax } from "../testEmailSyntax";
 
 describe("validarEmail", () => {
   it("deve retornar true para um email válido", () => {

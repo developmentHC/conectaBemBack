@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { sendEmail } from "../sendEmail.mjs";
+import { sendEmail } from "../sendEmail";
 import sgMail from "@sendgrid/mail";
 
 vi.mock("@sendgrid/mail");
