@@ -7,8 +7,8 @@ import {
   completeSignUpProfessional,
   searchProfessionalsHighlightsWeek,
   searchProfessionalBySpeciality,
-} from "./../controller/userController";
-import authMiddleware from "../utils/authMiddleware";
+} from "./../controller/userController.ts";
+import authMiddleware from "../utils/authMiddleware.ts";
 
 const router = express.Router();
 

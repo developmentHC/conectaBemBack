@@ -1,4 +1,4 @@
-  import config from "./../config/config";
+  import config from "./../config/config.ts";
   import sgMail from "@sendgrid/mail";
 
   sgMail.setApiKey(config.SENDGRID_API_KEY);

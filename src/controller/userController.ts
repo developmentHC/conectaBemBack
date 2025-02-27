@@ -1,12 +1,12 @@
 
-import { User } from "../models";
-import { generateOTP } from "../utils/generateOTP";
-import { sendEmail } from "../utils/sendEmail";
+import { User } from "../models/index.ts";
+import { generateOTP } from "../utils/generateOTP.ts";
+import { sendEmail } from "../utils/sendEmail.ts";
 import bcrypt from "bcrypt";
-import { testEmailSyntax } from "../utils/testEmailSyntax";
-import config from "../config/config";
+import { testEmailSyntax } from "../utils/testEmailSyntax.ts";
+import config from "../config/config.ts";
 import jwt from "jsonwebtoken";
-import { parseDateString } from "../utils/parseDateString";
+import { parseDateString } from "../utils/parseDateString.ts";
 
 const saltRounds = 10;
 
