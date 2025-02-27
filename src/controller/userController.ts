@@ -1,16 +1,16 @@
-import mongoose from "mongoose";
-import { User } from "../models/index.mjs";
-import { generateOTP } from "../utils/generateOTP.mjs";
-import { sendEmail } from "../utils/sendEmail.mjs";
+
+import { User } from "../models";
+import { generateOTP } from "../utils/generateOTP";
+import { sendEmail } from "../utils/sendEmail";
 import bcrypt from "bcrypt";
-import { testEmailSyntax } from "../utils/testEmailSyntax.mjs";
-import config from "../config/config.mjs";
+import { testEmailSyntax } from "../utils/testEmailSyntax";
+import config from "../config/config";
 import jwt from "jsonwebtoken";
-import { parseDateString } from "../utils/parseDateString.mjs";
+import { parseDateString } from "../utils/parseDateString";
 
 const saltRounds = 10;
 
-export const checkUserEmailSendOTP = async (req, res) => {
+export const checkUserEmailSendOTP = async (req: any, res: any) => {
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'Envia o código OTP para o e-mail enviado pelo body'
@@ -76,7 +76,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
   }
 };
 
-export const checkOTP = async (req, res) => {
+export const checkOTP = async (req: any, res: any) => {
   /*
   #swagger.tags = ['User']
   #swagger.summary = 'Checa se OTPs coincidem, e parte para o login/registro do usuário'
@@ -114,7 +114,7 @@ export const checkOTP = async (req, res) => {
       };
       if (userExists.status === "completed") {
         message.email.exists = true;
-        const accessToken = jwt.sign(message, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        const accessToken = jwt.sign(message, config.ACCESS_TOKEN_SECRET as string, { expiresIn: '1h' });
         res.cookie('jwt', accessToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -136,7 +136,7 @@ export const checkOTP = async (req, res) => {
   }
 };
 
-export const completeSignUpPatient = async (req, res) => {
+export const completeSignUpPatient = async (req: any, res: any) => {
   /*
     #swagger.tags = ['User']
     #swagger.summary = 'Completa o cadastro do paciente'

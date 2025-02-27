@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { parseDateString } from "../parseDateString.mjs";
+import { parseDateString } from "../parseDateString";
 
 describe('parseDateString', () => {
   it('deve retornar a data no formato correto', () => {

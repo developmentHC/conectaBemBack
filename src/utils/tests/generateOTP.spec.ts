@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { generateOTP } from "../generateOTP.mjs";
+import { generateOTP } from "../generateOTP";
 
 describe("generateOTP", () => {
   it("deve retornar um número", () => {

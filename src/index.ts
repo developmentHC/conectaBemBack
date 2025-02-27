@@ -1,16 +1,15 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import swaggerUI from 'swagger-ui-express';
-import router from '../routes/route.mjs';
-import config from '../config/config.mjs';
+import router from './routes/route';
+import config from './config/config';
 import cookieParser from 'cookie-parser';
-import { createServerlessHandler } from '@vercel/node';
 
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/docs", swaggerUI.serve, swaggerUI.setup(await import("../swagger-output.json", { assert: { type: "json" } })));
+app.use("/docs", swaggerUI.serve, swaggerUI.setup(await import("./swagger-output.json", { assert: { type: "json" } })));
 
 app.get("/", (req, res) => {
   res.redirect('/docs');
@@ -27,4 +26,6 @@ const connectDB = async () => {
 };
 await connectDB();
 
-export default createServerlessHandler(app);
+export default (req: any, res: any) => {
+  app(req, res);
+};

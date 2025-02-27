@@ -1,5 +1,7 @@
 import swaggerAutogen from "swagger-autogen";
 
+console.log("Generating Swagger docs...");
+
 const isProduction = process.env.NODE_ENV === "production";
 const host = isProduction
   ? "conecta-bem-back.vercel.app"
@@ -55,6 +57,6 @@ const doc = {
 };
 
 const outputFile = "./swagger-output.json";
-const routes = ["./routes/*.mjs"];
+const routes = ["./routes/*.ts"];
 
 swaggerAutogen({ language: "pt-BR" })(outputFile, routes, doc);

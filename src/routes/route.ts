@@ -7,13 +7,13 @@ import {
   completeSignUpProfessional,
   searchProfessionalsHighlightsWeek,
   searchProfessionalBySpeciality,
-} from "./../controller/userController.mjs";
-import authMiddleware from "../utils/authMiddleware.mjs";
+} from "./../controller/userController";
+import authMiddleware from "../utils/authMiddleware";
 
 const router = express.Router();
 
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin: function (origin: any, callback: any) {
     const allowedOrigins = [
       "http://localhost:3000",
       "https://conecta-bem-visu.vercel.app/",
@@ -39,7 +39,7 @@ router.post("/auth/createProfessional", completeSignUpProfessional);
 router.post("/search/highlightsWeek", authMiddleware, searchProfessionalsHighlightsWeek);
 router.post("/search/professionalBySpeciality/:speciality", authMiddleware, searchProfessionalBySpeciality);
 
-router.get("/teste", (req, res) => {
+router.get("/teste", (req: any, res: any) => {
   /*
     #swagger.tags = ['Test']
     #swagger.summary = 'Teste para verificar se API está funcionando'
