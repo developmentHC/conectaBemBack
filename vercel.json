@@ -12,10 +12,6 @@
   ],
   "routes": [
     {
-      "src": "/docs/(.*)",
-      "dest": "src/swagger.mjs"
-    },
-    {
       "src": "/(.*)",
       "dest": "src/index.mjs"
     }
