@@ -20,7 +20,7 @@ mongoose
     `mongodb+srv://${config.DB_USER}:${config.DB_PASSWORD}@cluster0.rczok.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
   )
   .then(() => {
-    !isProduction && app.listen(3000);
+    app.listen(3000);
     console.log("Conectou ao banco com sucesso");
   })
   .catch((error) => console.log(error));
