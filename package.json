@@ -10,8 +10,7 @@
     "start": "node ./src/index.mjs",
     "dev": "npm run swagger && nodemon ./src/index.mjs",
     "build": "node ./src/swagger.mjs",
-    "swagger": "node ./src/swagger.mjs",
-    "vercel-build": "npm run build && npm install"
+    "swagger": "node ./src/swagger.mjs"
   },
   "keywords": [],
   "author": "",
