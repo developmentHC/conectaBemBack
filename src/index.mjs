@@ -6,6 +6,7 @@ import swaggerFile from './../swagger-output.json' with {type: 'json'};
 import config from './config/config.mjs';
 import cookieParser from 'cookie-parser';
 
+const isProduction = process.env.NODE_ENV === "production";
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
@@ -19,7 +20,7 @@ mongoose
     `mongodb+srv://${config.DB_USER}:${config.DB_PASSWORD}@cluster0.rczok.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
   )
   .then(() => {
-    app.listen(3000);
+    !isProduction && app.listen(3000);
     console.log("Conectou ao banco com sucesso");
   })
   .catch((error) => console.log(error));

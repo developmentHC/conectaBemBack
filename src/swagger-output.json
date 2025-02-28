@@ -321,7 +321,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/url"
+          "example": "https://www.url/path"
         }
       },
       "required": [
@@ -403,7 +403,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/url"
+          "example": "https://www.url/path"
         }
       },
       "required": [
