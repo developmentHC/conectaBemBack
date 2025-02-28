@@ -5,9 +5,8 @@ import {
   checkOTP,
   completeSignUpPatient,
   completeSignUpProfessional,
-  searchProfessionalsHighlightsWeek,
-  searchProfessionalBySpeciality,
-} from "./../controller/userController.mjs";
+} from "./../controller/userController/index.mjs";
+import { searchProfessionalsHighlightsWeek, searchProfessionalBySpeciality } from "./../controller/searchController/index.mjs"
 import authMiddleware from "../utils/authMiddleware.mjs";
 
 const router = express.Router();

@@ -1,18 +1,17 @@
-import mongoose from "mongoose";
-import { User } from "../models/index.mjs";
-import { generateOTP } from "../utils/generateOTP.mjs";
-import { sendEmail } from "../utils/sendEmail.mjs";
 import bcrypt from "bcrypt";
-import { testEmailSyntax } from "../utils/testEmailSyntax.mjs";
-import config from "../config/config.mjs";
 import jwt from "jsonwebtoken";
-import { parseDateString } from "../utils/parseDateString.mjs";
+import { User } from "../../models/index.mjs";
+import { generateOTP } from "../../utils/generateOTP.mjs";
+import { sendEmail } from "../../utils/sendEmail.mjs";
+import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
+import config from "../../config/config.mjs";
+import { parseDateString } from "../../utils/parseDateString.mjs";
 
 const saltRounds = 10;
 
 export const checkUserEmailSendOTP = async (req, res) => {
   /*
-    #swagger.tags = ['User']
+    #swagger.tags = ['Authentication']
     #swagger.summary = 'Envia o código OTP para o e-mail enviado pelo body'
     #swagger.description = 'Envia o código OTP para registro/login da conta no e-mail enviado no body'
     #swagger.responses[200] = { description: 'Usuário já existente, código OTP enviado por e-mail' }
@@ -78,7 +77,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
 
 export const checkOTP = async (req, res) => {
   /*
-  #swagger.tags = ['User']
+  #swagger.tags = ['Authentication']
   #swagger.summary = 'Checa se OTPs coincidem, e parte para o login/registro do usuário'
   #swagger.description = 'Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro'
   #swagger.responses[200] = { description: 'Còdigos OTP coincidem' }
@@ -113,8 +112,8 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
-        message.email.exists = true;
-        const accessToken = jwt.sign(message, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        /* message.email.exists = true; */
+        const accessToken = jwt.sign(config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
         res.cookie('jwt', accessToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -138,7 +137,7 @@ export const checkOTP = async (req, res) => {
 
 export const completeSignUpPatient = async (req, res) => {
   /*
-    #swagger.tags = ['User']
+    #swagger.tags = ['Authentication']
     #swagger.summary = 'Completa o cadastro do paciente'
     #swagger.responses[201] = { description: 'Usuário encontrado, cadastro completado com sucesso' } 
     #swagger.responses[200] = { description: 'Usuário encontardo, mas nenhuma alteração realizada no seu cadastro' } 
@@ -218,7 +217,7 @@ export const completeSignUpPatient = async (req, res) => {
 
 export const completeSignUpProfessional = async (req, res) => {
   /*
-    #swagger.tags = ['User']
+    #swagger.tags = ['Authentication']
     #swagger.summary = 'Completa o cadastro do profissional'
     #swagger.responses[201] = { description: 'Usuário encontrado, cadastro completado com sucesso' } 
     #swagger.responses[200] = { description: 'Usuário encontardo, mas nenhuma alteração realizada no seu cadastro' } 
@@ -323,93 +322,3 @@ export const completeSignUpProfessional = async (req, res) => {
   }
 };
 
-export const searchProfessionalsHighlightsWeek = async (req, res) => {
-  /*
-    #swagger.tags = ['User']
-    #swagger.summary = 'Pesquisa os destaques da semana'
-    #swagger.responses[200] = { description: 'Profissionais encontrados, retorna um range de 10 profissionais' } 
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-    #swagger.parameters['body'] = {
-            in: 'body',
-            description: 'Pesquisar pelos profissionais destaques da semana.',
-            schema: {
-              'page' : '1'
-            }
-    }
-  */
-
-  try {
-    let page = parseInt(req.body.page) || 1;
-    const limit = 10;
-
-    const totalProfessionals = await User.countDocuments({ userType: "professional" }, { hashedOTP: 0 });
-
-    const pageCount = Math.ceil(totalProfessionals / limit);
-
-    if (page > pageCount && pageCount > 0) {
-      page = pageCount;
-    }
-
-    const professionals = await User.find({ userType: "professional" }, { hashedOTP: 0 })
-      .skip((page - 1) * limit)
-      .limit(limit);
-    console.log(professionals);
-
-    return res.status(200).json({
-      professionals: professionals,
-      page: page,
-      pageCount: pageCount,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: error,
-    });
-  }
-};
-
-export const searchProfessionalBySpeciality = async (req, res) => {
-  /*
-    #swagger.tags = ['User']
-    #swagger.summary = 'Pesquisa um range de 10 profissionais de uma especialidade específica'
-    #swagger.responses[200] = { description: 'Profissional encontrado, retorna um range de 10 profissionais' } 
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-    #swagger.parameters['body'] = {
-            in: 'body',
-            description: 'Pesquisar pelos profissionais destaques da semana.',
-            schema: {
-              'page' : '1'
-            }
-    }
-  */
-  const speciality = req.params.speciality;
-  try {
-    let page = parseInt(req.body.page) || 1;
-    let limit = 10;
-
-    const totalProfessionals = await User.countDocuments(
-      { professionalSpecialities: { $in: [speciality] } },
-      { hashedOTP: 0 }
-    );
-
-    const pageCount = Math.ceil(totalProfessionals / limit);
-
-    if (page > pageCount && pageCount > 0) {
-      page = pageCount;
-    }
-
-    const professionals = await User.find({ professionalSpecialities: { $in: [speciality] } }, { hashedOTP: 0 })
-      .skip((page - 1) * limit)
-      .limit(limit);
-    console.log(professionals);
-
-    return res.status(200).json({
-      professionals: professionals,
-      page: page,
-      pageCount: pageCount,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: error.message,
-    });
-  }
-};

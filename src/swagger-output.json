@@ -9,8 +9,12 @@
   "basePath": "/",
   "tags": [
     {
-      "name": "User",
-      "description": "Endpoints relacionados aos usuários"
+      "name": "Authentication",
+      "description": "Endpoints relacionados a autenticação do usuário"
+    },
+    {
+      "name": "Search",
+      "description": "Endpoints relacionados a busca de dados do usuário"
     },
     {
       "name": "Test",
@@ -24,7 +28,7 @@
     "/auth/sendOTP": {
       "post": {
         "tags": [
-          "User"
+          "Authentication"
         ],
         "summary": "Envia o código OTP para o e-mail enviado pelo body",
         "description": "Envia o código OTP para registro/login da conta no e-mail enviado no body",
@@ -61,7 +65,7 @@
     "/auth/checkOTP": {
       "post": {
         "tags": [
-          "User"
+          "Authentication"
         ],
         "summary": "Checa se OTPs coincidem, e parte para o login/registro do usuário",
         "description": "Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro",
@@ -104,7 +108,7 @@
     "/auth/createPatient": {
       "post": {
         "tags": [
-          "User"
+          "Authentication"
         ],
         "summary": "Completa o cadastro do paciente",
         "description": "",
@@ -143,7 +147,7 @@
     "/auth/createProfessional": {
       "post": {
         "tags": [
-          "User"
+          "Authentication"
         ],
         "summary": "Completa o cadastro do profissional",
         "description": "",
@@ -185,7 +189,7 @@
     "/search/highlightsWeek": {
       "post": {
         "tags": [
-          "User"
+          "Search"
         ],
         "summary": "Pesquisa os destaques da semana",
         "description": "",
@@ -218,7 +222,7 @@
     "/search/professionalBySpeciality/{speciality}": {
       "post": {
         "tags": [
-          "User"
+          "Search"
         ],
         "summary": "Pesquisa um range de 10 profissionais de uma especialidade específica",
         "description": "",

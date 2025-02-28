@@ -18,8 +18,12 @@ const doc = {
   schemes: schemes,
   tags: [
     {
-      name: "User",
-      description: "Endpoints relacionados aos usuários",
+      name: "Authentication",
+      description: "Endpoints relacionados a autenticação do usuário",
+    },
+    {
+      name: "Search",
+      description: "Endpoints relacionados a busca de dados do usuário",
     },
     {
       name: "Test",
@@ -34,7 +38,7 @@ const doc = {
       $userSpecialities: ["Acumputura", "Aromaterapia"],
       $userServicePreferences: ["LGBTQIA+ Friendly", "Pet Friendly"],
       userAcessibilityPreferences: ["Atendimento em Libras", "Audiodescrição"],
-      profilePhoto: "https://www.url/url",
+      profilePhoto: "https://www.url/path",
     },
     AddUserProfessional: {
       $userId: "1234",
@@ -49,7 +53,7 @@ const doc = {
       $professionalSpecialities: ["Acumputura", "Aromaterapia"],
       otherProfessionalSpecialities: ["Yoga na água", "Corrente russa"],
       $professionalServicePreferences: ["LGBTQIA+ Friendly", "Pet Friendly"],
-      profilePhoto: "https://www.url/url",
+      profilePhoto: "https://www.url/path",
     },
   },
 };
