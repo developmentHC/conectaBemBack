@@ -1,11 +1,7 @@
 import swaggerAutogen from "swagger-autogen";
 
-const isProduction = process.env.NODE_ENV === "production";
-const host = isProduction
-  ? "conecta-bem-back.vercel.app"
-  : "conecta-bem-back.vercel.app";
-
-const schemes = isProduction ? ["https"] : ["http"];
+const isProduction = process.env.VERCEL == 1;
+const vercelUrl = process.env.VERCEL_URL;
 
 const doc = {
   info: {
@@ -13,9 +9,11 @@ const doc = {
     title: "ConectaBem APIs",
     description: "APIs para o projeto ConectaBem",
   },
-  host: host,
+  host: isProduction
+    ? vercelUrl
+    : "localhost:3000",
   basePath: "/",
-  schemes: schemes,
+  schemes: isProduction ? ["https"] : ["http"],
   tags: [
     {
       name: "Authentication",

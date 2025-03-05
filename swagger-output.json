@@ -5,7 +5,7 @@
     "title": "ConectaBem APIs",
     "description": "APIs para o projeto ConectaBem"
   },
-  "host": "conecta-bem-back.vercel.app",
+  "host": "",
   "basePath": "/",
   "tags": [
     {
@@ -22,7 +22,7 @@
     }
   ],
   "schemes": [
-    "http"
+    "https"
   ],
   "paths": {
     "/auth/sendOTP": {
