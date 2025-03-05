@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import router from './routes/route.mjs';
-import swaggerUI from 'swagger-ui-express';
+import swaggerUi from 'swagger-ui-express';
 import swaggerFile from './../swagger-output.json' with {type: 'json'};
 import config from './config/config.mjs';
 import cookieParser from 'cookie-parser';
@@ -10,7 +10,21 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerFile));
+app.use(
+  '/docs',
+  swaggerUi.serve,
+  (req, res, next) => {
+    swaggerUi.setup(swaggerFile, {
+      customSiteTitle: "API Docs",
+      customCssUrl: 'https://unpkg.com/swagger-ui-dist@4.18.1/swagger-ui.css',
+      customJs: [
+        'https://unpkg.com/swagger-ui-dist@4.18.1/swagger-ui-bundle.js',
+        'https://unpkg.com/swagger-ui-dist@4.18.1/swagger-ui-standalone-preset.js'
+      ]
+    })(req, res, next);
+  }
+);
+
 app.get("/", (req, res) => { res.redirect('/docs'); });
 app.use("/", router);
 

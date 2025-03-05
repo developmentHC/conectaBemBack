@@ -3,7 +3,7 @@ import swaggerAutogen from "swagger-autogen";
 const isProduction = process.env.NODE_ENV === "production";
 const host = isProduction
   ? "conecta-bem-back.vercel.app"
-  : "localhost:3000";
+  : "conecta-bem-back.vercel.app";
 
 const schemes = isProduction ? ["https"] : ["http"];
 
@@ -58,7 +58,7 @@ const doc = {
   },
 };
 
-const outputFile = "./swagger-output.json";
+const outputFile = "./../swagger-output.json";
 const routes = ["./routes/*.mjs"];
 
 swaggerAutogen({ language: "pt-BR" })(outputFile, routes, doc);
