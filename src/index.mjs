@@ -1,8 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import router from './routes/route.mjs';
-import swaggerUI from 'swagger-ui-express';
-import swaggerFile from './../swagger-output.json' with {type: 'json'};
+import swaggerUi from 'swagger-ui-express';
+import swagger from './swagger.mjs';
 import config from './config/config.mjs';
 import cookieParser from 'cookie-parser';
 
@@ -10,7 +10,7 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerFile));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swagger));
 app.get("/", (req, res) => { res.redirect('/docs'); });
 app.use("/", router);
 
