@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import router from './routes/route.mjs';
+import router from './routes/index.mjs';
 import swaggerUi from 'swagger-ui-express';
 import swaggerFile from './../swagger-output.json' with {type: 'json'};
 import config from './config/config.mjs';

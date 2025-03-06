@@ -5,7 +5,7 @@
     "title": "ConectaBem APIs",
     "description": "APIs para o projeto ConectaBem"
   },
-  "host": "",
+  "host": "localhost:3000",
   "basePath": "/",
   "tags": [
     {
@@ -22,7 +22,7 @@
     }
   ],
   "schemes": [
-    "https"
+    "http"
   ],
   "paths": {
     "/auth/sendOTP": {
@@ -101,6 +101,9 @@
           },
           "500": {
             "description": "Erro no servidor"
+          },
+          "501": {
+            "description": "Não Implementado"
           }
         }
       }
@@ -187,31 +190,18 @@
       }
     },
     "/search/highlightsWeek": {
-      "post": {
+      "get": {
         "tags": [
           "Search"
         ],
-        "summary": "Pesquisa os destaques da semana",
+        "summary": "Pesquisa os profissionais destaques da semana",
         "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "description": "Pesquisar pelos profissionais destaques da semana.",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "page": {
-                  "type": "string",
-                  "example": "1"
-                }
-              }
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
           },
           "500": {
             "description": "Erro no servidor"
@@ -220,7 +210,7 @@
       }
     },
     "/search/professionalBySpeciality/{speciality}": {
-      "post": {
+      "get": {
         "tags": [
           "Search"
         ],
@@ -232,25 +222,42 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "description": "Pesquisar pelos profissionais destaques da semana.",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "page": {
-                  "type": "string",
-                  "example": "1"
-                }
-              }
-            }
           }
         ],
         "responses": {
           "200": {
             "description": "Profissional encontrado, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/search/searchBar/{terms}": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Barra de pesquisa",
+        "description": "",
+        "parameters": [
+          {
+            "name": "terms",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
           },
           "500": {
             "description": "Erro no servidor"

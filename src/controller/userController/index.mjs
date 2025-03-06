@@ -112,19 +112,19 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
-        /* message.email.exists = true; */
-        const accessToken = jwt.sign(config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        const accessToken = jwt.sign(userExists._id, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
         res.cookie('jwt', accessToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'Strict',
           maxAge: 3600000
         });
-        res.status(200).json({ msg: "Login bem-sucedido!" });
+
+        return res.status(200).json({ msg: "Login bem-sucedido!" });
       } else if (userExists.status === "pending") {
-        res.status(200).json({ message });
+        return res.status(200).json({ message });
       } else {
-        res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
+        return res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
       }
     } else {
       return res.status(401).json({ msg: "Código OTP está incorreto!" });
@@ -178,6 +178,7 @@ export const completeSignUpPatient = async (req, res) => {
     console.log(parsedDate.error);
     return res.status(400).json({ error: parsedDate.error });
   }
+
   const update = {
     name,
     birthdayDate: parsedDate.result,
@@ -185,9 +186,11 @@ export const completeSignUpPatient = async (req, res) => {
     userServicePreferences,
     userType: "patient",
   };
+
   if (userAcessibilityPreferences !== undefined) {
     update.userAcessibilityPreferences = userAcessibilityPreferences;
   }
+
   if (profilePhoto !== undefined) {
     update.profilePhoto = profilePhoto;
   }
@@ -195,23 +198,24 @@ export const completeSignUpPatient = async (req, res) => {
   try {
     const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
+
     if (result.modifiedCount > 0) {
-      const updatedUser = await User.findOne([{ _id: { $in: [userId] } }, { hashedOTP: 0 }]);
+      console.log("Payload para JWT:", userId);
+      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.cookie('jwt', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 3600000
+      });
 
-      if (updatedUser.length === 0) {
-        return res.status(404).json({ error: "Usuário não encontrado" });
-      }
-
-      console.log("Payload para JWT:", updatedUser[0]);
-
-      const accessToken = jwt.sign(updatedUser[0], config.ACCESS_TOKEN_SECRET);
-      return res.status(201).json({ accessToken: accessToken });
+      return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
       return res.status(500).json({ error: "Usuário já está cadastrado no banco de dados" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "Bad request" });
   }
 };
 
@@ -292,9 +296,11 @@ export const completeSignUpProfessional = async (req, res) => {
   if (complementoClinica !== undefined) {
     update.complementoClinica = complementoClinica;
   }
+
   if (otherProfessionalSpecialities !== undefined) {
     update.otherProfessionalSpecialities = otherProfessionalSpecialities;
   }
+
   if (profilePhoto !== undefined) {
     update.profilePhoto = profilePhoto;
   }
@@ -303,16 +309,23 @@ export const completeSignUpProfessional = async (req, res) => {
     const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
     if (result.modifiedCount > 0) {
-      const updatedUser = await User.findOne([{ _id: { $in: [userId] } }, { hashedOTP: 0 }]);
+      console.log(typeof userId);
+
+      const updatedUser = await User.findOne({ _id: userId }, { hashedOTP: 0 });
 
       if (updatedUser.length === 0) {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      console.log("Payload para JWT:", updatedUser[0]);
+      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.cookie('jwt', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 3600000
+      });
 
-      const accessToken = jwt.sign(updatedUser[0], config.ACCESS_TOKEN_SECRET);
-      return res.status(201).json({ accessToken: accessToken });
+      return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
       return res.status(403).json({ error: "Usuário já está cadastrado no banco de dados" });
     }
