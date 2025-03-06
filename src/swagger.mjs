@@ -20,8 +20,12 @@ const doc = {
       description: "Endpoints relacionados a autenticação do usuário",
     },
     {
+      name: "User",
+      description: "Endpoints relacionados ao usuário",
+    },
+    {
       name: "Search",
-      description: "Endpoints relacionados a busca de dados do usuário",
+      description: "Endpoints relacionados a busca de dados",
     },
     {
       name: "Test",

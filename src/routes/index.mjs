@@ -5,6 +5,7 @@ import {
   checkOTP,
   completeSignUpPatient,
   completeSignUpProfessional,
+  userInfo,
 } from "../controller/userController/index.mjs";
 import { searchProfessionalsHighlightsWeek, searchProfessionalBySpeciality, searchBar } from "../controller/searchController/index.mjs"
 
@@ -25,6 +26,8 @@ router.post("/auth/createProfessional", completeSignUpProfessional);
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
 router.get("/search/searchBar/:terms", searchBar);
+
+router.get("/user", userInfo);
 
 router.get("/teste", (req, res) => {
   /*

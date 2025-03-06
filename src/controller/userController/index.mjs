@@ -309,8 +309,6 @@ export const completeSignUpProfessional = async (req, res) => {
     const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
     if (result.modifiedCount > 0) {
-      console.log(typeof userId);
-
       const updatedUser = await User.findOne({ _id: userId }, { hashedOTP: 0 });
 
       if (updatedUser.length === 0) {
@@ -335,3 +333,32 @@ export const completeSignUpProfessional = async (req, res) => {
   }
 };
 
+export const userInfo = async (req, res) => {
+  /*
+    #swagger.tags = ['User']
+    #swagger.summary = 'Retorna todas as informações do usuário'
+    #swagger.responses[200] = { description: 'Usuário encontrado, dados retornados' } 
+    #swagger.responses[401] = { description: 'Cookie não encontrado' } 
+    #swagger.responses[500] = { description: 'Bad request' } 
+  */
+
+  try {
+    const token = req.cookies.jwt;
+
+    if (!token) {
+      return res.status(401).json({ message: 'Não autorizado, cookie não encontrado' });
+    }
+
+    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
+    console.log(decoded);
+
+    const userExists = await User.findOne({ _id: decoded.userId }, {
+      hashedOTP: 0, status: 0, __v: 0
+    });
+
+    return res.status(200).json(userExists);
+  } catch (error) {
+    console.error("Erro ao trazer informações do usuário:", error);
+    return res.status(500).json({ error: "Bad request" });
+  }
+}

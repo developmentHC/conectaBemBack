@@ -13,8 +13,12 @@
       "description": "Endpoints relacionados a autenticação do usuário"
     },
     {
+      "name": "User",
+      "description": "Endpoints relacionados ao usuário"
+    },
+    {
       "name": "Search",
-      "description": "Endpoints relacionados a busca de dados do usuário"
+      "description": "Endpoints relacionados a busca de dados"
     },
     {
       "name": "Test",
@@ -101,9 +105,6 @@
           },
           "500": {
             "description": "Erro no servidor"
-          },
-          "501": {
-            "description": "Não Implementado"
           }
         }
       }
@@ -261,6 +262,26 @@
           },
           "500": {
             "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Retorna todas as informações do usuário",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Usuário encontrado, dados retornados"
+          },
+          "401": {
+            "description": "Cookie não encontrado"
+          },
+          "500": {
+            "description": "Bad request"
           }
         }
       }
