@@ -138,7 +138,7 @@ export const checkOTP = async (req, res) => {
 export const completeSignUpPatient = async (req, res) => {
   /*
     #swagger.tags = ['Authentication']
-    #swagger.summary = 'Completa o cadastro do paciente'
+    #swagger.summary = 'Completa o cadastro do usuário paciente'
     #swagger.responses[201] = { description: 'Usuário encontrado, cadastro completado com sucesso' } 
     #swagger.responses[200] = { description: 'Usuário encontardo, mas nenhuma alteração realizada no seu cadastro' } 
     #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' } 
@@ -146,7 +146,7 @@ export const completeSignUpPatient = async (req, res) => {
     #swagger.responses[500] = { description: 'Erro no servidor' }
     #swagger.parameters['body'] = {
             in: 'body',
-            description: 'Criar novo paciente.',
+            description: 'É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint',
             schema: { $ref: '#/definitions/AddUserPaciente' }
     }
   */
@@ -167,11 +167,16 @@ export const completeSignUpPatient = async (req, res) => {
     });
   }
 
-  const userExists = await User.findOne({ _id: userId });
-  if (!userExists) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
+  try {
+    const userExists = await User.findOne({ _id: userId });
+    if (!userExists) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    console.log(`Usuário encontrado com sucesso: ${userExists}`);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
   }
-  console.log(`Usuário encontrado com sucesso: ${userExists}`);
 
   const parsedDate = parseDateString(birthdayDate);
   if (parsedDate.error) {
@@ -222,7 +227,7 @@ export const completeSignUpPatient = async (req, res) => {
 export const completeSignUpProfessional = async (req, res) => {
   /*
     #swagger.tags = ['Authentication']
-    #swagger.summary = 'Completa o cadastro do profissional'
+    #swagger.summary = 'Completa o cadastro do usuário profissional'
     #swagger.responses[201] = { description: 'Usuário encontrado, cadastro completado com sucesso' } 
     #swagger.responses[200] = { description: 'Usuário encontardo, mas nenhuma alteração realizada no seu cadastro' } 
     #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' } 
@@ -230,7 +235,7 @@ export const completeSignUpProfessional = async (req, res) => {
     #swagger.responses[500] = { description: 'Erro no servidor' }
     #swagger.parameters['body'] = {
             in: 'body',
-            description: 'Criar novo paciente.',
+            description: 'É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint',
             schema: { $ref: '#/definitions/AddUserProfessional' }
     }
   */
@@ -268,11 +273,17 @@ export const completeSignUpProfessional = async (req, res) => {
     });
   }
 
-  const userExists = await User.findOne({ _id: userId });
-  console.log(`Usuário encontrado com sucesso: ${userExists}`);
-  if (!userExists) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
+  try {
+    const userExists = await User.findOne({ _id: userId });
+    console.log(`Usuário encontrado com sucesso: ${userExists}`);
+    if (!userExists) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
   }
+
 
   const parsedDate = parseDateString(birthdayDate);
   if (parsedDate.error) {

@@ -114,13 +114,13 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Completa o cadastro do paciente",
+        "summary": "Cria o cadastro do paciente",
         "description": "",
         "parameters": [
           {
             "name": "body",
             "in": "body",
-            "description": "Criar novo paciente.",
+            "description": "É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint",
             "schema": {
               "$ref": "#/definitions/AddUserPaciente"
             }
@@ -153,13 +153,13 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Completa o cadastro do profissional",
+        "summary": "Cria o cadastro do profissional",
         "description": "",
         "parameters": [
           {
             "name": "body",
             "in": "body",
-            "description": "Criar novo paciente.",
+            "description": "É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint",
             "schema": {
               "$ref": "#/definitions/AddUserProfessional"
             }
