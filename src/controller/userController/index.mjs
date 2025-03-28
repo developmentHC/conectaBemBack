@@ -112,7 +112,7 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
-        const accessToken = jwt.sign(userExists._id, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
         res.cookie('jwt', accessToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -155,13 +155,13 @@ export const completeSignUpPatient = async (req, res) => {
     userId,
     name,
     birthdayDate,
-    userSpecialities,
+    userSpecialties,
     userServicePreferences,
     userAcessibilityPreferences,
     profilePhoto,
   } = req.body;
 
-  if (!userId || !name || !birthdayDate || !userSpecialities || !userServicePreferences) {
+  if (!userId || !name || !birthdayDate || !userSpecialties || !userServicePreferences) {
     return res.status(422).json({
       msg: "Existem alguns parâmetros faltando para completar o cadastro do paciente",
     });
@@ -187,9 +187,10 @@ export const completeSignUpPatient = async (req, res) => {
   const update = {
     name,
     birthdayDate: parsedDate.result,
-    userSpecialities,
+    userSpecialties,
     userServicePreferences,
     userType: "patient",
+    status: "completed"
   };
 
   if (userAcessibilityPreferences !== undefined) {
@@ -250,9 +251,9 @@ export const completeSignUpProfessional = async (req, res) => {
     cepClinica,
     enderecoClinica,
     complementoClinica,
-    profissionalSpecialities,
-    otherProfessionalSpecialities,
-    profissionalServicePreferences,
+    professionalSpecialties,
+    otherProfessionalSpecialties,
+    professionalServicePreferences,
     profilePhoto,
   } = req.body;
 
@@ -265,8 +266,8 @@ export const completeSignUpProfessional = async (req, res) => {
     !CNPJCPFProfissional ||
     !cepClinica ||
     !enderecoClinica ||
-    !profissionalSpecialities ||
-    !profissionalServicePreferences
+    !professionalSpecialties ||
+    !professionalServicePreferences
   ) {
     return res.status(422).json({
       msg: "Existem alguns parâmetros faltando para completar o cadastro do profissional",
@@ -299,17 +300,18 @@ export const completeSignUpProfessional = async (req, res) => {
     CNPJCPFProfissional,
     cepClinica,
     enderecoClinica,
-    profissionalSpecialities,
-    profissionalServicePreferences,
+    professionalSpecialties,
+    professionalServicePreferences,
     userType: "professional",
+    status: "completed",
   };
 
   if (complementoClinica !== undefined) {
     update.complementoClinica = complementoClinica;
   }
 
-  if (otherProfessionalSpecialities !== undefined) {
-    update.otherProfessionalSpecialities = otherProfessionalSpecialities;
+  if (otherProfessionalSpecialties !== undefined) {
+    update.otherProfessionalSpecialties = otherProfessionalSpecialties;
   }
 
   if (profilePhoto !== undefined) {

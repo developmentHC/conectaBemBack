@@ -26,7 +26,7 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
     }
 
     const professionals = await User.find({ userType: "professional" }, {
-      hashedOTP: 0, email: 0, status: 0, userSpecialities: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
+      hashedOTP: 0, email: 0, status: 0, userSpecialties: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
       userType: 0
     })
       .skip((page - 1) * limit)
@@ -69,7 +69,7 @@ export const searchProfessionalBySpeciality = async (req, res) => {
     let limit = 10;
 
     const totalProfessionals = await User.countDocuments(
-      { professionalSpecialities: { $in: [speciality] } }
+      { professionalSpecialties: { $in: [speciality] } }
     );
 
     const pageCount = Math.ceil(totalProfessionals / limit);
@@ -78,8 +78,8 @@ export const searchProfessionalBySpeciality = async (req, res) => {
       page = pageCount;
     }
 
-    const professionals = await User.find({ professionalSpecialities: { $in: [speciality] } }, {
-      hashedOTP: 0, email: 0, status: 0, userSpecialities: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
+    const professionals = await User.find({ professionalSpecialties: { $in: [speciality] } }, {
+      hashedOTP: 0, email: 0, status: 0, userSpecialties: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
       userType: 0
     })
       .skip((page - 1) * limit)
@@ -123,7 +123,7 @@ export const searchBar = async (req, res) => {
     const totalTerms = await User.countDocuments({
       $or: [
         { name: { $regex: terms, $options: "i" } },
-        { professionalSpecialities: { $regex: terms, $options: "i" } },
+        { professionalSpecialties: { $regex: terms, $options: "i" } },
       ],
     });
 
@@ -136,10 +136,10 @@ export const searchBar = async (req, res) => {
     const professionals = await User.find({
       $or: [
         { name: { $regex: terms, $options: "i" } },
-        { professionalSpecialities: { $regex: terms, $options: "i" } },
+        { professionalSpecialties: { $regex: terms, $options: "i" } },
       ],
     }, {
-      hashedOTP: 0, email: 0, status: 0, userSpecialities: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
+      hashedOTP: 0, email: 0, status: 0, userSpecialties: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
       userType: 0
     })
       .skip((page - 1) * limit)

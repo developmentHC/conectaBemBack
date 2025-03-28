@@ -114,7 +114,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Cria o cadastro do paciente",
+        "summary": "Completa o cadastro do usuário paciente",
         "description": "",
         "parameters": [
           {
@@ -153,7 +153,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Cria o cadastro do profissional",
+        "summary": "Completa o cadastro do usuário profissional",
         "description": "",
         "parameters": [
           {
@@ -317,7 +317,7 @@
           "type": "string",
           "example": "20/12/2003"
         },
-        "userSpecialities": {
+        "userSpecialties": {
           "type": "array",
           "example": [
             "Acumputura",
@@ -356,7 +356,7 @@
         "userId",
         "name",
         "birthdayDate",
-        "userSpecialities",
+        "userSpecialties",
         "userServicePreferences"
       ]
     },
@@ -399,7 +399,7 @@
           "type": "string",
           "example": "Casa"
         },
-        "professionalSpecialities": {
+        "professionalSpecialties": {
           "type": "array",
           "example": [
             "Acumputura",
@@ -409,7 +409,7 @@
             "type": "string"
           }
         },
-        "otherProfessionalSpecialities": {
+        "otherProfessionalSpecialties": {
           "type": "array",
           "example": [
             "Yoga na água",
@@ -443,7 +443,7 @@
         "CNPJCPFProfissional",
         "cepClinica",
         "enderecoClinica",
-        "professionalSpecialities",
+        "professionalSpecialties",
         "professionalServicePreferences"
       ]
     }
