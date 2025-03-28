@@ -320,7 +320,7 @@
         "userSpecialties": {
           "type": "array",
           "example": [
-            "Acumputura",
+            "Acupuntura",
             "Aromaterapia"
           ],
           "items": {
@@ -402,7 +402,7 @@
         "professionalSpecialties": {
           "type": "array",
           "example": [
-            "Acumputura",
+            "Acupuntura",
             "Aromaterapia"
           ],
           "items": {
