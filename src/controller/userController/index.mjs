@@ -112,19 +112,19 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
-        /* message.email.exists = true; */
-        const accessToken = jwt.sign(config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
         res.cookie('jwt', accessToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'Strict',
           maxAge: 3600000
         });
-        res.status(200).json({ msg: "Login bem-sucedido!" });
+
+        return res.status(200).json({ msg: "Login bem-sucedido!" });
       } else if (userExists.status === "pending") {
-        res.status(200).json({ message });
+        return res.status(200).json({ message });
       } else {
-        res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
+        return res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
       }
     } else {
       return res.status(401).json({ msg: "Código OTP está incorreto!" });
@@ -138,7 +138,7 @@ export const checkOTP = async (req, res) => {
 export const completeSignUpPatient = async (req, res) => {
   /*
     #swagger.tags = ['Authentication']
-    #swagger.summary = 'Completa o cadastro do paciente'
+    #swagger.summary = 'Completa o cadastro do usuário paciente'
     #swagger.responses[201] = { description: 'Usuário encontrado, cadastro completado com sucesso' } 
     #swagger.responses[200] = { description: 'Usuário encontardo, mas nenhuma alteração realizada no seu cadastro' } 
     #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' } 
@@ -146,7 +146,7 @@ export const completeSignUpPatient = async (req, res) => {
     #swagger.responses[500] = { description: 'Erro no servidor' }
     #swagger.parameters['body'] = {
             in: 'body',
-            description: 'Criar novo paciente.',
+            description: 'É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint',
             schema: { $ref: '#/definitions/AddUserPaciente' }
     }
   */
@@ -155,39 +155,48 @@ export const completeSignUpPatient = async (req, res) => {
     userId,
     name,
     birthdayDate,
-    userSpecialities,
+    userSpecialties,
     userServicePreferences,
     userAcessibilityPreferences,
     profilePhoto,
   } = req.body;
 
-  if (!userId || !name || !birthdayDate || !userSpecialities || !userServicePreferences) {
+  if (!userId || !name || !birthdayDate || !userSpecialties || !userServicePreferences) {
     return res.status(422).json({
       msg: "Existem alguns parâmetros faltando para completar o cadastro do paciente",
     });
   }
 
-  const userExists = await User.findOne({ _id: userId });
-  if (!userExists) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
+  try {
+    const userExists = await User.findOne({ _id: userId });
+    if (!userExists) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    console.log(`Usuário encontrado com sucesso: ${userExists}`);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
   }
-  console.log(`Usuário encontrado com sucesso: ${userExists}`);
 
   const parsedDate = parseDateString(birthdayDate);
   if (parsedDate.error) {
     console.log(parsedDate.error);
     return res.status(400).json({ error: parsedDate.error });
   }
+
   const update = {
     name,
     birthdayDate: parsedDate.result,
-    userSpecialities,
+    userSpecialties,
     userServicePreferences,
     userType: "patient",
+    status: "completed"
   };
+
   if (userAcessibilityPreferences !== undefined) {
     update.userAcessibilityPreferences = userAcessibilityPreferences;
   }
+
   if (profilePhoto !== undefined) {
     update.profilePhoto = profilePhoto;
   }
@@ -195,30 +204,31 @@ export const completeSignUpPatient = async (req, res) => {
   try {
     const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
+
     if (result.modifiedCount > 0) {
-      const updatedUser = await User.findOne([{ _id: { $in: [userId] } }, { hashedOTP: 0 }]);
+      console.log("Payload para JWT:", userId);
+      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.cookie('jwt', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 3600000
+      });
 
-      if (updatedUser.length === 0) {
-        return res.status(404).json({ error: "Usuário não encontrado" });
-      }
-
-      console.log("Payload para JWT:", updatedUser[0]);
-
-      const accessToken = jwt.sign(updatedUser[0], config.ACCESS_TOKEN_SECRET);
-      return res.status(201).json({ accessToken: accessToken });
+      return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
       return res.status(500).json({ error: "Usuário já está cadastrado no banco de dados" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "Bad request" });
   }
 };
 
 export const completeSignUpProfessional = async (req, res) => {
   /*
     #swagger.tags = ['Authentication']
-    #swagger.summary = 'Completa o cadastro do profissional'
+    #swagger.summary = 'Completa o cadastro do usuário profissional'
     #swagger.responses[201] = { description: 'Usuário encontrado, cadastro completado com sucesso' } 
     #swagger.responses[200] = { description: 'Usuário encontardo, mas nenhuma alteração realizada no seu cadastro' } 
     #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' } 
@@ -226,7 +236,7 @@ export const completeSignUpProfessional = async (req, res) => {
     #swagger.responses[500] = { description: 'Erro no servidor' }
     #swagger.parameters['body'] = {
             in: 'body',
-            description: 'Criar novo paciente.',
+            description: 'É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint',
             schema: { $ref: '#/definitions/AddUserProfessional' }
     }
   */
@@ -241,9 +251,9 @@ export const completeSignUpProfessional = async (req, res) => {
     cepClinica,
     enderecoClinica,
     complementoClinica,
-    profissionalSpecialities,
-    otherProfessionalSpecialities,
-    profissionalServicePreferences,
+    professionalSpecialties,
+    otherProfessionalSpecialties,
+    professionalServicePreferences,
     profilePhoto,
   } = req.body;
 
@@ -256,19 +266,25 @@ export const completeSignUpProfessional = async (req, res) => {
     !CNPJCPFProfissional ||
     !cepClinica ||
     !enderecoClinica ||
-    !profissionalSpecialities ||
-    !profissionalServicePreferences
+    !professionalSpecialties ||
+    !professionalServicePreferences
   ) {
     return res.status(422).json({
       msg: "Existem alguns parâmetros faltando para completar o cadastro do profissional",
     });
   }
 
-  const userExists = await User.findOne({ _id: userId });
-  console.log(`Usuário encontrado com sucesso: ${userExists}`);
-  if (!userExists) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
+  try {
+    const userExists = await User.findOne({ _id: userId });
+    console.log(`Usuário encontrado com sucesso: ${userExists}`);
+    if (!userExists) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
   }
+
 
   const parsedDate = parseDateString(birthdayDate);
   if (parsedDate.error) {
@@ -284,17 +300,20 @@ export const completeSignUpProfessional = async (req, res) => {
     CNPJCPFProfissional,
     cepClinica,
     enderecoClinica,
-    profissionalSpecialities,
-    profissionalServicePreferences,
+    professionalSpecialties,
+    professionalServicePreferences,
     userType: "professional",
+    status: "completed",
   };
 
   if (complementoClinica !== undefined) {
     update.complementoClinica = complementoClinica;
   }
-  if (otherProfessionalSpecialities !== undefined) {
-    update.otherProfessionalSpecialities = otherProfessionalSpecialities;
+
+  if (otherProfessionalSpecialties !== undefined) {
+    update.otherProfessionalSpecialties = otherProfessionalSpecialties;
   }
+
   if (profilePhoto !== undefined) {
     update.profilePhoto = profilePhoto;
   }
@@ -303,16 +322,21 @@ export const completeSignUpProfessional = async (req, res) => {
     const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
     if (result.modifiedCount > 0) {
-      const updatedUser = await User.findOne([{ _id: { $in: [userId] } }, { hashedOTP: 0 }]);
+      const updatedUser = await User.findOne({ _id: userId }, { hashedOTP: 0 });
 
       if (updatedUser.length === 0) {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      console.log("Payload para JWT:", updatedUser[0]);
+      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.cookie('jwt', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 3600000
+      });
 
-      const accessToken = jwt.sign(updatedUser[0], config.ACCESS_TOKEN_SECRET);
-      return res.status(201).json({ accessToken: accessToken });
+      return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
       return res.status(403).json({ error: "Usuário já está cadastrado no banco de dados" });
     }
@@ -322,3 +346,32 @@ export const completeSignUpProfessional = async (req, res) => {
   }
 };
 
+export const userInfo = async (req, res) => {
+  /*
+    #swagger.tags = ['User']
+    #swagger.summary = 'Retorna todas as informações do usuário'
+    #swagger.responses[200] = { description: 'Usuário encontrado, dados retornados' } 
+    #swagger.responses[401] = { description: 'Cookie não encontrado' } 
+    #swagger.responses[500] = { description: 'Bad request' } 
+  */
+
+  try {
+    const token = req.cookies.jwt;
+
+    if (!token) {
+      return res.status(401).json({ message: 'Não autorizado, cookie não encontrado' });
+    }
+
+    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
+    console.log(decoded);
+
+    const userExists = await User.findOne({ _id: decoded.userId }, {
+      hashedOTP: 0, status: 0, __v: 0
+    });
+
+    return res.status(200).json(userExists);
+  } catch (error) {
+    console.error("Erro ao trazer informações do usuário:", error);
+    return res.status(500).json({ error: "Bad request" });
+  }
+}

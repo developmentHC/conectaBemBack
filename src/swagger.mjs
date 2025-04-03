@@ -1,11 +1,7 @@
 import swaggerJsDoc from "swagger-jsdoc";
 
-const isProduction = process.env.NODE_ENV === "production";
-const host = isProduction
-  ? "conecta-bem-back.vercel.app"
-  : "localhost:3000";
-
-const schemes = isProduction ? ["https"] : ["http"];
+const isProduction = process.env.VERCEL == 1;
+const vercelUrl = process.env.VERCEL_URL;
 
 const swaggerOptions = {
   swaggerDefinition: {
@@ -62,6 +58,7 @@ const swaggerOptions = {
   apis: ['./routes/*.mjs']
 };
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions)
+const outputFile = "./../swagger-output.json";
+const routes = ["./routes/*.mjs"];
 
 export default swaggerDocs;

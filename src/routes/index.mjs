@@ -5,8 +5,9 @@ import {
   checkOTP,
   completeSignUpPatient,
   completeSignUpProfessional,
-} from "./../controller/userController/index.mjs";
-import { searchProfessionalsHighlightsWeek, searchProfessionalBySpeciality } from "./../controller/searchController/index.mjs"
+  userInfo,
+} from "../controller/userController/index.mjs";
+import { searchProfessionalsHighlightsWeek, searchProfessionalBySpeciality, searchBar } from "../controller/searchController/index.mjs"
 
 const router = express.Router();
 const corsOptions = {
@@ -21,8 +22,12 @@ router.post("/auth/sendOTP", checkUserEmailSendOTP);
 router.post("/auth/checkOTP", checkOTP);
 router.post("/auth/createPatient", completeSignUpPatient);
 router.post("/auth/createProfessional", completeSignUpProfessional);
-router.post("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
-router.post("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
+
+router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
+router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
+router.get("/search/searchBar/:terms", searchBar);
+
+router.get("/user", userInfo);
 
 router.get("/teste", (req, res) => {
   /*

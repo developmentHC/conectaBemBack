@@ -6,10 +6,8 @@
   "scripts": {
     "test": "vitest --run --reporter verbose --globals",
     "test:watch": "vitest",
-    "test:coverage": "vitest --coverage",
-    "start": "node ./src/index.mjs",
-    "dev": "npm run swagger && nodemon ./src/index.mjs",
-    "build": "node ./src/swagger.mjs",
+    "build": "node ./src/swagger.mjs && node ./src/index.mjs",
+    "dev": "node ./src/swagger.mjs && nodemon ./src/index.mjs",
     "swagger": "node ./src/swagger.mjs"
   },
   "keywords": [],
