@@ -5,7 +5,6 @@ import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
 import config from "../../config/config.mjs";
-import { gridFSBucket } from "../../lib/gridfs.mjs";
 
 const saltRounds = 10;
 
@@ -290,7 +289,7 @@ export const completeSignUpProfessional = async (req, res) => {
 
   const buffer = Buffer.from(data, "base64");
 
-  const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
+  /* const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
     metadata: { userId },
     contentType: mimeType,
   });
@@ -306,7 +305,7 @@ export const completeSignUpProfessional = async (req, res) => {
       success: true,
       fileId: uploadStream.id,
     });
-  });
+  }); */
 
   try {
     const userExists = await User.findOne({ _id: userId });
