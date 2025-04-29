@@ -284,12 +284,12 @@ export const completeSignUpProfessional = async (req, res) => {
     return res.status(400).json({ error: "String Base64 inválida." });
   }
 
-  const [header, data] = base64String.split(";base64,");
+  /* const [header, data] = profilePhoto.split(";base64,");
   const mimeType = header.split(":")[1];
 
   const buffer = Buffer.from(data, "base64");
 
-  /* const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
+   const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
     metadata: { userId },
     contentType: mimeType,
   });
