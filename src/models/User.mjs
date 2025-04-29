@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
   userSpecialties: [String],
   userServicePreferences: [String],
   userAcessibilityPreferences: [String],
-  profilePhoto: String,
+  profilePhoto: mongoose.Schema.Types.ObjectId,
   userType: String,
 });
 

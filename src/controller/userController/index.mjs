@@ -5,7 +5,7 @@ import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
 import config from "../../config/config.mjs";
-import { parseDateString } from "../../utils/parseDateString.mjs";
+import { gridFSBucket } from "../../lib/gridfs.mjs";
 
 const saltRounds = 10;
 
@@ -112,12 +112,12 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
-        const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-        res.cookie('jwt', accessToken, {
+        const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+        res.cookie("jwt", accessToken, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'Strict',
-          maxAge: 3600000
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "Strict",
+          maxAge: 3600000,
         });
 
         return res.status(200).json({ msg: "Login bem-sucedido!" });
@@ -178,28 +178,35 @@ export const completeSignUpPatient = async (req, res) => {
     return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
   }
 
-  const parsedDate = parseDateString(birthdayDate);
-  if (parsedDate.error) {
-    console.log(parsedDate.error);
-    return res.status(400).json({ error: parsedDate.error });
+  if (typeof birthdayDate !== "number") {
+    return res.status(400).json({
+      error: "O campo 'birthdayDate' deve ser um número (timestamp em milissegundos).",
+    });
+  }
+
+  if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
+    return res.status(400).json({
+      error:
+        "Timestamp inválido. Envie um número positivo de milissegundos desde 1970-01-01 (UTC). Exemplo: 1672531200000.",
+    });
   }
 
   const update = {
     name,
-    birthdayDate: parsedDate.result,
+    birthdayDate,
     userSpecialties,
     userServicePreferences,
     userType: "patient",
-    status: "completed"
+    status: "completed",
   };
 
   if (userAcessibilityPreferences !== undefined) {
     update.userAcessibilityPreferences = userAcessibilityPreferences;
   }
 
-  if (profilePhoto !== undefined) {
+  /* if (profilePhoto !== undefined) {
     update.profilePhoto = profilePhoto;
-  }
+  } */
 
   try {
     const result = await User.updateOne({ _id: userId }, { $set: update });
@@ -207,12 +214,12 @@ export const completeSignUpPatient = async (req, res) => {
 
     if (result.modifiedCount > 0) {
       console.log("Payload para JWT:", userId);
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-      res.cookie('jwt', accessToken, {
+      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+      res.cookie("jwt", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        maxAge: 3600000
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+        maxAge: 3600000,
       });
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
@@ -274,6 +281,33 @@ export const completeSignUpProfessional = async (req, res) => {
     });
   }
 
+  if (profilePhoto && !profilePhoto.startsWith("data:image")) {
+    return res.status(400).json({ error: "String Base64 inválida." });
+  }
+
+  const [header, data] = base64String.split(";base64,");
+  const mimeType = header.split(":")[1];
+
+  const buffer = Buffer.from(data, "base64");
+
+  const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
+    metadata: { userId },
+    contentType: mimeType,
+  });
+
+  uploadStream.end(buffer);
+
+  uploadStream.on("finish", async () => {
+    await User.findByIdAndUpdate(userId, {
+      profileImageId: uploadStream.id,
+    });
+
+    res.json({
+      success: true,
+      fileId: uploadStream.id,
+    });
+  });
+
   try {
     const userExists = await User.findOne({ _id: userId });
     console.log(`Usuário encontrado com sucesso: ${userExists}`);
@@ -285,16 +319,22 @@ export const completeSignUpProfessional = async (req, res) => {
     return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
   }
 
+  if (typeof birthdayDate !== "number") {
+    return res.status(400).json({
+      error: "O campo 'birthdayDate' deve ser um número (timestamp em milissegundos).",
+    });
+  }
 
-  const parsedDate = parseDateString(birthdayDate);
-  if (parsedDate.error) {
-    console.log(parsedDate.error);
-    return res.status(400).json({ error: parsedDate.error });
+  if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
+    return res.status(400).json({
+      error:
+        "Timestamp inválido. Envie um número positivo de milissegundos desde 1970-01-01 (UTC). Exemplo: 1672531200000.",
+    });
   }
 
   const update = {
     name,
-    birthdayDate: parsedDate.result,
+    birthdayDate,
     cepResidencial,
     nomeClinica,
     CNPJCPFProfissional,
@@ -314,9 +354,9 @@ export const completeSignUpProfessional = async (req, res) => {
     update.otherProfessionalSpecialties = otherProfessionalSpecialties;
   }
 
-  if (profilePhoto !== undefined) {
+  /* if (profilePhoto !== undefined) {
     update.profilePhoto = profilePhoto;
-  }
+  } */
 
   try {
     const result = await User.updateOne({ _id: userId }, { $set: update });
@@ -328,12 +368,12 @@ export const completeSignUpProfessional = async (req, res) => {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-      res.cookie('jwt', accessToken, {
+      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+      res.cookie("jwt", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        maxAge: 3600000
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+        maxAge: 3600000,
       });
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
@@ -359,19 +399,24 @@ export const userInfo = async (req, res) => {
     const token = req.cookies.jwt;
 
     if (!token) {
-      return res.status(401).json({ message: 'Não autorizado, cookie não encontrado' });
+      return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
     }
 
     const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
     console.log(decoded);
 
-    const userExists = await User.findOne({ _id: decoded.userId }, {
-      hashedOTP: 0, status: 0, __v: 0
-    });
+    const userExists = await User.findOne(
+      { _id: decoded.userId },
+      {
+        hashedOTP: 0,
+        status: 0,
+        __v: 0,
+      }
+    );
 
     return res.status(200).json(userExists);
   } catch (error) {
     console.error("Erro ao trazer informações do usuário:", error);
     return res.status(500).json({ error: "Bad request" });
   }
-}
+};
