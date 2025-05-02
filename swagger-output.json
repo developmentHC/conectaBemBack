@@ -307,20 +307,20 @@
       "properties": {
         "userId": {
           "type": "string",
-          "example": "1234"
+          "example": "63a8cdac35345692997edf32"
         },
         "name": {
           "type": "string",
           "example": "Thiago Cabral"
         },
         "birthdayDate": {
-          "type": "string",
-          "example": "20/12/2003"
+          "type": "number",
+          "example": 1745940325251
         },
         "userSpecialties": {
           "type": "array",
           "example": [
-            "Acupuntura",
+            "Acumputura",
             "Aromaterapia"
           ],
           "items": {
@@ -365,15 +365,15 @@
       "properties": {
         "userId": {
           "type": "string",
-          "example": "1234"
+          "example": "63a8cdac35345692997edf32"
         },
         "name": {
           "type": "string",
           "example": "Ronaldinho Gaúcho"
         },
         "birthdayDate": {
-          "type": "string",
-          "example": "20/12/2003"
+          "type": "number",
+          "example": 1745940325251
         },
         "cepResidencial": {
           "type": "string",
@@ -402,7 +402,7 @@
         "professionalSpecialties": {
           "type": "array",
           "example": [
-            "Acupuntura",
+            "Acumputura",
             "Aromaterapia"
           ],
           "items": {
