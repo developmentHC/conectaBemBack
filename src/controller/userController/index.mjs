@@ -5,6 +5,8 @@ import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
 import config from "../../config/config.mjs";
+import { gridFSBucket } from "../../lib/gridFs.mjs";
+import mongoose from "mongoose";
 
 const saltRounds = 10;
 
@@ -203,12 +205,40 @@ export const completeSignUpPatient = async (req, res) => {
     update.userAcessibilityPreferences = userAcessibilityPreferences;
   }
 
-  /* if (profilePhoto !== undefined) {
-    update.profilePhoto = profilePhoto;
-  } */
+  if (profilePhoto) {
+    const [header, data] = profilePhoto.split(";base64,");
+    const mimeType = header.split(":")[1];
+    const buffer = Buffer.from(data, "base64");
+
+    const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
+      metadata: { userId },
+      contentType: mimeType,
+    });
+
+    console.log("Iniciando upload da imagem...");
+
+    const fileId = await new Promise((resolve, reject) => {
+      uploadStream.end(buffer);
+      uploadStream.on("finish", () => {
+        console.log("Upload concluído com ID:", uploadStream.id);
+        resolve(uploadStream.id);
+      });
+      uploadStream.on("error", (err) => {
+        console.error("Erro durante upload:", err);
+        reject(err);
+      });
+    });
+
+    console.log(fileId);
+
+    update.profileImage = fileId;
+  }
+
+  console.log(update);
+
+  const result = await User.updateOne({ _id: userId }, { $set: update });
 
   try {
-    const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
 
     if (result.modifiedCount > 0) {
@@ -284,80 +314,77 @@ export const completeSignUpProfessional = async (req, res) => {
     return res.status(400).json({ error: "String Base64 inválida." });
   }
 
-  /* const [header, data] = profilePhoto.split(";base64,");
-  const mimeType = header.split(":")[1];
-
-  const buffer = Buffer.from(data, "base64");
-
-   const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
-    metadata: { userId },
-    contentType: mimeType,
-  });
-
-  uploadStream.end(buffer);
-
-  uploadStream.on("finish", async () => {
-    await User.findByIdAndUpdate(userId, {
-      profileImageId: uploadStream.id,
-    });
-
-    res.json({
-      success: true,
-      fileId: uploadStream.id,
-    });
-  }); */
-
   try {
     const userExists = await User.findOne({ _id: userId });
-    console.log(`Usuário encontrado com sucesso: ${userExists}`);
     if (!userExists) {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
-  }
 
-  if (typeof birthdayDate !== "number") {
-    return res.status(400).json({
-      error: "O campo 'birthdayDate' deve ser um número (timestamp em milissegundos).",
-    });
-  }
+    if (typeof birthdayDate !== "number") {
+      return res.status(400).json({
+        error: "O campo 'birthdayDate' deve ser um número (timestamp em milissegundos).",
+      });
+    }
 
-  if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
-    return res.status(400).json({
-      error:
-        "Timestamp inválido. Envie um número positivo de milissegundos desde 1970-01-01 (UTC). Exemplo: 1672531200000.",
-    });
-  }
+    if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
+      return res.status(400).json({
+        error:
+          "Timestamp inválido. Envie um número positivo de milissegundos desde 1970-01-01 (UTC). Exemplo: 1672531200000.",
+      });
+    }
 
-  const update = {
-    name,
-    birthdayDate,
-    cepResidencial,
-    nomeClinica,
-    CNPJCPFProfissional,
-    cepClinica,
-    enderecoClinica,
-    professionalSpecialties,
-    professionalServicePreferences,
-    userType: "professional",
-    status: "completed",
-  };
+    const update = {
+      name,
+      birthdayDate,
+      cepResidencial,
+      nomeClinica,
+      CNPJCPFProfissional,
+      cepClinica,
+      enderecoClinica,
+      professionalSpecialties,
+      professionalServicePreferences,
+      userType: "professional",
+      status: "completed",
+    };
 
-  if (complementoClinica !== undefined) {
-    update.complementoClinica = complementoClinica;
-  }
+    if (complementoClinica !== undefined) {
+      update.complementoClinica = complementoClinica;
+    }
 
-  if (otherProfessionalSpecialties !== undefined) {
-    update.otherProfessionalSpecialties = otherProfessionalSpecialties;
-  }
+    if (otherProfessionalSpecialties !== undefined) {
+      update.otherProfessionalSpecialties = otherProfessionalSpecialties;
+    }
 
-  /* if (profilePhoto !== undefined) {
-    update.profilePhoto = profilePhoto;
-  } */
+    if (profilePhoto) {
+      const [header, data] = profilePhoto.split(";base64,");
+      const mimeType = header.split(":")[1];
+      const buffer = Buffer.from(data, "base64");
 
-  try {
+      const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
+        metadata: { userId },
+        contentType: mimeType,
+      });
+
+      console.log("Iniciando upload da imagem...");
+
+      // Upload da imagem e obtenção do ID
+      const fileId = await new Promise((resolve, reject) => {
+        uploadStream.end(buffer);
+        uploadStream.on("finish", () => {
+          console.log("Upload concluído com ID:", uploadStream.id);
+          resolve(uploadStream.id);
+        });
+        uploadStream.on("error", (err) => {
+          console.error("Erro durante upload:", err);
+          reject(err);
+        });
+      });
+
+      // Atualiza o objeto update com o ID do arquivo
+      update.profileImage = fileId;
+    }
+
+    // Uma única atualização do usuário com todas as informações
     const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
     if (result.modifiedCount > 0) {
@@ -396,22 +423,48 @@ export const userInfo = async (req, res) => {
 
   try {
     const token = req.cookies.jwt;
-
     if (!token) {
       return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
     }
 
     const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-    console.log(decoded);
 
     const userExists = await User.findOne(
       { _id: decoded.userId },
       {
         hashedOTP: 0,
-        status: 0,
         __v: 0,
       }
-    );
+    ).lean();
+
+    if (!userExists) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    if (userExists.profileImage) {
+      try {
+        const downloadStream = gridFSBucket.openDownloadStream(userExists.profileImage);
+
+        const chunks = [];
+        await new Promise((resolve, reject) => {
+          downloadStream.on("data", (chunk) => chunks.push(chunk));
+          downloadStream.on("end", () => resolve());
+          downloadStream.on("error", reject);
+        });
+
+        const buffer = Buffer.concat(chunks);
+
+        const file = await mongoose.connection.db.collection("fs.files").findOne({ _id: userExists.profileImage });
+
+        const base64 = buffer.toString("base64");
+        const dataUri = `data:${file.contentType};base64,${base64}`;
+
+        userExists.profilePhoto = dataUri;
+      } catch (error) {
+        console.error("Erro ao buscar imagem:", error);
+        userExists.profilePhoto = null;
+      }
+    }
 
     return res.status(200).json(userExists);
   } catch (error) {

@@ -28,7 +28,10 @@ const userSchema = new mongoose.Schema({
   userSpecialties: [String],
   userServicePreferences: [String],
   userAcessibilityPreferences: [String],
-  profilePhoto: mongoose.Schema.Types.ObjectId,
+  profileImage: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "fs.files",
+  },
   userType: String,
 });
 
