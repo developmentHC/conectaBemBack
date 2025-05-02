@@ -280,6 +280,9 @@
           "401": {
             "description": "Cookie não encontrado"
           },
+          "404": {
+            "description": "Não Encontrado"
+          },
           "500": {
             "description": "Bad request"
           }
@@ -349,7 +352,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/path"
+          "example": "base64"
         }
       },
       "required": [
@@ -431,7 +434,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/path"
+          "example": "base64"
         }
       },
       "required": [
