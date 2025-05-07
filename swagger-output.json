@@ -320,6 +320,10 @@
           "type": "number",
           "example": 1745940325251
         },
+        "cepResidencial": {
+          "type": "string",
+          "example": "12345678"
+        },
         "userSpecialties": {
           "type": "array",
           "example": [
@@ -359,6 +363,7 @@
         "userId",
         "name",
         "birthdayDate",
+        "cepResidencial",
         "userSpecialties",
         "userServicePreferences"
       ]

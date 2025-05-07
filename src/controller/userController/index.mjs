@@ -156,13 +156,14 @@ export const completeSignUpPatient = async (req, res) => {
     userId,
     name,
     birthdayDate,
+    cepResidencial,
     userSpecialties,
     userServicePreferences,
     userAcessibilityPreferences,
     profilePhoto,
   } = req.body;
 
-  if (!userId || !name || !birthdayDate || !userSpecialties || !userServicePreferences) {
+  if (!userId || !name || !birthdayDate || !userSpecialties || !userServicePreferences || !cepResidencial) {
     return res.status(422).json({
       msg: "Existem alguns parâmetros faltando para completar o cadastro do paciente",
     });
@@ -195,6 +196,7 @@ export const completeSignUpPatient = async (req, res) => {
   const update = {
     name,
     birthdayDate,
+    cepResidencial,
     userSpecialties,
     userServicePreferences,
     userType: "patient",
