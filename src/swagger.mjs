@@ -18,6 +18,10 @@ const doc = {
       description: "Endpoints relacionados a autenticação do usuário",
     },
     {
+      name: "Address",
+      description: "Endpoints relacionados aos endereços do usuário",
+    },
+    {
       name: "User",
       description: "Endpoints relacionados ao usuário",
     },

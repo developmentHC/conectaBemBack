@@ -13,6 +13,10 @@
       "description": "Endpoints relacionados a autenticação do usuário"
     },
     {
+      "name": "Address",
+      "description": "Endpoints relacionados aos endereços do usuário"
+    },
+    {
       "name": "User",
       "description": "Endpoints relacionados ao usuário"
     },
@@ -266,6 +270,177 @@
         }
       }
     },
+    "/address": {
+      "put": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Atualizar endereço do usuário",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Dados do endereço atualizado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "addressId": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "507f1f77bcf86cd799439011"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "ID do endereço a ser atualizado"
+                    }
+                  }
+                },
+                "cep": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "12345678"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "CEP do endereço"
+                    }
+                  }
+                },
+                "name": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Casa"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Nome do local"
+                    }
+                  }
+                },
+                "endereco": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Rua Example, 123"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Logradouro"
+                    }
+                  }
+                },
+                "bairro": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Centro"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Bairro"
+                    }
+                  }
+                },
+                "estado": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "SP"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Estado"
+                    }
+                  }
+                },
+                "complemento": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Apto 123"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Complemento do endereço"
+                    }
+                  }
+                },
+                "principal": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "example": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Indica se é o endereço principal"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endereço atualizado com sucesso"
+          },
+          "304": {
+            "description": "Endereço está idêntico ao banco de dados"
+          },
+          "422": {
+            "description": "Parâmetros exigidos não estão sendo enviados no body"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "tags": [
@@ -385,7 +560,7 @@
         },
         "cepResidencial": {
           "type": "string",
-          "example": "12345-678"
+          "example": "12345678"
         },
         "nomeClinica": {
           "type": "string",

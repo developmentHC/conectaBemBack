@@ -7,7 +7,12 @@ import {
   completeSignUpProfessional,
   userInfo,
 } from "../controller/userController/index.mjs";
-import { searchProfessionalsHighlightsWeek, searchProfessionalBySpeciality, searchBar } from "../controller/searchController/index.mjs"
+import {
+  searchProfessionalsHighlightsWeek,
+  searchProfessionalBySpeciality,
+  searchBar,
+} from "../controller/searchController/index.mjs";
+import { changeAddress } from "../controller/addressController/index.mjs";
 
 const router = express.Router();
 const corsOptions = {
@@ -26,6 +31,8 @@ router.post("/auth/createProfessional", completeSignUpProfessional);
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
 router.get("/search/searchBar/:terms", searchBar);
+
+router.put("/address", changeAddress);
 
 router.get("/user", userInfo);
 

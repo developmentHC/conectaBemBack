@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import addressSchema from "./Address.mjs";
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -16,6 +17,7 @@ const userSchema = new mongoose.Schema({
   },
   name: String,
   birthdayDate: Date,
+  addresses: [addressSchema],
   cepResidencial: String,
   nomeClinica: String,
   CNPJCPFProfissional: String,
