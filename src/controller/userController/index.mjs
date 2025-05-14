@@ -149,7 +149,7 @@ export const completeSignUpPatient = async (req, res) => {
     #swagger.parameters['body'] = {
             in: 'body',
             description: 'É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint',
-            schema: { $ref: '#/definitions/AddUserPaciente' }
+            schema: { $ref: '#/definitions/AddUserPatient' }
     }
   */
 
