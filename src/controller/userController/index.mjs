@@ -7,6 +7,7 @@ import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
 import config from "../../config/config.mjs";
 import { gridFSBucket } from "../../lib/gridFs.mjs";
 import mongoose from "mongoose";
+import { UserValidationService, ValidationError } from "../../services/ValidationService.mjs";
 
 const saltRounds = 10;
 
@@ -156,47 +157,38 @@ export const completeSignUpPatient = async (req, res) => {
     userId,
     name,
     birthdayDate,
-    cepResidencial,
+    residentialAddress,
     userSpecialties,
     userServicePreferences,
     userAcessibilityPreferences,
     profilePhoto,
   } = req.body;
 
-  if (!userId || !name || !birthdayDate || !userSpecialties || !userServicePreferences || !cepResidencial) {
-    return res.status(422).json({
-      msg: "Existem alguns parâmetros faltando para completar o cadastro do paciente",
-    });
-  }
-
   try {
-    const userExists = await User.findOne({ _id: userId });
-    if (!userExists) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
-    }
-    console.log(`Usuário encontrado com sucesso: ${userExists}`);
+    UserValidationService.validatePatientData(req.body);
+    UserValidationService.validateProfilePhoto(profilePhoto);
+    UserValidationService.validateUserExists(userId);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
-  }
-
-  if (typeof birthdayDate !== "number") {
-    return res.status(400).json({
-      error: "O campo 'birthdayDate' deve ser um número (timestamp em milissegundos).",
-    });
-  }
-
-  if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
-    return res.status(400).json({
-      error:
-        "Timestamp inválido. Envie um número positivo de milissegundos desde 1970-01-01 (UTC). Exemplo: 1672531200000.",
-    });
+    if (error instanceof ValidationError) {
+      return res.status(error.statusCode).json({
+        error: error.message,
+      });
+    }
   }
 
   const update = {
     name,
     birthdayDate,
-    cepResidencial,
+    address: [
+      {
+        cep: residentialAddress.cep,
+        address: residentialAddress.address,
+        neighborhood: residentialAddress.neighborhood,
+        city: residentialAddress.city,
+        state: residentialAddress.state,
+        principal: true,
+      },
+    ],
     userSpecialties,
     userServicePreferences,
     userType: "patient",
@@ -216,8 +208,6 @@ export const completeSignUpPatient = async (req, res) => {
       metadata: { userId },
       contentType: mimeType,
     });
-
-    console.log("Iniciando upload da imagem...");
 
     const fileId = await new Promise((resolve, reject) => {
       uploadStream.end(buffer);
@@ -283,80 +273,59 @@ export const completeSignUpProfessional = async (req, res) => {
     userId,
     name,
     birthdayDate,
-    cepResidencial,
-    nomeClinica,
+    clinic,
+    residentialAddress,
     CNPJCPFProfissional,
-    cepClinica,
-    enderecoClinica,
-    complementoClinica,
     professionalSpecialties,
-    otherProfessionalSpecialties,
+    otherProfessionalSpecialties = [],
     professionalServicePreferences,
-    profilePhoto,
+    profilePhoto = undefined,
   } = req.body;
 
-  if (
-    !userId ||
-    !name ||
-    !birthdayDate ||
-    !cepResidencial ||
-    !nomeClinica ||
-    !CNPJCPFProfissional ||
-    !cepClinica ||
-    !enderecoClinica ||
-    !professionalSpecialties ||
-    !professionalServicePreferences
-  ) {
-    return res.status(422).json({
-      msg: "Existem alguns parâmetros faltando para completar o cadastro do profissional",
-    });
+  try {
+    UserValidationService.validateProfessionalData(req.body);
+    UserValidationService.validateProfilePhoto(profilePhoto);
+    UserValidationService.validateUserExists(userId);
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(error.statusCode).json({
+        error: error.message,
+      });
+    }
   }
 
-  if (profilePhoto && !profilePhoto.startsWith("data:image")) {
-    return res.status(400).json({ error: "String Base64 inválida." });
-  }
+  const update = {
+    name,
+    birthdayDate,
+    CNPJCPFProfissional,
+    address: [
+      {
+        cep: residentialAddress.cep,
+        address: residentialAddress.address,
+        neighborhood: residentialAddress.neighborhood,
+        city: residentialAddress.city,
+        state: residentialAddress.state,
+        principal: true,
+      },
+    ],
+    clinic: {
+      name: clinic.name,
+      cep: clinic.cep,
+      address: clinic.address,
+      neighborhood: clinic.neighborhood,
+      number: clinic.number,
+      city: clinic.city,
+      state: clinic.state,
+      addition: clinic.addition,
+    },
+    professionalSpecialties,
+    professionalServicePreferences,
+    otherProfessionalSpecialties,
+    userType: "professional",
+    status: "completed",
+  };
 
   try {
-    const userExists = await User.findOne({ _id: userId });
-    if (!userExists) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
-    }
-
-    if (typeof birthdayDate !== "number") {
-      return res.status(400).json({
-        error: "O campo 'birthdayDate' deve ser um número (timestamp em milissegundos).",
-      });
-    }
-
-    if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
-      return res.status(400).json({
-        error:
-          "Timestamp inválido. Envie um número positivo de milissegundos desde 1970-01-01 (UTC). Exemplo: 1672531200000.",
-      });
-    }
-
-    const update = {
-      name,
-      birthdayDate,
-      cepResidencial,
-      nomeClinica,
-      CNPJCPFProfissional,
-      cepClinica,
-      enderecoClinica,
-      professionalSpecialties,
-      professionalServicePreferences,
-      userType: "professional",
-      status: "completed",
-    };
-
-    if (complementoClinica !== undefined) {
-      update.complementoClinica = complementoClinica;
-    }
-
-    if (otherProfessionalSpecialties !== undefined) {
-      update.otherProfessionalSpecialties = otherProfessionalSpecialties;
-    }
-
     if (profilePhoto) {
       const [header, data] = profilePhoto.split(";base64,");
       const mimeType = header.split(":")[1];
@@ -367,9 +336,6 @@ export const completeSignUpProfessional = async (req, res) => {
         contentType: mimeType,
       });
 
-      console.log("Iniciando upload da imagem...");
-
-      // Upload da imagem e obtenção do ID
       const fileId = await new Promise((resolve, reject) => {
         uploadStream.end(buffer);
         uploadStream.on("finish", () => {
@@ -382,11 +348,9 @@ export const completeSignUpProfessional = async (req, res) => {
         });
       });
 
-      // Atualiza o objeto update com o ID do arquivo
       update.profileImage = fileId;
     }
 
-    // Uma única atualização do usuário com todas as informações
     const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
     if (result.modifiedCount > 0) {

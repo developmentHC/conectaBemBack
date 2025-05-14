@@ -137,9 +137,6 @@
           "201": {
             "description": "Usuário encontrado, cadastro completado com sucesso"
           },
-          "400": {
-            "description": "Solicitação Inválida"
-          },
           "404": {
             "description": "Usuário não encontrado"
           },
@@ -175,9 +172,6 @@
           },
           "201": {
             "description": "Usuário encontrado, cadastro completado com sucesso"
-          },
-          "400": {
-            "description": "Solicitação Inválida"
           },
           "403": {
             "description": "Acesso Negado"
