@@ -87,10 +87,10 @@ export class UserValidationService {
     }
   }
 
-  static validateProfilePhoto(profilePhoto) {
-    if (profilePhoto && !profilePhoto.startsWith("data:image")) {
+  static validateProfilePhoto() {
+    /* if (profilePhoto && !profilePhoto.startsWith("data:image")) {
       throw new ValidationError("String Base64 inválida para foto do perfil", 400);
-    }
+    } */
   }
 }
 
