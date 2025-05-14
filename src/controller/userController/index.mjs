@@ -199,7 +199,7 @@ export const completeSignUpPatient = async (req, res) => {
     update.userAcessibilityPreferences = userAcessibilityPreferences;
   }
 
-  if (profilePhoto) {
+  if (profilePhoto && !profilePhoto.startsWith("data:image")) {
     const [header, data] = profilePhoto.split(";base64,");
     const mimeType = header.split(":")[1];
     const buffer = Buffer.from(data, "base64");
@@ -326,7 +326,7 @@ export const completeSignUpProfessional = async (req, res) => {
   };
 
   try {
-    if (profilePhoto) {
+    if (profilePhoto && !profilePhoto.startsWith("data:image")) {
       const [header, data] = profilePhoto.split(";base64,");
       const mimeType = header.split(":")[1];
       const buffer = Buffer.from(data, "base64");
