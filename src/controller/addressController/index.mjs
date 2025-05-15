@@ -1,6 +1,7 @@
 import User from "../../models/User.mjs";
 import jwt from "jsonwebtoken";
 import config from "../../config/config.mjs";
+import { UserValidationService } from "../../services/ValidationService.mjs";
 
 export const changeAddress = async (req, res) => {
   /*
@@ -136,17 +137,8 @@ export const getAddresses = async (req, res) => {
     #swagger.responses[500] = { description: 'Erro no servidor' }
   */
 
-  const token = req.cookies.jwt;
-
-  if (!token) {
-    return res.status(401).json({
-      error: "Não autorizado, cookie não encontrado",
-    });
-  }
-
   try {
-    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-    console.log(decoded);
+    const decoded = UserValidationService.validateToken(req.cookies.jwt);
 
     const user = await User.findOne({ _id: decoded.id }, { address: 1, _id: 0 }).lean();
 
@@ -199,20 +191,13 @@ export const changeActiveAddress = async (req, res) => {
     });
   }
 
-  const token = req.cookies.jwt;
-
-  if (!token) {
-    return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
-  }
-
   try {
-    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-
-    console.log("Looking for address:", addressId);
+    const decoded = UserValidationService.validateToken(req.cookies.jwt);
 
     const user = await User.findOne({
-      "address._id": addressId,
+      _id: decoded.id,
     });
+
     console.log(
       "Available addresses:",
       user?.address.map((a) => a._id.toString())

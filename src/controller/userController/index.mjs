@@ -396,7 +396,7 @@ export const userInfo = async (req, res) => {
     const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
 
     const userExists = await User.findOne(
-      { _id: decoded.userId },
+      { _id: decoded.id },
       {
         hashedOTP: 0,
         __v: 0,
