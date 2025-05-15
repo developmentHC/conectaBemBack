@@ -433,6 +433,71 @@
             "description": "Erro no servidor"
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Retorna todos os endereços do usuário",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Endereços encontrados",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "507f1f77bcf86cd799439011"
+                      },
+                      "cep": {
+                        "type": "string",
+                        "example": "12345678"
+                      },
+                      "address": {
+                        "type": "string",
+                        "example": "Rua Example, 123"
+                      },
+                      "neighborhood": {
+                        "type": "string",
+                        "example": "Centro"
+                      },
+                      "city": {
+                        "type": "string",
+                        "example": "São Paulo"
+                      },
+                      "state": {
+                        "type": "string",
+                        "example": "SP"
+                      },
+                      "active": {
+                        "type": "boolean",
+                        "example": true
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
       }
     },
     "/active-address": {

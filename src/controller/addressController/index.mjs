@@ -111,6 +111,62 @@ export const changeAddress = async (req, res) => {
   }
 };
 
+export const getAddresses = async (req, res) => {
+  /*
+    #swagger.tags = ['Address']
+    #swagger.summary = 'Retorna todos os endereços do usuário'
+    #swagger.responses[200] = { 
+      description: 'Endereços encontrados',
+      schema: {
+        address: [
+          {
+            _id: '507f1f77bcf86cd799439011',
+            cep: '12345678',
+            address: 'Rua Example, 123',
+            neighborhood: 'Centro',
+            city: 'São Paulo',
+            state: 'SP',
+            active: true
+          }
+        ]
+      }
+    }
+    #swagger.responses[401] = { description: 'Não autorizado' }
+    #swagger.responses[404] = { description: 'Usuário não encontrado' }
+    #swagger.responses[500] = { description: 'Erro no servidor' }
+  */
+
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.status(401).json({
+      error: "Não autorizado, cookie não encontrado",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
+    console.log(decoded);
+
+    const user = await User.findOne({ _id: decoded.id }, { address: 1, _id: 0 }).lean();
+
+    if (!user) {
+      return res.status(404).json({
+        error: "Usuário não encontrado",
+      });
+    }
+
+    return res.status(200).json({
+      addresses: user.address || [],
+    });
+  } catch (error) {
+    console.error("Erro ao buscar endereços:", error);
+    return res.status(500).json({
+      error: "Erro ao buscar endereços",
+    });
+  }
+};
+
 export const changeActiveAddress = async (req, res) => {
   /*
   #swagger.tags = ['Address']
@@ -151,14 +207,12 @@ export const changeActiveAddress = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-    console.log(decoded);
 
     console.log("Looking for address:", addressId);
 
     const user = await User.findOne({
       "address._id": addressId,
     });
-    console.log("User: ", user);
     console.log(
       "Available addresses:",
       user?.address.map((a) => a._id.toString())

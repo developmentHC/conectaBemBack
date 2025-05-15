@@ -12,7 +12,7 @@ import {
   searchProfessionalBySpeciality,
   searchBar,
 } from "../controller/searchController/index.mjs";
-import { changeActiveAddress, changeAddress } from "../controller/addressController/index.mjs";
+import { changeActiveAddress, changeAddress, getAddresses } from "../controller/addressController/index.mjs";
 
 const router = express.Router();
 const corsOptions = {
@@ -33,6 +33,7 @@ router.get("/search/professionalBySpeciality/:speciality", searchProfessionalByS
 router.get("/search/searchBar/:terms", searchBar);
 
 router.put("/address", changeAddress);
+router.get("/address", getAddresses);
 router.put("/active-address", changeActiveAddress);
 
 router.get("/user", userInfo);
