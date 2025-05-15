@@ -49,17 +49,17 @@ export const changeAddress = async (req, res) => {
                 example: 'Apto 123',
                 description: 'Complemento do endereço'
             },
-            principal: {
+            active: {
                 type: 'boolean',
                 example: false,
-                description: 'Indica se é o endereço principal'
+                description: 'Indica se é o endereço ativo'
             }
         }
       }
     }
   */
 
-  const { addressId, name, cep, endereco, bairro, estado, complemento, principal } = req.body;
+  const { addressId, name, cep, endereco, bairro, estado, complemento, active } = req.body;
 
   const token = req.cookies.jwt;
 
@@ -81,7 +81,7 @@ export const changeAddress = async (req, res) => {
     bairro,
     estado,
     complemento,
-    principal: principal ?? false,
+    active: active ?? false,
   };
 
   if (name !== undefined) {
@@ -90,10 +90,10 @@ export const changeAddress = async (req, res) => {
 
   try {
     const result = await User.updateOne(
-      { _id: decoded.userId, "addresses._id": addressId },
+      { _id: decoded.userId, "address._id": addressId },
       {
         $set: {
-          "addresses.$": update,
+          "address.$": update,
         },
       }
     );
@@ -107,6 +107,92 @@ export const changeAddress = async (req, res) => {
     }
   } catch (error) {
     console.error("Erro ao atualizar endereço de usuário:", error);
+    return res.status(500).json({ error: "Erro no servidor" });
+  }
+};
+
+export const changeActiveAddress = async (req, res) => {
+  /*
+  #swagger.tags = ['Address']
+  #swagger.summary = 'Alterar endereço principal do usuário'
+  #swagger.responses[200] = { description: 'Endereço principal atualizado com sucesso' }
+  #swagger.responses[404] = { description: 'Endereço não encontrado' }
+  #swagger.responses[422] = { description: 'ID do endereço não fornecido' }
+  #swagger.responses[500] = { description: 'Erro no servidor' }
+  #swagger.parameters['body'] = {
+    in: 'body',
+    description: 'ID do endereço que será definido como principal',
+    required: true,
+    schema: {
+        type: 'object',
+        required: ['addressId'],
+        properties: {
+          addressId: {
+            type: 'string',
+            example: '507f1f77bcf86cd799439011'
+          }
+        }
+      }
+  }
+*/
+  const { addressId } = req.body;
+
+  if (!addressId) {
+    return res.status(422).json({
+      error: "ID do endereço é obrigatório",
+    });
+  }
+
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
+    console.log(decoded);
+
+    console.log("Looking for address:", addressId);
+
+    const user = await User.findOne({
+      "address._id": addressId,
+    });
+    console.log("User: ", user);
+    console.log(
+      "Available addresses:",
+      user?.address.map((a) => a._id.toString())
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        error: "Endereço não encontrado para este usuário",
+      });
+    }
+
+    const resultUpdate = await User.updateOne({ "address._id": addressId }, { $set: { "address.$[].active": false } });
+    console.log(resultUpdate);
+
+    const result = await User.updateOne(
+      {
+        "address._id": addressId,
+      },
+      {
+        $set: { "address.$.active": true },
+      }
+    );
+
+    if (result.modifiedCount > 0) {
+      return res.status(200).json({
+        msg: "Endereço principal atualizado com sucesso!",
+      });
+    }
+
+    return res.status(304).json({
+      msg: "Não houve alteração no endereço principal",
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar endereço principal:", error);
     return res.status(500).json({ error: "Erro no servidor" });
   }
 };

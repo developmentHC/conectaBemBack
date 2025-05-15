@@ -186,7 +186,7 @@ export const completeSignUpPatient = async (req, res) => {
         neighborhood: residentialAddress.neighborhood,
         city: residentialAddress.city,
         state: residentialAddress.state,
-        principal: true,
+        active: true,
       },
     ],
     userSpecialties,
@@ -305,7 +305,7 @@ export const completeSignUpProfessional = async (req, res) => {
         neighborhood: residentialAddress.neighborhood,
         city: residentialAddress.city,
         state: residentialAddress.state,
-        principal: true,
+        active: true,
       },
     ],
     clinic: {

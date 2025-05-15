@@ -21,7 +21,7 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  principal: {
+  active: {
     type: Boolean,
     default: false,
   },

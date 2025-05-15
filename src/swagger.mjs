@@ -37,7 +37,7 @@ export const sharedProperties = {
           type: "string",
           example: "SP",
         },
-        principal: {
+        active: {
           type: "boolean",
           example: true,
         },
