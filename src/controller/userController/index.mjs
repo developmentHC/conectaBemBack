@@ -117,7 +117,7 @@ export const checkOTP = async (req, res) => {
         const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
         res.cookie("jwt", accessToken, {
           httpOnly: true,
-          secure: false,
+          secure: true,
           sameSite: "None",
           maxAge: 3600000,
           path: "/",
@@ -240,7 +240,7 @@ export const completeSignUpPatient = async (req, res) => {
       const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
       res.cookie("jwt", accessToken, {
         httpOnly: true,
-        secure: false,
+        secure: true,
         sameSite: "None",
         maxAge: 3600000,
         path: "/",
@@ -367,7 +367,7 @@ export const completeSignUpProfessional = async (req, res) => {
       const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
       res.cookie("jwt", accessToken, {
         httpOnly: true,
-        secure: false,
+        secure: true,
         sameSite: "None",
         maxAge: 3600000,
         path: "/",
