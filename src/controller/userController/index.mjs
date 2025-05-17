@@ -118,7 +118,7 @@ export const checkOTP = async (req, res) => {
         res.cookie("jwt", accessToken, {
           httpOnly: true,
           secure: false,
-          sameSite: "Strict",
+          sameSite: "Lax",
           maxAge: 3600000,
         });
 
@@ -240,7 +240,7 @@ export const completeSignUpPatient = async (req, res) => {
       res.cookie("jwt", accessToken, {
         httpOnly: true,
         secure: false,
-        sameSite: "Strict",
+        sameSite: "Lax",
         maxAge: 3600000,
       });
 
@@ -366,7 +366,7 @@ export const completeSignUpProfessional = async (req, res) => {
       res.cookie("jwt", accessToken, {
         httpOnly: true,
         secure: false,
-        sameSite: "Strict",
+        sameSite: "Lax",
         maxAge: 3600000,
       });
 
