@@ -120,6 +120,7 @@ export const checkOTP = async (req, res) => {
           secure: false,
           sameSite: "Lax",
           maxAge: 3600000,
+          path: "/",
         });
 
         return res.status(200).json({ msg: "Login bem-sucedido!" });
@@ -242,6 +243,7 @@ export const completeSignUpPatient = async (req, res) => {
         secure: false,
         sameSite: "Lax",
         maxAge: 3600000,
+        path: "/",
       });
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
@@ -368,6 +370,7 @@ export const completeSignUpProfessional = async (req, res) => {
         secure: false,
         sameSite: "Lax",
         maxAge: 3600000,
+        path: "/",
       });
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
