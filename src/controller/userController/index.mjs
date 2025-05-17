@@ -239,7 +239,7 @@ export const completeSignUpPatient = async (req, res) => {
       const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
       res.cookie("jwt", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
         sameSite: "Strict",
         maxAge: 3600000,
       });
@@ -365,7 +365,7 @@ export const completeSignUpProfessional = async (req, res) => {
       const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
       res.cookie("jwt", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
         sameSite: "Strict",
         maxAge: 3600000,
       });
