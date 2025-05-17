@@ -15,5 +15,6 @@
       "src": "/(.*)",
       "dest": "src/index.mjs"
     }
-  ]
+  ],
+  "payloadSizeLimit": "50mb"
 }
