@@ -117,7 +117,7 @@ export const checkOTP = async (req, res) => {
         const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
         res.cookie("jwt", accessToken, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
+          secure: false,
           sameSite: "Strict",
           maxAge: 3600000,
         });
