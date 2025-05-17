@@ -124,7 +124,7 @@ export const checkOTP = async (req, res) => {
 
         return res.status(200).json({ msg: "Login bem-sucedido!" });
       } else if (userExists.status === "pending") {
-        return res.status(200).json({ message });
+        return res.status(201).json({ message });
       } else {
         return res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
       }
@@ -165,6 +165,7 @@ export const completeSignUpPatient = async (req, res) => {
   } = req.body;
 
   try {
+    /* UserValidationService.validateToken(req.cookies.jwt); */
     UserValidationService.validatePatientData(req.body);
     UserValidationService.validateProfilePhoto(profilePhoto);
     UserValidationService.validateUserExists(userId);
@@ -283,6 +284,7 @@ export const completeSignUpProfessional = async (req, res) => {
   } = req.body;
 
   try {
+    /* UserValidationService.validateToken(req.cookies.jwt); */
     UserValidationService.validateProfessionalData(req.body);
     UserValidationService.validateProfilePhoto(profilePhoto);
     UserValidationService.validateUserExists(userId);
@@ -395,8 +397,11 @@ export const userInfo = async (req, res) => {
 
     const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
 
+    /* const decoded = UserValidationService.validateToken(req.cookies.jwt); */
+
     const userExists = await User.findOne(
       { _id: decoded.id },
+      /*  { _id: decoded.userId }, */
       {
         hashedOTP: 0,
         __v: 0,
