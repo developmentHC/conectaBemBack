@@ -62,13 +62,7 @@ export const changeAddress = async (req, res) => {
 
   const { addressId, name, cep, endereco, bairro, estado, complemento, active } = req.body;
 
-  const token = req.cookies.jwt;
-
-  if (!token) {
-    return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
-  }
-
-  const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
+  const decoded = UserValidationService.validateToken(req.cookies.jwt);
 
   if (!addressId || !cep || !endereco || !bairro || !estado || !complemento) {
     return res.status(422).json({
@@ -137,10 +131,9 @@ export const getAddresses = async (req, res) => {
     #swagger.responses[500] = { description: 'Erro no servidor' }
   */
 
+  const decoded = UserValidationService.validateToken(req.cookies.jwt);
   try {
-    const decoded = UserValidationService.validateToken(req.cookies.jwt);
-
-    const user = await User.findOne({ _id: decoded.id }, { address: 1, _id: 0 }).lean();
+    const user = await User.findOne({ _id: decoded.userId }, { address: 1, _id: 0 }).lean();
 
     if (!user) {
       return res.status(404).json({
@@ -195,7 +188,7 @@ export const changeActiveAddress = async (req, res) => {
     const decoded = UserValidationService.validateToken(req.cookies.jwt);
 
     const user = await User.findOne({
-      _id: decoded.id,
+      _id: decoded.userId,
     });
 
     console.log(

@@ -8,6 +8,7 @@ import config from "../../config/config.mjs";
 import { gridFSBucket } from "../../lib/gridFs.mjs";
 import mongoose from "mongoose";
 import { UserValidationService, ValidationError } from "../../services/ValidationService.mjs";
+import setAuthCookie from "../../services/authService.mjs";
 
 const saltRounds = 10;
 
@@ -28,8 +29,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
     return res.status(422).json({ message: "Um e-mail é exigido" });
   }
 
-  console.log("Email válido recebido:", email);
-
   try {
     const OTP = generateOTP();
     sendEmail(email, OTP);
@@ -37,10 +36,9 @@ export const checkUserEmailSendOTP = async (req, res) => {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedOTP = await bcrypt.hash(String(OTP), salt);
 
-    console.log(`OTP gerado: ${OTP}, hashed OTP: ${hashedOTP}`);
+    console.log("OTP gerado: ", OTP);
 
     const userExists = await User.findOne({ email: email });
-    console.log("Usuário existente:", userExists);
     if (!userExists) {
       const result = await User.create({
         email: email,
@@ -48,7 +46,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
         status: "pending",
       });
       console.log("Usuário criado:", result);
-      console.log(result);
 
       return res.status(201).json({
         id: result._id,
@@ -60,8 +57,8 @@ export const checkUserEmailSendOTP = async (req, res) => {
         message: "User created and OTP sent through email",
       });
     } else {
+      console.log("Usuário existente:", userExists);
       await User.updateOne({ email }, { hashedOTP });
-      console.log("OTP do usuário atualizado");
       return res.status(200).json({
         id: userExists._id,
         email: {
@@ -114,14 +111,7 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
-        const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-        res.cookie("jwt", accessToken, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "None",
-          maxAge: 3600000,
-          path: "/",
-        });
+        setAuthCookie(res, userExists._id);
 
         return res.status(200).json({ msg: "Login bem-sucedido!" });
       } else if (userExists.status === "pending") {
@@ -166,7 +156,7 @@ export const completeSignUpPatient = async (req, res) => {
   } = req.body;
 
   try {
-    /* UserValidationService.validateToken(req.cookies.jwt); */
+    UserValidationService.validateToken(req.cookies.jwt);
     UserValidationService.validatePatientData(req.body);
     UserValidationService.validateProfilePhoto(profilePhoto);
     UserValidationService.validateUserExists(userId);
@@ -237,14 +227,7 @@ export const completeSignUpPatient = async (req, res) => {
 
     if (result.modifiedCount > 0) {
       console.log("Payload para JWT:", userId);
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-      res.cookie("jwt", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        maxAge: 3600000,
-        path: "/",
-      });
+      setAuthCookie(res, userExists._id);
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
@@ -286,7 +269,7 @@ export const completeSignUpProfessional = async (req, res) => {
   } = req.body;
 
   try {
-    /* UserValidationService.validateToken(req.cookies.jwt); */
+    UserValidationService.validateToken(req.cookies.jwt);
     UserValidationService.validateProfessionalData(req.body);
     UserValidationService.validateProfilePhoto(profilePhoto);
     UserValidationService.validateUserExists(userId);
@@ -364,14 +347,7 @@ export const completeSignUpProfessional = async (req, res) => {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-      res.cookie("jwt", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        maxAge: 3600000,
-        path: "/",
-      });
+      setAuthCookie(res, userExists._id);
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
@@ -393,18 +369,10 @@ export const userInfo = async (req, res) => {
   */
 
   try {
-    const token = req.cookies.jwt;
-    if (!token) {
-      return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
-    }
-
-    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-
-    /* const decoded = UserValidationService.validateToken(req.cookies.jwt); */
+    const decoded = UserValidationService.validateToken(req.cookies.jwt);
 
     const userExists = await User.findOne(
-      { _id: decoded.id },
-      /*  { _id: decoded.userId }, */
+      { _id: decoded.userId },
       {
         hashedOTP: 0,
         __v: 0,
@@ -442,6 +410,11 @@ export const userInfo = async (req, res) => {
 
     return res.status(200).json(userExists);
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(error.statusCode).json({
+        error: error.message,
+      });
+    }
     console.error("Erro ao trazer informações do usuário:", error);
     return res.status(500).json({ error: "Bad request" });
   }

@@ -101,11 +101,14 @@ export class UserValidationService {
         throw new ValidationError("Não autorizado, cookie não encontrado", 422);
       }
 
+      console.log(token);
       const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
 
-      if (!decoded || !decoded.id) {
+      if (!decoded.userId) {
         throw new ValidationError("Token inválido", 401);
       }
+
+      console.log("userId: ", decoded.userId);
 
       return decoded;
     } catch (error) {
@@ -115,7 +118,6 @@ export class UserValidationService {
       if (error instanceof ValidationError) {
         throw error;
       }
-      console.error(error);
       throw new ValidationError("Erro na validação do token", 500);
     }
   }

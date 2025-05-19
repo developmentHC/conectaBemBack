@@ -98,6 +98,9 @@
           "200": {
             "description": "Còdigos OTP coincidem"
           },
+          "201": {
+            "description": "Criado"
+          },
           "401": {
             "description": "Códigos OTP não coincidem"
           },
@@ -557,9 +560,6 @@
           },
           "304": {
             "description": "Não Modificado"
-          },
-          "401": {
-            "description": "Não autorizado"
           },
           "404": {
             "description": "Endereço não encontrado"
