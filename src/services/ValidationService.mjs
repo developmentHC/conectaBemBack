@@ -1,5 +1,5 @@
-import User from "../models/User.mjs";
 import jwt from "jsonwebtoken";
+import User from "../models/User.mjs";
 import config from "../config/config.mjs";
 
 export class UserValidationService {
