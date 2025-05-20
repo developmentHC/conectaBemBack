@@ -2,7 +2,7 @@
   "name": "apinode",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "commonjs",
+  "type": "module",
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
   },
