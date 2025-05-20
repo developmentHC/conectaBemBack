@@ -3,12 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "type": "commonjs",
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  },
   "scripts": {
+    "lint": "eslint . --ext .mjs",
+    "lint:fix": "eslint . --ext .mjs --fix",
     "test": "vitest --run --reporter verbose --globals",
     "test:watch": "vitest",
-    "build": "node ./src/swagger.mjs && node ./src/index.mjs",
+    "build": "npm run lint && node ./src/swagger.mjs && node ./src/index.mjs",
     "dev": "node ./src/swagger.mjs && nodemon ./src/index.mjs",
-    "swagger": "node ./src/swagger.mjs"
+    "swagger": "node ./src/swagger.mjs",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -28,7 +34,15 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/eslint-parser": "^7.27.1",
+    "@eslint/js": "^9.27.0",
+    "eslint": "^9.27.0",
+    "globals": "^16.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.0",
     "nodemon": "^3.1.7",
+    "prettier": "3.5.3",
     "supertest": "^7.0.0",
     "vitest": "^2.1.8"
   }

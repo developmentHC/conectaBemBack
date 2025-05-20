@@ -60,7 +60,11 @@ describe("checkUserEmailSendOTP", () => {
     bcrypt.genSalt.mockResolvedValue("salt");
     bcrypt.hash.mockResolvedValue("hashedOTP");
     User.findOne.mockResolvedValue(null);
-    User.create.mockResolvedValue({ _id: "newUserId", email: "teste@exemplo.com.br", hashedOTP: "hashedOTP" });
+    User.create.mockResolvedValue({
+      _id: "newUserId",
+      email: "teste@exemplo.com.br",
+      hashedOTP: "hashedOTP",
+    });
     sendEmail.mockResolvedValue({});
 
     await checkUserEmailSendOTP(req, res);
@@ -89,9 +93,14 @@ describe("checkUserEmailSendOTP", () => {
 
     await checkUserEmailSendOTP(req, res);
 
-    expect(User.findOne).toHaveBeenCalledWith({ email: "teste@exemplo.com.br" });
+    expect(User.findOne).toHaveBeenCalledWith({
+      email: "teste@exemplo.com.br",
+    });
 
-    expect(User.updateOne).toHaveBeenCalledWith({ email: "teste@exemplo.com.br" }, { hashedOTP: "hashedOTP" });
+    expect(User.updateOne).toHaveBeenCalledWith(
+      { email: "teste@exemplo.com.br" },
+      { hashedOTP: "hashedOTP" },
+    );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       id: "existingUserId",

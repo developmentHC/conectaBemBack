@@ -1,14 +1,15 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+import setAuthCookie from "../../services/authService.mjs";
 import { User } from "../../models/index.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
-import config from "../../config/config.mjs";
 import { gridFSBucket } from "../../lib/gridFs.mjs";
-import mongoose from "mongoose";
-import { UserValidationService, ValidationError } from "../../services/ValidationService.mjs";
-import setAuthCookie from "../../services/authService.mjs";
+import {
+  UserValidationService,
+  ValidationError,
+} from "../../services/validationService.mjs";
 
 const saltRounds = 10;
 
@@ -36,8 +37,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedOTP = await bcrypt.hash(String(OTP), salt);
 
-    console.log("OTP gerado: ", OTP);
-
     const userExists = await User.findOne({ email: email });
     if (!userExists) {
       const result = await User.create({
@@ -45,7 +44,8 @@ export const checkUserEmailSendOTP = async (req, res) => {
         hashedOTP: hashedOTP,
         status: "pending",
       });
-      console.log("Usuário criado:", result);
+
+      console.log("Usuário criado:", result, OTP);
 
       return res.status(201).json({
         id: result._id,
@@ -57,7 +57,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
         message: "User created and OTP sent through email",
       });
     } else {
-      console.log("Usuário existente:", userExists);
+      console.log("Usuário existente:", userExists, OTP);
       await User.updateOne({ email }, { hashedOTP });
       return res.status(200).json({
         id: userExists._id,
@@ -88,7 +88,8 @@ export const checkOTP = async (req, res) => {
   const { email, OTP } = req.body;
   if (!email || !OTP || testEmailSyntax(email) === false) {
     return res.status(422).json({
-      msg: "Parâmetros exigidos não estão sendo enviados ou não estão sendo enviados de forma correta no body",
+      error:
+        "Parâmetros exigidos não estão sendo enviados ou não estão sendo enviados de forma correta no body",
     });
   }
   try {
@@ -98,9 +99,9 @@ export const checkOTP = async (req, res) => {
     }
 
     const resultComparation = await bcrypt.compare(OTP, userExists.hashedOTP);
-    console.log(`Comparação entre os OTPs: ${resultComparation}`);
+
     if (resultComparation) {
-      const message = {
+      const response = {
         id: userExists._id,
         email: {
           address: userExists.email,
@@ -111,20 +112,23 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
+        await User.updateOne(
+          { _id: userExists._id },
+          { $unset: { hashedOTP: "" } },
+        );
         setAuthCookie(res, userExists._id);
-
         return res.status(200).json({ msg: "Login bem-sucedido!" });
       } else if (userExists.status === "pending") {
-        return res.status(201).json({ message });
+        return res.status(201).json({ response });
       } else {
         return res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
       }
     } else {
-      return res.status(401).json({ msg: "Código OTP está incorreto!" });
+      return res.status(401).json({ error: "Código OTP está incorreto!" });
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -227,11 +231,13 @@ export const completeSignUpPatient = async (req, res) => {
 
     if (result.modifiedCount > 0) {
       console.log("Payload para JWT:", userId);
-      setAuthCookie(res, userExists._id);
+      setAuthCookie(res, userId);
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
-      return res.status(500).json({ error: "Usuário já está cadastrado no banco de dados" });
+      return res
+        .status(500)
+        .json({ error: "Usuário já está cadastrado no banco de dados" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
@@ -347,11 +353,13 @@ export const completeSignUpProfessional = async (req, res) => {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      setAuthCookie(res, userExists._id);
+      setAuthCookie(res, userId);
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
-      return res.status(403).json({ error: "Usuário já está cadastrado no banco de dados" });
+      return res
+        .status(403)
+        .json({ error: "Usuário já está cadastrado no banco de dados" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
@@ -376,7 +384,7 @@ export const userInfo = async (req, res) => {
       {
         hashedOTP: 0,
         __v: 0,
-      }
+      },
     ).lean();
 
     if (!userExists) {
@@ -385,7 +393,9 @@ export const userInfo = async (req, res) => {
 
     if (userExists.profileImage) {
       try {
-        const downloadStream = gridFSBucket.openDownloadStream(userExists.profileImage);
+        const downloadStream = gridFSBucket.openDownloadStream(
+          userExists.profileImage,
+        );
 
         const chunks = [];
         await new Promise((resolve, reject) => {
@@ -396,7 +406,9 @@ export const userInfo = async (req, res) => {
 
         const buffer = Buffer.concat(chunks);
 
-        const file = await mongoose.connection.db.collection("fs.files").findOne({ _id: userExists.profileImage });
+        const file = await mongoose.connection.db
+          .collection("fs.files")
+          .findOne({ _id: userExists.profileImage });
 
         const base64 = buffer.toString("base64");
         const dataUri = `data:${file.contentType};base64,${base64}`;

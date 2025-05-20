@@ -28,7 +28,10 @@ export class UserValidationService {
     const missingFields = requiredFields.filter((field) => !data[field]);
 
     if (missingFields.length > 0) {
-      throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
+      throw new ValidationError(
+        `Campos obrigatórios ausentes: ${missingFields.join(", ")}`,
+        422,
+      );
     }
 
     this.validateAddressData(data.residentialAddress);
@@ -51,7 +54,10 @@ export class UserValidationService {
     const missingFields = requiredFields.filter((field) => !data[field]);
 
     if (missingFields.length > 0) {
-      throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
+      throw new ValidationError(
+        `Campos obrigatórios ausentes: ${missingFields.join(", ")}`,
+        422,
+      );
     }
 
     this.validateAddressData(data.residentialAddress);
@@ -61,38 +67,69 @@ export class UserValidationService {
 
   static validateBirthDate(birthdayDate) {
     if (typeof birthdayDate !== "number") {
-      throw new ValidationError("O campo 'birthdayDate' deve ser um número (timestamp)", 400);
+      throw new ValidationError(
+        "O campo 'birthdayDate' deve ser um número (timestamp)",
+        400,
+      );
     }
 
-    if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
-      throw new ValidationError("Timestamp inválido. Envie um timestamp correto", 400);
+    if (
+      isNaN(birthdayDate) ||
+      !isFinite(birthdayDate) ||
+      birthdayDate <= 0 ||
+      birthdayDate > Date.now()
+    ) {
+      throw new ValidationError(
+        "Timestamp inválido. Envie um timestamp correto",
+        400,
+      );
     }
   }
 
   static validateAddressData(residentialAddress) {
     const requiredFields = ["cep", "address", "neighborhood", "city", "state"];
 
-    const missingFields = requiredFields.filter((field) => !residentialAddress[field]);
+    const missingFields = requiredFields.filter(
+      (field) => !residentialAddress[field],
+    );
 
     if (missingFields.length > 0) {
-      throw new ValidationError(`Dados do endereço residencial imcompletos: ${missingFields.join(", ")}`, 422);
+      throw new ValidationError(
+        `Dados do endereço residencial imcompletos: ${missingFields.join(", ")}`,
+        422,
+      );
     }
   }
 
   static validateClinicData(clinic) {
-    const requiredFields = ["name", "cep", "address", "neighborhood", "number", "city", "state", "addition"];
+    const requiredFields = [
+      "name",
+      "cep",
+      "address",
+      "neighborhood",
+      "number",
+      "city",
+      "state",
+      "addition",
+    ];
 
     const missingFields = requiredFields.filter((field) => !clinic[field]);
 
     if (missingFields.length > 0) {
-      throw new ValidationError(`Dados da clínica incompletos: ${missingFields.join(", ")}`, 422);
+      throw new ValidationError(
+        `Dados da clínica incompletos: ${missingFields.join(", ")}`,
+        422,
+      );
     }
   }
 
-  static validateProfilePhoto() {
-    /* if (profilePhoto && !profilePhoto.startsWith("data:image")) {
-      throw new ValidationError("String Base64 inválida para foto do perfil", 400);
-    } */
+  static validateProfilePhoto(profilePhoto) {
+    if (!profilePhoto.startsWith("data:image")) {
+      throw new ValidationError(
+        "String Base64 inválida para foto do perfil",
+        400,
+      );
+    }
   }
 
   static validateToken(token) {
@@ -101,14 +138,11 @@ export class UserValidationService {
         throw new ValidationError("Não autorizado, cookie não encontrado", 422);
       }
 
-      console.log(token);
       const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
 
       if (!decoded.userId) {
         throw new ValidationError("Token inválido", 401);
       }
-
-      console.log("userId: ", decoded.userId);
 
       return decoded;
     } catch (error) {

@@ -12,7 +12,11 @@ import {
   searchProfessionalBySpeciality,
   searchBar,
 } from "../controller/searchController/index.mjs";
-import { changeActiveAddress, changeAddress, getAddresses } from "../controller/addressController/index.mjs";
+import {
+  changeActiveAddress,
+  changeAddress,
+  getAddresses,
+} from "../controller/addressController/index.mjs";
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -47,7 +51,7 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-const router = express.Router();  
+const router = express.Router();
 
 router.use(cors(corsOptions));
 router.use(express.json());
@@ -58,7 +62,10 @@ router.post("/auth/createPatient", completeSignUpPatient);
 router.post("/auth/createProfessional", completeSignUpProfessional);
 
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
-router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
+router.get(
+  "/search/professionalBySpeciality/:speciality",
+  searchProfessionalBySpeciality,
+);
 router.get("/search/searchBar/:terms", searchBar);
 
 router.put("/address", changeAddress);

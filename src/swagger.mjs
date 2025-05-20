@@ -157,7 +157,13 @@ const doc = {
     },
     AddUserPatient: {
       type: "object",
-      required: ["name", "birthdayDate", "address", "userSpecialties", "userServicePreferences"],
+      required: [
+        "name",
+        "birthdayDate",
+        "address",
+        "userSpecialties",
+        "userServicePreferences",
+      ],
       properties: {
         ...sharedProperties,
         userSpecialties: {
