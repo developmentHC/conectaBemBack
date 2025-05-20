@@ -9,7 +9,7 @@ import { gridFSBucket } from "../../lib/gridFs.mjs";
 import {
   UserValidationService,
   ValidationError,
-} from "../../services/validationService.mjs";
+} from "../../services/ValidationService.mjs";
 
 const saltRounds = 10;
 
