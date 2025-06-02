@@ -160,7 +160,6 @@ export const completeSignUpPatient = async (req, res) => {
   } = req.body;
 
   try {
-    UserValidationService.validateToken(req.cookies.jwt);
     UserValidationService.validatePatientData(req.body);
     UserValidationService.validateProfilePhoto(profilePhoto);
     UserValidationService.validateUserExists(userId);
@@ -275,7 +274,6 @@ export const completeSignUpProfessional = async (req, res) => {
   } = req.body;
 
   try {
-    UserValidationService.validateToken(req.cookies.jwt);
     UserValidationService.validateProfessionalData(req.body);
     UserValidationService.validateProfilePhoto(profilePhoto);
     UserValidationService.validateUserExists(userId);
