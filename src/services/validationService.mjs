@@ -22,7 +22,6 @@ export class UserValidationService {
       "userSpecialties",
       "userServicePreferences",
       "userAcessibilityPreferences",
-      "profilePhoto",
     ];
 
     const missingFields = requiredFields.filter((field) => !data[field]);
@@ -48,7 +47,6 @@ export class UserValidationService {
       "clinic",
       "professionalSpecialties",
       "professionalServicePreferences",
-      "profilePhoto",
     ];
 
     const missingFields = requiredFields.filter((field) => !data[field]);
@@ -110,7 +108,6 @@ export class UserValidationService {
       "number",
       "city",
       "state",
-      "addition",
     ];
 
     const missingFields = requiredFields.filter((field) => !clinic[field]);
