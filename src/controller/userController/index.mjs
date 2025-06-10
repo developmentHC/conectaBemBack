@@ -1,10 +1,15 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+import setAuthCookie from "../../services/authService.mjs";
 import { User } from "../../models/index.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
-import config from "../../config/config.mjs";
+import { gridFSBucket } from "../../lib/gridFs.mjs";
+import {
+  UserValidationService,
+  ValidationError,
+} from "../../services/validationService.mjs";
 
 const saltRounds = 10;
 
@@ -25,8 +30,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
     return res.status(422).json({ message: "Um e-mail é exigido" });
   }
 
-  console.log("Email válido recebido:", email);
-
   try {
     const OTP = generateOTP();
     sendEmail(email, OTP);
@@ -34,18 +37,15 @@ export const checkUserEmailSendOTP = async (req, res) => {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedOTP = await bcrypt.hash(String(OTP), salt);
 
-    console.log(`OTP gerado: ${OTP}, hashed OTP: ${hashedOTP}`);
-
     const userExists = await User.findOne({ email: email });
-    console.log("Usuário existente:", userExists);
     if (!userExists) {
       const result = await User.create({
         email: email,
         hashedOTP: hashedOTP,
         status: "pending",
       });
-      console.log("Usuário criado:", result);
-      console.log(result);
+
+      console.log("Usuário criado:", result, OTP);
 
       return res.status(201).json({
         id: result._id,
@@ -57,8 +57,8 @@ export const checkUserEmailSendOTP = async (req, res) => {
         message: "User created and OTP sent through email",
       });
     } else {
+      console.log("Usuário existente:", userExists, OTP);
       await User.updateOne({ email }, { hashedOTP });
-      console.log("OTP do usuário atualizado");
       return res.status(200).json({
         id: userExists._id,
         email: {
@@ -88,7 +88,8 @@ export const checkOTP = async (req, res) => {
   const { email, OTP } = req.body;
   if (!email || !OTP || testEmailSyntax(email) === false) {
     return res.status(422).json({
-      msg: "Parâmetros exigidos não estão sendo enviados ou não estão sendo enviados de forma correta no body",
+      error:
+        "Parâmetros exigidos não estão sendo enviados ou não estão sendo enviados de forma correta no body",
     });
   }
   try {
@@ -98,9 +99,9 @@ export const checkOTP = async (req, res) => {
     }
 
     const resultComparation = await bcrypt.compare(OTP, userExists.hashedOTP);
-    console.log(`Comparação entre os OTPs: ${resultComparation}`);
+
     if (resultComparation) {
-      const message = {
+      const response = {
         id: userExists._id,
         email: {
           address: userExists.email,
@@ -111,26 +112,23 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
-        const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-        res.cookie("jwt", accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "Strict",
-          maxAge: 3600000,
-        });
-
+        await User.updateOne(
+          { _id: userExists._id },
+          { $unset: { hashedOTP: "" } },
+        );
+        setAuthCookie(res, userExists._id);
         return res.status(200).json({ msg: "Login bem-sucedido!" });
       } else if (userExists.status === "pending") {
-        return res.status(200).json({ message });
+        return res.status(201).json({ response });
       } else {
         return res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
       }
     } else {
-      return res.status(401).json({ msg: "Código OTP está incorreto!" });
+      return res.status(401).json({ error: "Código OTP está incorreto!" });
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -146,7 +144,7 @@ export const completeSignUpPatient = async (req, res) => {
     #swagger.parameters['body'] = {
             in: 'body',
             description: 'É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint',
-            schema: { $ref: '#/definitions/AddUserPaciente' }
+            schema: { $ref: '#/definitions/AddUserPatient' }
     }
   */
 
@@ -154,45 +152,38 @@ export const completeSignUpPatient = async (req, res) => {
     userId,
     name,
     birthdayDate,
+    residentialAddress,
     userSpecialties,
     userServicePreferences,
     userAcessibilityPreferences,
     profilePhoto,
   } = req.body;
 
-  if (!userId || !name || !birthdayDate || !userSpecialties || !userServicePreferences) {
-    return res.status(422).json({
-      msg: "Existem alguns parâmetros faltando para completar o cadastro do paciente",
-    });
-  }
-
   try {
-    const userExists = await User.findOne({ _id: userId });
-    if (!userExists) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
-    }
-    console.log(`Usuário encontrado com sucesso: ${userExists}`);
+    UserValidationService.validatePatientData(req.body);
+    UserValidationService.validateProfilePhoto(profilePhoto);
+    UserValidationService.validateUserExists(userId);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
-  }
-
-  if (typeof birthdayDate !== "number") {
-    return res.status(400).json({
-      error: "O campo 'birthdayDate' deve ser um número (timestamp em milissegundos).",
-    });
-  }
-
-  if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
-    return res.status(400).json({
-      error:
-        "Timestamp inválido. Envie um número positivo de milissegundos desde 1970-01-01 (UTC). Exemplo: 1672531200000.",
-    });
+    if (error instanceof ValidationError) {
+      return res.status(error.statusCode).json({
+        error: error.message,
+      });
+    }
   }
 
   const update = {
     name,
     birthdayDate,
+    address: [
+      {
+        cep: residentialAddress.cep,
+        address: residentialAddress.address,
+        neighborhood: residentialAddress.neighborhood,
+        city: residentialAddress.city,
+        state: residentialAddress.state,
+        active: true,
+      },
+    ],
     userSpecialties,
     userServicePreferences,
     userType: "patient",
@@ -203,27 +194,49 @@ export const completeSignUpPatient = async (req, res) => {
     update.userAcessibilityPreferences = userAcessibilityPreferences;
   }
 
-  /* if (profilePhoto !== undefined) {
-    update.profilePhoto = profilePhoto;
-  } */
+  if (profilePhoto && typeof profilePhoto === "string") {
+    const [header, data] = profilePhoto.split(";base64,");
+    const mimeType = header.split(":")[1];
+    const buffer = Buffer.from(data, "base64");
+
+    const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
+      metadata: { userId },
+      contentType: mimeType,
+    });
+
+    const fileId = await new Promise((resolve, reject) => {
+      uploadStream.end(buffer);
+      uploadStream.on("finish", () => {
+        console.log("Upload concluído com ID:", uploadStream.id);
+        resolve(uploadStream.id);
+      });
+      uploadStream.on("error", (err) => {
+        console.error("Erro durante upload:", err);
+        reject(err);
+      });
+    });
+
+    console.log(fileId);
+
+    update.profileImage = fileId;
+  }
+
+  console.log(update);
+
+  const result = await User.updateOne({ _id: userId }, { $set: update });
 
   try {
-    const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
 
     if (result.modifiedCount > 0) {
       console.log("Payload para JWT:", userId);
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-      res.cookie("jwt", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 3600000,
-      });
+      setAuthCookie(res, userId);
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
-      return res.status(500).json({ error: "Usuário já está cadastrado no banco de dados" });
+      return res
+        .status(500)
+        .json({ error: "Usuário já está cadastrado no banco de dados" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
@@ -251,113 +264,84 @@ export const completeSignUpProfessional = async (req, res) => {
     userId,
     name,
     birthdayDate,
-    cepResidencial,
-    nomeClinica,
+    clinic,
+    residentialAddress,
     CNPJCPFProfissional,
-    cepClinica,
-    enderecoClinica,
-    complementoClinica,
     professionalSpecialties,
-    otherProfessionalSpecialties,
+    otherProfessionalSpecialties = [],
     professionalServicePreferences,
-    profilePhoto,
+    profilePhoto = undefined,
   } = req.body;
 
-  if (
-    !userId ||
-    !name ||
-    !birthdayDate ||
-    !cepResidencial ||
-    !nomeClinica ||
-    !CNPJCPFProfissional ||
-    !cepClinica ||
-    !enderecoClinica ||
-    !professionalSpecialties ||
-    !professionalServicePreferences
-  ) {
-    return res.status(422).json({
-      msg: "Existem alguns parâmetros faltando para completar o cadastro do profissional",
-    });
-  }
-
-  if (profilePhoto && !profilePhoto.startsWith("data:image")) {
-    return res.status(400).json({ error: "String Base64 inválida." });
-  }
-
-  /* const [header, data] = profilePhoto.split(";base64,");
-  const mimeType = header.split(":")[1];
-
-  const buffer = Buffer.from(data, "base64");
-
-   const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
-    metadata: { userId },
-    contentType: mimeType,
-  });
-
-  uploadStream.end(buffer);
-
-  uploadStream.on("finish", async () => {
-    await User.findByIdAndUpdate(userId, {
-      profileImageId: uploadStream.id,
-    });
-
-    res.json({
-      success: true,
-      fileId: uploadStream.id,
-    });
-  }); */
-
   try {
-    const userExists = await User.findOne({ _id: userId });
-    console.log(`Usuário encontrado com sucesso: ${userExists}`);
-    if (!userExists) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
-    }
+    UserValidationService.validateProfessionalData(req.body);
+    UserValidationService.validateProfilePhoto(profilePhoto);
+    UserValidationService.validateUserExists(userId);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Erro ao encontrar usuário, o id certo está sendo enviado?" });
-  }
-
-  if (typeof birthdayDate !== "number") {
-    return res.status(400).json({
-      error: "O campo 'birthdayDate' deve ser um número (timestamp em milissegundos).",
-    });
-  }
-
-  if (isNaN(birthdayDate) || !isFinite(birthdayDate) || birthdayDate <= 0 || birthdayDate > Date.now()) {
-    return res.status(400).json({
-      error:
-        "Timestamp inválido. Envie um número positivo de milissegundos desde 1970-01-01 (UTC). Exemplo: 1672531200000.",
-    });
+    if (error instanceof ValidationError) {
+      return res.status(error.statusCode).json({
+        error: error.message,
+      });
+    }
   }
 
   const update = {
     name,
     birthdayDate,
-    cepResidencial,
-    nomeClinica,
     CNPJCPFProfissional,
-    cepClinica,
-    enderecoClinica,
+    address: [
+      {
+        cep: residentialAddress.cep,
+        address: residentialAddress.address,
+        neighborhood: residentialAddress.neighborhood,
+        city: residentialAddress.city,
+        state: residentialAddress.state,
+        active: true,
+      },
+    ],
+    clinic: {
+      name: clinic.name,
+      cep: clinic.cep,
+      address: clinic.address,
+      neighborhood: clinic.neighborhood,
+      number: clinic.number,
+      city: clinic.city,
+      state: clinic.state,
+      addition: clinic.addition,
+    },
     professionalSpecialties,
     professionalServicePreferences,
+    otherProfessionalSpecialties,
     userType: "professional",
     status: "completed",
   };
 
-  if (complementoClinica !== undefined) {
-    update.complementoClinica = complementoClinica;
-  }
-
-  if (otherProfessionalSpecialties !== undefined) {
-    update.otherProfessionalSpecialties = otherProfessionalSpecialties;
-  }
-
-  /* if (profilePhoto !== undefined) {
-    update.profilePhoto = profilePhoto;
-  } */
-
   try {
+    if (profilePhoto && typeof profilePhoto === "string") {
+      const [header, data] = profilePhoto.split(";base64,");
+      const mimeType = header.split(":")[1];
+      const buffer = Buffer.from(data, "base64");
+
+      const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
+        metadata: { userId },
+        contentType: mimeType,
+      });
+
+      const fileId = await new Promise((resolve, reject) => {
+        uploadStream.end(buffer);
+        uploadStream.on("finish", () => {
+          console.log("Upload concluído com ID:", uploadStream.id);
+          resolve(uploadStream.id);
+        });
+        uploadStream.on("error", (err) => {
+          console.error("Erro durante upload:", err);
+          reject(err);
+        });
+      });
+
+      update.profileImage = fileId;
+    }
+
     const result = await User.updateOne({ _id: userId }, { $set: update });
     console.log("Resultado da atualização:", result);
     if (result.modifiedCount > 0) {
@@ -367,17 +351,13 @@ export const completeSignUpProfessional = async (req, res) => {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-      res.cookie("jwt", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 3600000,
-      });
+      setAuthCookie(res, userId);
 
       return res.status(201).json({ msg: "Registro bem-sucedido!" });
     } else {
-      return res.status(403).json({ error: "Usuário já está cadastrado no banco de dados" });
+      return res
+        .status(403)
+        .json({ error: "Usuário já está cadastrado no banco de dados" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
@@ -395,26 +375,56 @@ export const userInfo = async (req, res) => {
   */
 
   try {
-    const token = req.cookies.jwt;
-
-    if (!token) {
-      return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
-    }
-
-    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-    console.log(decoded);
+    const decoded = UserValidationService.validateToken(req.cookies.jwt);
 
     const userExists = await User.findOne(
       { _id: decoded.userId },
       {
         hashedOTP: 0,
-        status: 0,
         __v: 0,
+      },
+    ).lean();
+
+    if (!userExists) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    if (userExists.profileImage) {
+      try {
+        const downloadStream = gridFSBucket.openDownloadStream(
+          userExists.profileImage,
+        );
+
+        const chunks = [];
+        await new Promise((resolve, reject) => {
+          downloadStream.on("data", (chunk) => chunks.push(chunk));
+          downloadStream.on("end", () => resolve());
+          downloadStream.on("error", reject);
+        });
+
+        const buffer = Buffer.concat(chunks);
+
+        const file = await mongoose.connection.db
+          .collection("fs.files")
+          .findOne({ _id: userExists.profileImage });
+
+        const base64 = buffer.toString("base64");
+        const dataUri = `data:${file.contentType};base64,${base64}`;
+
+        userExists.profilePhoto = dataUri;
+      } catch (error) {
+        console.error("Erro ao buscar imagem:", error);
+        userExists.profilePhoto = null;
       }
-    );
+    }
 
     return res.status(200).json(userExists);
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(error.statusCode).json({
+        error: error.message,
+      });
+    }
     console.error("Erro ao trazer informações do usuário:", error);
     return res.status(500).json({ error: "Bad request" });
   }

@@ -1,5 +1,64 @@
 import mongoose from "mongoose";
 
+const addressSchema = new mongoose.Schema({
+  cep: {
+    type: String,
+    required: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  neighborhood: {
+    type: String,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  state: {
+    type: String,
+    required: true,
+  },
+  active: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const clinicSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  cep: {
+    type: String,
+    required: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  neighborhood: {
+    type: String,
+    required: true,
+  },
+  number: {
+    type: String,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  state: {
+    type: String,
+    required: true,
+  },
+  addition: String,
+});
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -13,23 +72,24 @@ const userSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
+    enum: ["pending", "completed"],
   },
   name: String,
   birthdayDate: Date,
-  cepResidencial: String,
-  nomeClinica: String,
   CNPJCPFProfissional: String,
-  cepClinica: String,
-  enderecoClinica: String,
-  complementoClinica: String,
+  address: [addressSchema],
+  clinic: clinicSchema,
   professionalSpecialties: [String],
   otherProfessionalSpecialties: [String],
   professionalServicePreferences: [String],
-  userSpecialties: [String],
-  userServicePreferences: [String],
-  userAcessibilityPreferences: [String],
-  profilePhoto: mongoose.Schema.Types.ObjectId,
-  userType: String,
+  userType: {
+    type: String,
+    enum: ["professional", "patient"],
+  },
+  profileImage: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "fs.files",
+  },
 });
 
 const User = mongoose.model("User", userSchema);
