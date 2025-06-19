@@ -3,12 +3,14 @@ import { generateOTP } from "../generateOTP.mjs";
 
 describe("generateOTP", () => {
   it("deve retornar um número", () => {
-    const otp = generateOTP();
+    const OTP = generateOTP();
+
     expect(typeof otp).toBe("number");
   });
 
   it("deve retornar um número de quatro dígitos", () => {
-    const otp = generateOTP();
+    const OTP = generateOTP();
+
     expect(otp).toBeGreaterThanOrEqual(1000);
     expect(otp).toBeLessThanOrEqual(9999);
   });
@@ -20,19 +22,22 @@ describe("generateOTP", () => {
   });
 
   it("deve retornar um número dentro do intervalo esperado", () => {
-    const otp = generateOTP();
+    const OTP = generateOTP();
+
     expect(otp).toBeGreaterThanOrEqual(1000);
     expect(otp).toBeLessThanOrEqual(9999);
   });
 
   it("não deve retornar valores undefined ou null", () => {
-    const otp = generateOTP();
+    const OTP = generateOTP();
+
     expect(otp).not.toBeUndefined();
     expect(otp).not.toBeNull();
   });
 
   it("não deve retornar valores negativos", () => {
-    const otp = generateOTP();
+    const OTP = generateOTP();
+
     expect(otp).toBeGreaterThanOrEqual(0);
   });
 });
