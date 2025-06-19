@@ -11,7 +11,7 @@ describe("sendEmail", () => {
 
   it("should send an email with the correct parameters", async () => {
     const to = "gustavomottacardoso1@gmail.com";
-    const OTP = "123456";
+    const OTP = generateOTP();
 
     sgMail.send.mockResolvedValue({});
 
@@ -29,7 +29,7 @@ describe("sendEmail", () => {
 
   it("should not be able to send the email", async () => {
     const to = "gustavomottacardoso1@gmail.com";
-    const OTP = "123456";
+    const OTP = generateOTP();
 
     const errorMessage = "Erro ao enviar email";
 

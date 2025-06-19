@@ -21,6 +21,12 @@ const doc = {
       name: "User",
       description: "Endpoints relacionados ao usuário",
     },
+        { name: "Agendamentos", description: "Endpoints relacionados a agendamentos de consultas" },
+        {
+  name: "Interações",
+  description: "Endpoints relacionados às interações vinculadas aos agendamentos"
+},
+
     {
       name: "Search",
       description: "Endpoints relacionados a busca de dados",
