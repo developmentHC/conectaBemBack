@@ -72,7 +72,7 @@ describe("checkUserEmailSendOTP", () => {
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
       id: "newUserId",
-      email: { adress: "teste@exemplo.com.br", exists: false },
+      email: { address: "teste@exemplo.com.br", exists: false },
       role: undefined,
       message: "User created and OTP sent through email",
     });
@@ -95,7 +95,7 @@ describe("checkUserEmailSendOTP", () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       id: "existingUserId",
-      email: { adress: "teste@exemplo.com.br", exists: true },
+      email: { address: "teste@exemplo.com.br", exists: true },
       message: "User OTP updated and sent",
     });
   });

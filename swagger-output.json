@@ -273,12 +273,22 @@
         ],
         "summary": "Retorna todas as informações do usuário",
         "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Usuário encontrado, dados retornados"
           },
           "401": {
             "description": "Cookie não encontrado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "500": {
             "description": "Bad request"

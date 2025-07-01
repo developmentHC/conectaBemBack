@@ -46,7 +46,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
       return res.status(201).json({
         id: result._id,
         email: {
-          adress: result.email,
+          address: result.email,
           exists: false,
         },
         role: undefined,
@@ -58,7 +58,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
       return res.status(200).json({
         id: userExists._id,
         email: {
-          adress: email,
+          address: email,
           exists: true,
         },
         message: "User OTP updated and sent",
@@ -353,7 +353,7 @@ export const completeSignUpProfessional = async (req, res) => {
     if (result.modifiedCount > 0) {
       const updatedUser = await User.findOne({ _id: userId }, { hashedOTP: 0 });
 
-      if (updatedUser.length === 0) {
+      if (!updatedUser) {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
@@ -379,19 +379,11 @@ export const userInfo = async (req, res) => {
     #swagger.responses[401] = { description: 'Cookie não encontrado' } 
     #swagger.responses[500] = { description: 'Bad request' } 
   */
-
   try {
-    const token = req.cookies.jwt;
-
-    if (!token) {
-      return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
-    }
-
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    console.log(decoded);
+    const userId = req.userId;
 
     const userExists = await User.findOne(
-      { _id: decoded.userId },
+      { _id: userId },
       {
         hashedOTP: 0,
         status: 0,
