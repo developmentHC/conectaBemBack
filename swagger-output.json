@@ -97,9 +97,6 @@
           "401": {
             "description": "Códigos OTP não coincidem"
           },
-          "404": {
-            "description": "Não Encontrado"
-          },
           "422": {
             "description": "Parâmetros exigidos não estão sendo enviados no body"
           },
@@ -274,6 +271,11 @@
         "summary": "Retorna todas as informações do usuário",
         "description": "",
         "parameters": [
+          {
+            "name": "substring(7",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "authorization",
             "in": "header",
