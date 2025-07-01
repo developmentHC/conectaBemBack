@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
-import setAuthCookie from "../../services/authService.mjs";
 import { User } from "../../models/index.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
@@ -10,6 +9,7 @@ import {
   UserValidationService,
   ValidationError,
 } from "../../services/validationService.mjs";
+import jwt from "jsonwebtoken";
 
 const saltRounds = 10;
 
@@ -97,8 +97,16 @@ export const checkOTP = async (req, res) => {
     if (!userExists) {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
-
+    console.log(userExists);
     const resultComparation = await bcrypt.compare(OTP, userExists.hashedOTP);
+
+    const accessToken = jwt.sign(
+      { userId: userExists._id },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: "1h",
+      },
+    );
 
     if (resultComparation) {
       const response = {
@@ -116,8 +124,9 @@ export const checkOTP = async (req, res) => {
           { _id: userExists._id },
           { $unset: { hashedOTP: "" } },
         );
-        setAuthCookie(res, userExists._id);
-        return res.status(200).json({ msg: "Login bem-sucedido!" });
+        return res
+          .status(200)
+          .json({ msg: "Login bem-sucedido!", token: accessToken });
       } else if (userExists.status === "pending") {
         return res.status(201).json({ response });
       } else {
@@ -230,9 +239,18 @@ export const completeSignUpPatient = async (req, res) => {
 
     if (result.modifiedCount > 0) {
       console.log("Payload para JWT:", userId);
-      setAuthCookie(res, userId);
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!" });
+      const accessToken = jwt.sign(
+        { userId: userId },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: "1h",
+        },
+      );
+
+      return res
+        .status(201)
+        .json({ msg: "Registro bem-sucedido!", token: accessToken });
     } else {
       return res
         .status(500)
@@ -351,9 +369,17 @@ export const completeSignUpProfessional = async (req, res) => {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      setAuthCookie(res, userId);
+      const accessToken = jwt.sign(
+        { userId: userId },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: "1h",
+        },
+      );
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!" });
+      return res
+        .status(201)
+        .json({ msg: "Registro bem-sucedido", token: accessToken });
     } else {
       return res
         .status(403)
