@@ -4,7 +4,6 @@ import { User } from "../../models/index.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
-import config from "../../config/config.mjs";
 
 const saltRounds = 10;
 
@@ -25,8 +24,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
     return res.status(422).json({ message: "Um e-mail é exigido" });
   }
 
-  console.log("Email válido recebido:", email);
-
   try {
     const OTP = generateOTP();
     sendEmail(email, OTP);
@@ -34,7 +31,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedOTP = await bcrypt.hash(String(OTP), salt);
 
-    console.log(`OTP gerado: ${OTP}, hashed OTP: ${hashedOTP}`);
+    console.log(`OTP gerado: ${OTP}`);
 
     const userExists = await User.findOne({ email: email });
     console.log("Usuário existente:", userExists);
@@ -45,7 +42,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
         status: "pending",
       });
       console.log("Usuário criado:", result);
-      console.log(result);
 
       return res.status(201).json({
         id: result._id,
@@ -98,7 +94,11 @@ export const checkOTP = async (req, res) => {
     }
 
     const resultComparation = await bcrypt.compare(OTP, userExists.hashedOTP);
-    console.log(`Comparação entre os OTPs: ${resultComparation}`);
+
+    const accessToken = jwt.sign({ userId: userExists._id }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "1h",
+    });
+
     if (resultComparation) {
       const message = {
         id: userExists._id,
@@ -111,15 +111,8 @@ export const checkOTP = async (req, res) => {
         },
       };
       if (userExists.status === "completed") {
-        const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-        res.cookie("jwt", accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "Strict",
-          maxAge: 3600000,
-        });
-
-        return res.status(200).json({ msg: "Login bem-sucedido!" });
+        await User.updateOne({ _id: userExists._id }, { $unset: { hashedOTP: "" } });
+        return res.status(200).json({ msg: "Login bem-sucedido!", token: accessToken });
       } else if (userExists.status === "pending") {
         return res.status(200).json({ message });
       } else {
@@ -213,15 +206,12 @@ export const completeSignUpPatient = async (req, res) => {
 
     if (result.modifiedCount > 0) {
       console.log("Payload para JWT:", userId);
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-      res.cookie("jwt", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 3600000,
+
+      const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
       });
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!" });
+      return res.status(201).json({ msg: "Registro bem-sucedido!", token: accessToken });
     } else {
       return res.status(500).json({ error: "Usuário já está cadastrado no banco de dados" });
     }
@@ -367,15 +357,11 @@ export const completeSignUpProfessional = async (req, res) => {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-      res.cookie("jwt", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 3600000,
+      const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
       });
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!" });
+      return res.status(201).json({ msg: "Registro bem-sucedido", token: accessToken });
     } else {
       return res.status(403).json({ error: "Usuário já está cadastrado no banco de dados" });
     }
@@ -401,7 +387,7 @@ export const userInfo = async (req, res) => {
       return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
     }
 
-    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     console.log(decoded);
 
     const userExists = await User.findOne(

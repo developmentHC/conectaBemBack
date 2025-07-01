@@ -349,7 +349,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/path"
+          "example": "base64"
         }
       },
       "required": [
@@ -431,7 +431,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/path"
+          "example": "base64"
         }
       },
       "required": [
