@@ -97,9 +97,6 @@
           "401": {
             "description": "Códigos OTP não coincidem"
           },
-          "404": {
-            "description": "Não Encontrado"
-          },
           "422": {
             "description": "Parâmetros exigidos não estão sendo enviados no body"
           },
@@ -273,12 +270,27 @@
         ],
         "summary": "Retorna todas as informações do usuário",
         "description": "",
+        "parameters": [
+          {
+            "name": "substring(7",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Usuário encontrado, dados retornados"
           },
           "401": {
             "description": "Cookie não encontrado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "500": {
             "description": "Bad request"
@@ -349,7 +361,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/path"
+          "example": "base64"
         }
       },
       "required": [
@@ -431,7 +443,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/path"
+          "example": "base64"
         }
       },
       "required": [

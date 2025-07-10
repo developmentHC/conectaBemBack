@@ -7,10 +7,16 @@ import {
   completeSignUpProfessional,
   userInfo,
 } from "../controller/userController/index.mjs";
-import { searchProfessionalsHighlightsWeek, searchProfessionalBySpeciality, searchBar } from "../controller/searchController/index.mjs"
+import {
+  searchProfessionalsHighlightsWeek,
+  searchProfessionalBySpeciality,
+  searchBar,
+} from "../controller/searchController/index.mjs";
+import { authenticateToken } from "../middleware/authMiddleware.mjs";
 
 const router = express.Router();
 const corsOptions = {
+  origin: "http://localhost:3000",
   optionsSuccessStatus: 200,
   credentials: true,
 };
@@ -27,7 +33,7 @@ router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
 router.get("/search/searchBar/:terms", searchBar);
 
-router.get("/user", userInfo);
+router.get("/user", authenticateToken, userInfo);
 
 router.get("/teste", (req, res) => {
   /*

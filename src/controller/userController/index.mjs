@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import AuthService from "../../services/authService.mjs";
 import { User } from "../../models/index.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
-import config from "../../config/config.mjs";
 
 const saltRounds = 10;
 
@@ -25,16 +25,12 @@ export const checkUserEmailSendOTP = async (req, res) => {
     return res.status(422).json({ message: "Um e-mail é exigido" });
   }
 
-  console.log("Email válido recebido:", email);
-
   try {
     const OTP = generateOTP();
     sendEmail(email, OTP);
 
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedOTP = await bcrypt.hash(String(OTP), salt);
-
-    console.log(`OTP gerado: ${OTP}, hashed OTP: ${hashedOTP}`);
 
     const userExists = await User.findOne({ email: email });
     console.log("Usuário existente:", userExists);
@@ -45,13 +41,14 @@ export const checkUserEmailSendOTP = async (req, res) => {
         status: "pending",
       });
       console.log("Usuário criado:", result);
-      console.log(result);
+      console.log(`OTP gerado: ${OTP}`);
 
       return res.status(201).json({
         id: result._id,
         email: {
-          adress: result.email,
+          address: result.email,
           exists: false,
+          status: "pending",
         },
         role: undefined,
         message: "User created and OTP sent through email",
@@ -59,11 +56,13 @@ export const checkUserEmailSendOTP = async (req, res) => {
     } else {
       await User.updateOne({ email }, { hashedOTP });
       console.log("OTP do usuário atualizado");
+      console.log(`OTP gerado: ${OTP}`);
       return res.status(200).json({
         id: userExists._id,
         email: {
-          adress: email,
+          address: email,
           exists: true,
+          status: userExists.status,
         },
         message: "User OTP updated and sent",
       });
@@ -76,61 +75,27 @@ export const checkUserEmailSendOTP = async (req, res) => {
 
 export const checkOTP = async (req, res) => {
   /*
-  #swagger.tags = ['Authentication']
-  #swagger.summary = 'Checa se OTPs coincidem, e parte para o login/registro do usuário'
-  #swagger.description = 'Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro'
-  #swagger.responses[200] = { description: 'Còdigos OTP coincidem' }
-  #swagger.responses[401] = { description: 'Códigos OTP não coincidem' }
-  #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' }
-  #swagger.responses[500] = { description: 'Erro no servidor' }
-*/
-
+    #swagger.tags = ['Authentication']
+    #swagger.summary = 'Checa se OTPs coincidem, e parte para o login/registro do usuário'
+    #swagger.description = 'Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro'
+    #swagger.responses[200] = { description: 'Còdigos OTP coincidem' }
+    #swagger.responses[401] = { description: 'Códigos OTP não coincidem' }
+    #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' }
+    #swagger.responses[500] = { description: 'Erro no servidor' }
+  */
   const { email, OTP } = req.body;
-  if (!email || !OTP || testEmailSyntax(email) === false) {
-    return res.status(422).json({
-      msg: "Parâmetros exigidos não estão sendo enviados ou não estão sendo enviados de forma correta no body",
-    });
+
+  if (!email || !OTP) {
+    return res.status(422).json({ message: "Email e OTP são obrigatórios." });
   }
+
   try {
-    const userExists = await User.findOne({ email: email });
-    if (!userExists) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
-    }
+    const result = await AuthService.loginWithOtp(email, OTP);
 
-    const resultComparation = await bcrypt.compare(OTP, userExists.hashedOTP);
-    console.log(`Comparação entre os OTPs: ${resultComparation}`);
-    if (resultComparation) {
-      const message = {
-        id: userExists._id,
-        email: {
-          address: userExists.email,
-          exists: false,
-        },
-        otp: {
-          isConfirmed: true,
-        },
-      };
-      if (userExists.status === "completed") {
-        const accessToken = jwt.sign({ id: userExists._id }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-        res.cookie("jwt", accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "Strict",
-          maxAge: 3600000,
-        });
-
-        return res.status(200).json({ msg: "Login bem-sucedido!" });
-      } else if (userExists.status === "pending") {
-        return res.status(200).json({ message });
-      } else {
-        return res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
-      }
-    } else {
-      return res.status(401).json({ msg: "Código OTP está incorreto!" });
-    }
+    return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
+    console.error(`Falha no login com OTP para ${email}:`, error.message);
+    return res.status(error.statusCode || 500).json({ message: error.message || "Ocorreu um erro no servidor." });
   }
 };
 
@@ -213,15 +178,12 @@ export const completeSignUpPatient = async (req, res) => {
 
     if (result.modifiedCount > 0) {
       console.log("Payload para JWT:", userId);
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-      res.cookie("jwt", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 3600000,
+
+      const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
       });
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!" });
+      return res.status(201).json({ msg: "Registro bem-sucedido!", token: accessToken });
     } else {
       return res.status(500).json({ error: "Usuário já está cadastrado no banco de dados" });
     }
@@ -363,19 +325,15 @@ export const completeSignUpProfessional = async (req, res) => {
     if (result.modifiedCount > 0) {
       const updatedUser = await User.findOne({ _id: userId }, { hashedOTP: 0 });
 
-      if (updatedUser.length === 0) {
+      if (!updatedUser) {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      const accessToken = jwt.sign({ userId }, config.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-      res.cookie("jwt", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 3600000,
+      const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
       });
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!" });
+      return res.status(201).json({ msg: "Registro bem-sucedido", token: accessToken });
     } else {
       return res.status(403).json({ error: "Usuário já está cadastrado no banco de dados" });
     }
@@ -393,19 +351,11 @@ export const userInfo = async (req, res) => {
     #swagger.responses[401] = { description: 'Cookie não encontrado' } 
     #swagger.responses[500] = { description: 'Bad request' } 
   */
-
   try {
-    const token = req.cookies.jwt;
-
-    if (!token) {
-      return res.status(401).json({ message: "Não autorizado, cookie não encontrado" });
-    }
-
-    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-    console.log(decoded);
+    const userId = req.userId;
 
     const userExists = await User.findOne(
-      { _id: decoded.userId },
+      { _id: userId },
       {
         hashedOTP: 0,
         status: 0,
