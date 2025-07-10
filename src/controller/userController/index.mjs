@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import mongoose from "mongoose";
-import setAuthCookie from "../../services/authService.mjs";
+import jwt from "jsonwebtoken";
+import AuthService from "../../services/authService.mjs";
 import { User } from "../../models/index.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
@@ -50,8 +50,9 @@ export const checkUserEmailSendOTP = async (req, res) => {
       return res.status(201).json({
         id: result._id,
         email: {
-          adress: result.email,
+          address: result.email,
           exists: false,
+          status: "pending",
         },
         role: undefined,
         message: "User created and OTP sent through email",
@@ -59,11 +60,14 @@ export const checkUserEmailSendOTP = async (req, res) => {
     } else {
       console.log("Usuário existente:", userExists, OTP);
       await User.updateOne({ email }, { hashedOTP });
+      console.log("OTP do usuário atualizado");
+      console.log(`OTP gerado: ${OTP}`);
       return res.status(200).json({
         id: userExists._id,
         email: {
-          adress: email,
+          address: email,
           exists: true,
+          status: userExists.status,
         },
         message: "User OTP updated and sent",
       });
@@ -76,59 +80,29 @@ export const checkUserEmailSendOTP = async (req, res) => {
 
 export const checkOTP = async (req, res) => {
   /*
-  #swagger.tags = ['Authentication']
-  #swagger.summary = 'Checa se OTPs coincidem, e parte para o login/registro do usuário'
-  #swagger.description = 'Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro'
-  #swagger.responses[200] = { description: 'Còdigos OTP coincidem' }
-  #swagger.responses[401] = { description: 'Códigos OTP não coincidem' }
-  #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' }
-  #swagger.responses[500] = { description: 'Erro no servidor' }
-*/
-
+    #swagger.tags = ['Authentication']
+    #swagger.summary = 'Checa se OTPs coincidem, e parte para o login/registro do usuário'
+    #swagger.description = 'Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro'
+    #swagger.responses[200] = { description: 'Còdigos OTP coincidem' }
+    #swagger.responses[401] = { description: 'Códigos OTP não coincidem' }
+    #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' }
+    #swagger.responses[500] = { description: 'Erro no servidor' }
+  */
   const { email, OTP } = req.body;
+
   if (!email || !OTP || testEmailSyntax(email) === false) {
-    return res.status(422).json({
-      error:
-        "Parâmetros exigidos não estão sendo enviados ou não estão sendo enviados de forma correta no body",
-    });
+    return res.status(422).json({ message: "Email e OTP são obrigatórios." });
   }
+
   try {
-    const userExists = await User.findOne({ email: email });
-    if (!userExists) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
-    }
+    const result = await AuthService.loginWithOtp(email, OTP);
 
-    const resultComparation = await bcrypt.compare(OTP, userExists.hashedOTP);
-
-    if (resultComparation) {
-      const response = {
-        id: userExists._id,
-        email: {
-          address: userExists.email,
-          exists: false,
-        },
-        otp: {
-          isConfirmed: true,
-        },
-      };
-      if (userExists.status === "completed") {
-        await User.updateOne(
-          { _id: userExists._id },
-          { $unset: { hashedOTP: "" } },
-        );
-        setAuthCookie(res, userExists._id);
-        return res.status(200).json({ msg: "Login bem-sucedido!" });
-      } else if (userExists.status === "pending") {
-        return res.status(201).json({ response });
-      } else {
-        return res.status(401).json({ msg: "Parâmetro 'status' inválido!" });
-      }
-    } else {
-      return res.status(401).json({ error: "Código OTP está incorreto!" });
-    }
+    return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Server error" });
+    console.error(`Falha no login com OTP para ${email}:`, error.message);
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || "Ocorreu um erro no servidor." });
   }
 };
 
@@ -230,9 +204,18 @@ export const completeSignUpPatient = async (req, res) => {
 
     if (result.modifiedCount > 0) {
       console.log("Payload para JWT:", userId);
-      setAuthCookie(res, userId);
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!" });
+      const accessToken = jwt.sign(
+        { userId: userId },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: "1h",
+        },
+      );
+
+      return res
+        .status(201)
+        .json({ msg: "Registro bem-sucedido!", token: accessToken });
     } else {
       return res
         .status(500)
@@ -347,13 +330,21 @@ export const completeSignUpProfessional = async (req, res) => {
     if (result.modifiedCount > 0) {
       const updatedUser = await User.findOne({ _id: userId }, { hashedOTP: 0 });
 
-      if (updatedUser.length === 0) {
+      if (!updatedUser) {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      setAuthCookie(res, userId);
+      const accessToken = jwt.sign(
+        { userId: userId },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: "1h",
+        },
+      );
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!" });
+      return res
+        .status(201)
+        .json({ msg: "Registro bem-sucedido", token: accessToken });
     } else {
       return res
         .status(403)
@@ -373,12 +364,11 @@ export const userInfo = async (req, res) => {
     #swagger.responses[401] = { description: 'Cookie não encontrado' } 
     #swagger.responses[500] = { description: 'Bad request' } 
   */
-
   try {
-    const decoded = UserValidationService.validateToken(req.cookies.jwt);
+    const userId = req.userId;
 
     const userExists = await User.findOne(
-      { _id: decoded.userId },
+      { _id: userId },
       {
         hashedOTP: 0,
         __v: 0,

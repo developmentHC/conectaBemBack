@@ -12,6 +12,7 @@ import {
   searchProfessionalBySpeciality,
   searchBar,
 } from "../controller/searchController/index.mjs";
+import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import {
   changeActiveAddress,
   changeAddress,
@@ -27,10 +28,8 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Permite requisições sem origem (ex: Postman) ou que combinem com os padrões
     if (!origin) return callback(null, true);
 
-    // Verifica se a origem está na lista permitida ou corresponde aos padrões regex
     const isAllowed = allowedOrigins.some((allowedOrigin) => {
       if (typeof allowedOrigin === "string") {
         return origin === allowedOrigin;
@@ -72,7 +71,7 @@ router.put("/address", changeAddress);
 router.get("/address", getAddresses);
 router.put("/active-address", changeActiveAddress);
 
-router.get("/user", userInfo);
+router.get("/user", authenticateToken, userInfo);
 
 router.get("/teste", (req, res) => {
   /*
