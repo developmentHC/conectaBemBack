@@ -13,6 +13,10 @@
       "description": "Endpoints relacionados a autenticação do usuário"
     },
     {
+      "name": "Address",
+      "description": "Endpoints relacionados aos endereços do usuário"
+    },
+    {
       "name": "User",
       "description": "Endpoints relacionados ao usuário"
     },
@@ -94,8 +98,14 @@
           "200": {
             "description": "Còdigos OTP coincidem"
           },
+          "201": {
+            "description": "Criado"
+          },
           "401": {
             "description": "Códigos OTP não coincidem"
+          },
+          "404": {
+            "description": "Não Encontrado"
           },
           "422": {
             "description": "Parâmetros exigidos não estão sendo enviados no body"
@@ -119,7 +129,7 @@
             "in": "body",
             "description": "É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint",
             "schema": {
-              "$ref": "#/definitions/AddUserPaciente"
+              "$ref": "#/definitions/AddUserPatient"
             }
           }
         ],
@@ -129,9 +139,6 @@
           },
           "201": {
             "description": "Usuário encontrado, cadastro completado com sucesso"
-          },
-          "400": {
-            "description": "Solicitação Inválida"
           },
           "404": {
             "description": "Usuário não encontrado"
@@ -168,9 +175,6 @@
           },
           "201": {
             "description": "Usuário encontrado, cadastro completado com sucesso"
-          },
-          "400": {
-            "description": "Solicitação Inválida"
           },
           "403": {
             "description": "Acesso Negado"
@@ -263,6 +267,312 @@
         }
       }
     },
+    "/address": {
+      "put": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Atualizar endereço do usuário",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Dados do endereço atualizado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "addressId": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "507f1f77bcf86cd799439011"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "ID do endereço a ser atualizado"
+                    }
+                  }
+                },
+                "cep": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "12345678"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "CEP do endereço"
+                    }
+                  }
+                },
+                "name": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Casa"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Nome do local"
+                    }
+                  }
+                },
+                "endereco": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Rua Example, 123"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Logradouro"
+                    }
+                  }
+                },
+                "bairro": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Centro"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Bairro"
+                    }
+                  }
+                },
+                "estado": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "SP"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Estado"
+                    }
+                  }
+                },
+                "complemento": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Apto 123"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Complemento do endereço"
+                    }
+                  }
+                },
+                "active": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "example": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Indica se é o endereço ativo"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endereço atualizado com sucesso"
+          },
+          "304": {
+            "description": "Endereço está idêntico ao banco de dados"
+          },
+          "422": {
+            "description": "Parâmetros exigidos não estão sendo enviados no body"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Retorna todos os endereços do usuário",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Endereços encontrados",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "507f1f77bcf86cd799439011"
+                      },
+                      "cep": {
+                        "type": "string",
+                        "example": "12345678"
+                      },
+                      "address": {
+                        "type": "string",
+                        "example": "Rua Example, 123"
+                      },
+                      "neighborhood": {
+                        "type": "string",
+                        "example": "Centro"
+                      },
+                      "city": {
+                        "type": "string",
+                        "example": "São Paulo"
+                      },
+                      "state": {
+                        "type": "string",
+                        "example": "SP"
+                      },
+                      "active": {
+                        "type": "boolean",
+                        "example": true
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/active-address": {
+      "put": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Alterar endereço principal do usuário",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "ID do endereço que será definido como principal",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "addressId"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "addressId": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "507f1f77bcf86cd799439011"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endereço principal atualizado com sucesso"
+          },
+          "304": {
+            "description": "Não Modificado"
+          },
+          "404": {
+            "description": "Endereço não encontrado"
+          },
+          "422": {
+            "description": "ID do endereço não fornecido"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "tags": [
@@ -270,18 +580,6 @@
         ],
         "summary": "Retorna todas as informações do usuário",
         "description": "",
-        "parameters": [
-          {
-            "name": "substring(7",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Usuário encontrado, dados retornados"
@@ -289,8 +587,8 @@
           "401": {
             "description": "Cookie não encontrado"
           },
-          "403": {
-            "description": "Acesso Negado"
+          "404": {
+            "description": "Não Encontrado"
           },
           "500": {
             "description": "Bad request"
@@ -314,150 +612,585 @@
     }
   },
   "definitions": {
-    "AddUserPaciente": {
-      "type": "object",
-      "properties": {
-        "userId": {
-          "type": "string",
-          "example": "63a8cdac35345692997edf32"
-        },
-        "name": {
-          "type": "string",
-          "example": "Thiago Cabral"
-        },
-        "birthdayDate": {
-          "type": "number",
-          "example": 1745940325251
-        },
-        "userSpecialties": {
-          "type": "array",
-          "example": [
-            "Acumputura",
-            "Aromaterapia"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "userServicePreferences": {
-          "type": "array",
-          "example": [
-            "LGBTQIA+ Friendly",
-            "Pet Friendly"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "userAcessibilityPreferences": {
-          "type": "array",
-          "example": [
-            "Atendimento em Libras",
-            "Audiodescrição"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "profilePhoto": {
-          "type": "string",
-          "example": "base64"
-        }
-      },
-      "required": [
-        "userId",
-        "name",
-        "birthdayDate",
-        "userSpecialties",
-        "userServicePreferences"
-      ]
-    },
     "AddUserProfessional": {
       "type": "object",
       "properties": {
-        "userId": {
+        "type": {
           "type": "string",
-          "example": "63a8cdac35345692997edf32"
+          "example": "object"
         },
-        "name": {
-          "type": "string",
-          "example": "Ronaldinho Gaúcho"
-        },
-        "birthdayDate": {
-          "type": "number",
-          "example": 1745940325251
-        },
-        "cepResidencial": {
-          "type": "string",
-          "example": "12345-678"
-        },
-        "nomeClinica": {
-          "type": "string",
-          "example": "Clinica do seu José"
-        },
-        "CNPJCPFProfissional": {
-          "type": "string",
-          "example": "123.456.789-10"
-        },
-        "cepClinica": {
-          "type": "string",
-          "example": "12345-678"
-        },
-        "enderecoClinica": {
-          "type": "string",
-          "example": "Rua Perto da Qui"
-        },
-        "complementoClinica": {
-          "type": "string",
-          "example": "Casa"
-        },
-        "professionalSpecialties": {
+        "required": {
           "type": "array",
           "example": [
-            "Acumputura",
-            "Aromaterapia"
+            "name",
+            "birthdayDate",
+            "CNPJCPFProfissional",
+            "residentialAddress",
+            "clinic",
+            "professionalSpecialties",
+            "professionalServicePreferences"
           ],
           "items": {
             "type": "string"
           }
         },
-        "otherProfessionalSpecialties": {
-          "type": "array",
-          "example": [
-            "Yoga na água",
-            "Corrente russa"
-          ],
-          "items": {
-            "type": "string"
+        "properties": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "João Silva"
+                }
+              }
+            },
+            "birthdayDate": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "number"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 1632824400000
+                }
+              }
+            },
+            "address": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "object"
+                    },
+                    "properties": {
+                      "type": "object",
+                      "properties": {
+                        "cep": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "12345-678"
+                            }
+                          }
+                        },
+                        "address": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "Rua das Flores"
+                            }
+                          }
+                        },
+                        "neighborhood": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "Centro"
+                            }
+                          }
+                        },
+                        "city": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "São Paulo"
+                            }
+                          }
+                        },
+                        "state": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "SP"
+                            }
+                          }
+                        },
+                        "active": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "boolean"
+                            },
+                            "example": {
+                              "type": "boolean",
+                              "example": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "CNPJCPFProfissional": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "123.456.789-00"
+                }
+              }
+            },
+            "clinic": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Clínica Saúde Total"
+                        }
+                      }
+                    },
+                    "cep": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "12345-678"
+                        }
+                      }
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Avenida Paulista"
+                        }
+                      }
+                    },
+                    "neighborhood": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Bela Vista"
+                        }
+                      }
+                    },
+                    "number": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "1000"
+                        }
+                      }
+                    },
+                    "city": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "São Paulo"
+                        }
+                      }
+                    },
+                    "state": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "SP"
+                        }
+                      }
+                    },
+                    "addition": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Sala 123"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "professionalSpecialties": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": [
+                    "Cardiologia",
+                    "Clínica Geral"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "professionalServicePreferences": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": [
+                    "Consulta",
+                    "Exame"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "otherProfessionalSpecialties": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": [
+                    "Acupuntura"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
           }
-        },
-        "professionalServicePreferences": {
-          "type": "array",
-          "example": [
-            "LGBTQIA+ Friendly",
-            "Pet Friendly"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "profilePhoto": {
-          "type": "string",
-          "example": "base64"
         }
-      },
-      "required": [
-        "userId",
-        "name",
-        "birthdayDate",
-        "cepResidencial",
-        "nomeClinica",
-        "CNPJCPFProfissional",
-        "cepClinica",
-        "enderecoClinica",
-        "professionalSpecialties",
-        "professionalServicePreferences"
-      ]
+      }
+    },
+    "AddUserPatient": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "name",
+            "birthdayDate",
+            "address",
+            "userSpecialties",
+            "userServicePreferences"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "João Silva"
+                }
+              }
+            },
+            "birthdayDate": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "number"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 1632824400000
+                }
+              }
+            },
+            "address": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "object"
+                    },
+                    "properties": {
+                      "type": "object",
+                      "properties": {
+                        "cep": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "12345-678"
+                            }
+                          }
+                        },
+                        "address": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "Rua das Flores"
+                            }
+                          }
+                        },
+                        "neighborhood": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "Centro"
+                            }
+                          }
+                        },
+                        "city": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "São Paulo"
+                            }
+                          }
+                        },
+                        "state": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            },
+                            "example": {
+                              "type": "string",
+                              "example": "SP"
+                            }
+                          }
+                        },
+                        "active": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "boolean"
+                            },
+                            "example": {
+                              "type": "boolean",
+                              "example": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "userSpecialties": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": [
+                    "Cardiologia",
+                    "Clínica Geral"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "userServicePreferences": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": [
+                    "Consulta",
+                    "Exame"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

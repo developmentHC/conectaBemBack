@@ -5,7 +5,7 @@ let gridFSBucket;
 
 const initializeGridFS = async () => {
   const client = new MongoClient(
-    `mongodb+srv://${config.DB_USER}:${config.DB_PASSWORD}@cluster0.rczok.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+    `mongodb+srv://${config.DB_USER}:${config.DB_PASSWORD}@cluster0.rczok.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`,
   );
   await client.connect();
   const db = client.db();
