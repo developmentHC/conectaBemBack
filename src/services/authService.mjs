@@ -10,10 +10,6 @@ class AuthService {
       throw createApiError("Usuário não encontrado.", 404);
     }
 
-    if (user.status !== "completed") {
-      throw createApiError("Esta conta não está ativa ou não completou o registro.", 401);
-    }
-
     const isOtpValid = await bcrypt.compare(otp, user.hashedOTP);
     if (!isOtpValid) {
       throw createApiError("Código OTP está incorreto!", 401);
@@ -26,7 +22,7 @@ class AuthService {
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       { $unset: { hashedOTP: "" } },
-      { new: true, select: "-hashedOTP -status -__v" }
+      { new: true, select: "-hashedOTP -__v" }
     );
 
     return {

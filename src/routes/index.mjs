@@ -16,6 +16,7 @@ import { authenticateToken } from "../middleware/authMiddleware.mjs";
 
 const router = express.Router();
 const corsOptions = {
+  origin: "http://localhost:3000",
   optionsSuccessStatus: 200,
   credentials: true,
 };

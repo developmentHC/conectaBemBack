@@ -48,6 +48,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
         email: {
           address: result.email,
           exists: false,
+          status: "pending",
         },
         role: undefined,
         message: "User created and OTP sent through email",
@@ -55,11 +56,13 @@ export const checkUserEmailSendOTP = async (req, res) => {
     } else {
       await User.updateOne({ email }, { hashedOTP });
       console.log("OTP do usuário atualizado");
+      console.log(`OTP gerado: ${OTP}`);
       return res.status(200).json({
         id: userExists._id,
         email: {
           address: email,
           exists: true,
+          status: userExists.status,
         },
         message: "User OTP updated and sent",
       });
