@@ -30,7 +30,7 @@ class AuthService {
     );
 
     return {
-      message: "Login bem-sucedido!",
+      message: "Autenticação bem sucedida!",
       token: accessToken,
       user: updatedUser,
     };

@@ -161,7 +161,7 @@ export const completeSignUpPatient = async (req, res) => {
     ],
     userSpecialties,
     userServicePreferences,
-    userType: "patient",
+    userType: ["patient"],
     status: "completed",
   };
 
@@ -296,7 +296,7 @@ export const completeSignUpProfessional = async (req, res) => {
     professionalSpecialties,
     professionalServicePreferences,
     otherProfessionalSpecialties,
-    userType: "professional",
+    userType: ["professional"],
     status: "completed",
   };
 

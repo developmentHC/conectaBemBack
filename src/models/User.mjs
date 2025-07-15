@@ -83,7 +83,7 @@ const userSchema = new mongoose.Schema({
   otherProfessionalSpecialties: [String],
   professionalServicePreferences: [String],
   userType: {
-    type: String,
+    type: [String],
     enum: ["professional", "patient"],
   },
   profileImage: {
