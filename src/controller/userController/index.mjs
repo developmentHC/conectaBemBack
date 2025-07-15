@@ -10,6 +10,7 @@ import {
   UserValidationService,
   ValidationError,
 } from "../../services/validationService.mjs";
+import mongoose from "mongoose";
 
 const saltRounds = 10;
 
