@@ -17,6 +17,14 @@
       "description": "Endpoints relacionados ao usuário"
     },
     {
+      "name": "Agendamentos",
+      "description": "Endpoints relacionados a agendamentos de consultas"
+    },
+    {
+      "name": "Interações",
+      "description": "Endpoints relacionados às interações vinculadas aos agendamentos"
+    },
+    {
       "name": "Search",
       "description": "Endpoints relacionados a busca de dados"
     },
@@ -190,6 +198,227 @@
         }
       }
     },
+    "/user": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Retorna todas as informações do usuário",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Usuário encontrado, dados retornados"
+          },
+          "401": {
+            "description": "Cookie não encontrado"
+          },
+          "500": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/appointments": {
+      "post": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Cria um novo agendamento",
+        "description": "Cria um agendamento entre o profissional autenticado e um paciente para uma data e hora específica.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "patient": {
+                  "type": "string",
+                  "example": "6657df0f2980adf19a8d9bd0"
+                },
+                "dateTime": {
+                  "type": "string",
+                  "example": "2025-06-20T14:00:00.000Z"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Agendamento criado com sucesso"
+          },
+          "400": {
+            "description": "Patient e dateTime são obrigatórios"
+          },
+          "401": {
+            "description": "Não autenticado"
+          },
+          "409": {
+            "description": "Este horário já está agendado"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/appointments/me": {
+      "get": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Listar agendamentos do usuário autenticado",
+        "description": "Retorna todos os agendamentos onde o usuário autenticado é paciente ou profissional.",
+        "responses": {
+          "200": {
+            "description": "Lista de agendamentos retornada com sucesso"
+          },
+          "401": {
+            "description": "Usuário não autenticado"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
+    "/appointments/{id}": {
+      "get": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Buscar detalhes de um agendamento",
+        "description": "Retorna informações detalhadas de um agendamento específico, incluindo paciente, profissional, data e status.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do agendamento"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agendamento retornado com sucesso."
+          },
+          "404": {
+            "description": "Agendamento não encontrado."
+          },
+          "500": {
+            "description": "Erro interno no servidor."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Cancelar um agendamento",
+        "description": "Atualiza o status de um agendamento para cancelado, desde que o profissional autenticado seja o responsável.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do agendamento"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agendamento cancelado com sucesso."
+          },
+          "403": {
+            "description": "Acesso negado."
+          },
+          "404": {
+            "description": "Agendamento não encontrado."
+          },
+          "500": {
+            "description": "Erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/interactions/{appointmentId}": {
+      "get": {
+        "tags": [
+          "Interações"
+        ],
+        "summary": "Lista interações de um agendamento",
+        "description": "Retorna todas as interações vinculadas a um agendamento específico.",
+        "parameters": [
+          {
+            "name": "appointmentId",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "ID do agendamento"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de interações retornada com sucesso."
+          },
+          "400": {
+            "description": "appointmentId ausente."
+          },
+          "500": {
+            "description": "Erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/interactions": {
+      "post": {
+        "tags": [
+          "Interações"
+        ],
+        "summary": "Cria uma nova interação",
+        "description": "Registra uma nova observação associada a um agendamento.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "appointment": {
+                  "type": "string",
+                  "example": "6852f8b1d59186c2f377c0dc"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "observação"
+                },
+                "content": {
+                  "type": "string",
+                  "example": "Paciente relatou dores lombares após a sessão."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Interação criada com sucesso."
+          },
+          "400": {
+            "description": "Parâmetros obrigatórios ausentes."
+          },
+          "401": {
+            "description": "Usuário não autenticado."
+          },
+          "500": {
+            "description": "Erro interno no servidor."
+          }
+        }
+      }
+    },
     "/search/highlightsWeek": {
       "get": {
         "tags": [
@@ -266,26 +495,6 @@
         }
       }
     },
-    "/user": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Retorna todas as informações do usuário",
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "Usuário encontrado, dados retornados"
-          },
-          "401": {
-            "description": "Cookie não encontrado"
-          },
-          "500": {
-            "description": "Bad request"
-          }
-        }
-      }
-    },
     "/teste": {
       "get": {
         "tags": [
@@ -349,7 +558,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/path"
+          "example": "base64"
         }
       },
       "required": [
@@ -431,7 +640,7 @@
         },
         "profilePhoto": {
           "type": "string",
-          "example": "https://www.url/path"
+          "example": "base64"
         }
       },
       "required": [
