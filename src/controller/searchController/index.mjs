@@ -17,7 +17,9 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
 
     const limit = 10;
 
-    const totalProfessionals = await User.countDocuments({ userType: "professional" });
+    const totalProfessionals = await User.countDocuments({
+      userType: "professional",
+    });
 
     const pageCount = Math.ceil(totalProfessionals / limit);
 
@@ -25,10 +27,19 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
       page = pageCount;
     }
 
-    const professionals = await User.find({ userType: "professional" }, {
-      hashedOTP: 0, email: 0, status: 0, userSpecialties: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
-      userType: 0
-    })
+    const professionals = await User.find(
+      { userType: "professional" },
+      {
+        hashedOTP: 0,
+        email: 0,
+        status: 0,
+        userSpecialties: 0,
+        userServicePreferences: 0,
+        userAcessibilityPreferences: 0,
+        __v: 0,
+        userType: 0,
+      },
+    )
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -68,9 +79,9 @@ export const searchProfessionalBySpeciality = async (req, res) => {
 
     let limit = 10;
 
-    const totalProfessionals = await User.countDocuments(
-      { professionalSpecialties: { $in: [speciality] } }
-    );
+    const totalProfessionals = await User.countDocuments({
+      professionalSpecialties: { $in: [speciality] },
+    });
 
     const pageCount = Math.ceil(totalProfessionals / limit);
 
@@ -78,10 +89,19 @@ export const searchProfessionalBySpeciality = async (req, res) => {
       page = pageCount;
     }
 
-    const professionals = await User.find({ professionalSpecialties: { $in: [speciality] } }, {
-      hashedOTP: 0, email: 0, status: 0, userSpecialties: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
-      userType: 0
-    })
+    const professionals = await User.find(
+      { professionalSpecialties: { $in: [speciality] } },
+      {
+        hashedOTP: 0,
+        email: 0,
+        status: 0,
+        userSpecialties: 0,
+        userServicePreferences: 0,
+        userAcessibilityPreferences: 0,
+        __v: 0,
+        userType: 0,
+      },
+    )
       .skip((page - 1) * limit)
       .limit(limit);
     console.log(professionals);
@@ -113,7 +133,9 @@ export const searchBar = async (req, res) => {
     let page = parseInt(req.params.page) || 1;
 
     if (!terms) {
-      return res.status(400).json({ error: "Parâmetros são obrigatórios para realizar a busca" })
+      return res
+        .status(400)
+        .json({ error: "Parâmetros são obrigatórios para realizar a busca" });
     }
 
     if (isNaN(page)) {
@@ -133,15 +155,24 @@ export const searchBar = async (req, res) => {
       page = pageCount;
     }
 
-    const professionals = await User.find({
-      $or: [
-        { name: { $regex: terms, $options: "i" } },
-        { professionalSpecialties: { $regex: terms, $options: "i" } },
-      ],
-    }, {
-      hashedOTP: 0, email: 0, status: 0, userSpecialties: 0, userServicePreferences: 0, userAcessibilityPreferences: 0, __v: 0,
-      userType: 0
-    })
+    const professionals = await User.find(
+      {
+        $or: [
+          { name: { $regex: terms, $options: "i" } },
+          { professionalSpecialties: { $regex: terms, $options: "i" } },
+        ],
+      },
+      {
+        hashedOTP: 0,
+        email: 0,
+        status: 0,
+        userSpecialties: 0,
+        userServicePreferences: 0,
+        userAcessibilityPreferences: 0,
+        __v: 0,
+        userType: 0,
+      },
+    )
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -151,11 +182,10 @@ export const searchBar = async (req, res) => {
       professionals: professionals,
       page: page,
       pageCount: pageCount,
-    })
-
+    });
   } catch (error) {
     return res.status(500).json({
       error: error.message,
     });
   }
-}
+};

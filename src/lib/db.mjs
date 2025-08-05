@@ -4,9 +4,8 @@ import config from "../config/config.mjs";
 export const connectDB = async () => {
   try {
     await mongoose.connect(
-      `mongodb+srv://${config.DB_USER}:${config.DB_PASSWORD}@cluster0.rczok.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+      `mongodb+srv://${config.DB_USER}:${config.DB_PASSWORD}@cluster0.rczok.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`,
     );
-    console.log("Conectado ao MongoDB!");
   } catch (error) {
     console.error("Erro ao conectar ao MongoDB:", error.message);
     process.exit(1);

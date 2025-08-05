@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import authMiddleware from "../utils/authMiddleware.mjs";
 import {
   checkUserEmailSendOTP,
   checkOTP,
@@ -9,26 +8,55 @@ import {
   userInfo,
 } from "../controller/userController/index.mjs";
 import { 
-  createAppointment, 
+  createAppointment,
+  actOnAppointment,
+  getAppointmentById, 
   getMyAppointments,
-  getAppointmentById,
-  cancelAppointment
 } from "../controller/appointmentController/index.mjs";
-import {
-  createInteraction,
-  getInteractionsByAppointment,
-} from "../controller/interactionController/index.mjs";
 import {
   searchProfessionalsHighlightsWeek,
   searchProfessionalBySpeciality,
   searchBar,
 } from "../controller/searchController/index.mjs";
+import { authenticateToken } from "../middleware/authMiddleware.mjs";
+import {
+  changeActiveAddress,
+  changeAddress,
+  getAddresses,
+} from "../controller/addressController/index.mjs";
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://conecta-bem-front.vercel.app",
+  /https:\/\/conecta-bem-front-.*-conectabems-projects\.vercel\.app/,
+  /https:\/\/conecta-bem-front-git-[a-zA-Z0-9-]+-conectabems-projects\.vercel\.app/,
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some((allowedOrigin) => {
+      if (typeof allowedOrigin === "string") {
+        return origin === allowedOrigin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error("Acesso bloqueado pelo CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
 
 const router = express.Router();
-const corsOptions = {
-  optionsSuccessStatus: 200,
-  credentials: true,
-};
 
 router.use(cors(corsOptions));
 router.use(express.json());
@@ -38,20 +66,25 @@ router.post("/auth/checkOTP", checkOTP);
 router.post("/auth/createPatient", completeSignUpPatient);
 router.post("/auth/createProfessional", completeSignUpProfessional);
 
-router.get("/user", userInfo);
+router.get("/user", authenticateToken, userInfo);
 
-router.post("/appointments", authMiddleware, createAppointment);
-router.get("/appointments/me", authMiddleware, getMyAppointments);
-router.get("/appointments/:id", authMiddleware, getAppointmentById);
-router.delete("/appointments/:id", authMiddleware, cancelAppointment);
-
-
-router.get("/interactions/:appointmentId", authMiddleware, getInteractionsByAppointment);
-router.post("/interactions", authMiddleware, createInteraction);
+router.post("/appointments", authenticateToken, createAppointment);
+router.post("/appointments/:id/actions", authenticateToken, actOnAppointment);
+router.get("/appointments/:id", authenticateToken, getAppointmentById);
+router.get("/appointments/me", authenticateToken, getMyAppointments);
 
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
-router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
+router.get(
+  "/search/professionalBySpeciality/:speciality",
+  searchProfessionalBySpeciality,
+);
 router.get("/search/searchBar/:terms", searchBar);
+
+router.put("/address", changeAddress);
+router.get("/address", getAddresses);
+router.put("/active-address", changeActiveAddress);
+
+router.get("/user", authenticateToken, userInfo);
 
 router.get("/teste", (req, res) => {
   /*
