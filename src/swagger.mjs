@@ -55,22 +55,32 @@ const doc = {
   host: isProduction ? vercelUrl : "localhost:3000",
   basePath: "/",
   schemes: isProduction ? ["https"] : ["http"],
+  securityDefinitions: {
+  bearerAuth: {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+    },
+  },
   tags: [
     {
       name: "Authentication",
       description: "Endpoints relacionados a autenticação do usuário",
     },
     {
-      name: "Address",
-      description: "Endpoints relacionados aos endereços do usuário",
-    },
-    {
       name: "User",
       description: "Endpoints relacionados ao usuário",
     },
     {
+      name: "Address",
+      description: "Endpoints relacionados aos endereços do usuário",
+    },
+    {
       name: "Search",
       description: "Endpoints relacionados a busca de dados",
+    },
+      { name: "Agendamentos", 
+        description: "Endpoints relacionados a agendamentos de consultas" 
     },
     {
       name: "Test",
@@ -81,6 +91,7 @@ const doc = {
     AddUserProfessional: {
       type: "object",
       required: [
+        "userId",
         "name",
         "birthdayDate",
         "CNPJCPFProfissional",
@@ -88,6 +99,7 @@ const doc = {
         "clinic",
         "professionalSpecialties",
         "professionalServicePreferences",
+        "otherProfessionalSpecialties"
       ],
       properties: {
         ...sharedProperties,
@@ -158,11 +170,13 @@ const doc = {
     AddUserPatient: {
       type: "object",
       required: [
+        "userId",
         "name",
         "birthdayDate",
         "address",
         "userSpecialties",
         "userServicePreferences",
+        "userAcessibilityPreferences",
       ],
       properties: {
         ...sharedProperties,
@@ -179,8 +193,42 @@ const doc = {
             type: "string",
           },
           example: ["Consulta", "Exame"],
+        userAcessibilityPreferences: {
+          type: "array",
+          items: {
+            type: "string",
+          },
+          example: ["Cadeira de rodas", "Deficiência visual"],
+          },
+
         },
       },
+    },
+    Appointment: {
+      type: "object",
+      properties: {
+        _id: {
+          type: "string",
+          example: "64fae32bd00141c1a2eaa321",
+        },
+        patient: {
+          type: "string",
+          example: "64fae24ad00141c1a2eaa320",
+        },
+        professional: {
+          type: "string",
+          example: "64fae109d00141c1a2eaa31f",
+        },
+        dateTime: {
+          type: "string",
+          format: "date-time",
+          example: "2025-08-01T14:00:00.000Z",
+        },
+        status: {
+          type: "string",
+          example: "confirmed",
+      },
+     },
     },
   },
 };
