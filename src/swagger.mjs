@@ -55,32 +55,50 @@ const doc = {
   host: isProduction ? vercelUrl : "localhost:3000",
   basePath: "/",
   schemes: isProduction ? ["https"] : ["http"],
+  securityDefinitions: {
+  bearerAuth: {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+    },
+  },
   tags: [
     {
       name: "Authentication",
       description: "Endpoints relacionados a autenticação do usuário",
     },
     {
-      name: "Address",
-      description: "Endpoints relacionados aos endereços do usuário",
-    },
-    {
       name: "User",
       description: "Endpoints relacionados ao usuário",
+    },
+    {
+      name: "Address",
+      description: "Endpoints relacionados aos endereços do usuário",
     },
     {
       name: "Search",
       description: "Endpoints relacionados a busca de dados",
     },
+      { name: "Agendamentos", 
+        description: "Endpoints relacionados a agendamentos de consultas" 
+    },
+    {
+      name: "Messages",
+      description: "Endpoints relacionados a mensagens entre usuários",
+    },
     {
       name: "Test",
       description: "Endpoints de teste",
+    },
+    { name: "Webhooks", 
+      description: "Eventos enviados pelo servidor (documentação)" 
     },
   ],
   definitions: {
     AddUserProfessional: {
       type: "object",
       required: [
+        "userId",
         "name",
         "birthdayDate",
         "CNPJCPFProfissional",
@@ -88,6 +106,7 @@ const doc = {
         "clinic",
         "professionalSpecialties",
         "professionalServicePreferences",
+        "otherProfessionalSpecialties"
       ],
       properties: {
         ...sharedProperties,
@@ -158,11 +177,13 @@ const doc = {
     AddUserPatient: {
       type: "object",
       required: [
+        "userId",
         "name",
         "birthdayDate",
         "address",
         "userSpecialties",
         "userServicePreferences",
+        "userAcessibilityPreferences",
       ],
       properties: {
         ...sharedProperties,
@@ -179,8 +200,61 @@ const doc = {
             type: "string",
           },
           example: ["Consulta", "Exame"],
+        userAcessibilityPreferences: {
+          type: "array",
+          items: {
+            type: "string",
+          },
+          example: ["Cadeira de rodas", "Deficiência visual"],
+          },
+
         },
       },
+    },
+    Appointment: {
+      type: "object",
+      properties: {
+        _id: {
+          type: "string",
+          example: "64fae32bd00141c1a2eaa321",
+        },
+        patient: {
+          type: "string",
+          example: "64fae24ad00141c1a2eaa320",
+        },
+        professional: {
+          type: "string",
+          example: "64fae109d00141c1a2eaa31f",
+        },
+        dateTime: {
+          type: "string",
+          format: "date-time",
+          example: "2025-08-01T14:00:00.000Z",
+        },
+        status: {
+          type: "string",
+          example: "confirmed",
+      },
+     },
+    },
+    WebhookMessageCreated: {
+      type: "object",
+      properties: {
+        eventId: { type: "string", example: "e5ae2396-ff2c-4a6b-8906-73a4459d42cc" },
+        type: { type: "string", example: "message.created" },
+        occurredAt: { type: "string", format: "date-time", example: "2025-08-05T22:48:13.781Z" },
+        data: {
+          type: "object",
+          properties: {
+            messageId: { type: "string", example: "68928a2d6acdb8a8dd58cc63" },
+            conversation: { type: "string", example: "conv_teste_123" },
+            sender: { type: "string", example: "68928a2d6acdb8a8dd58cc62" },
+            senderName: { type: "string", example: "Testador" },
+            content: { type: "string", example: "Mensagem teste webhook" },
+            createdAt: { type: "string", format: "date-time", example: "2025-08-05T22:48:13.592Z" }
+          }
+        }
+      }
     },
   },
 };
