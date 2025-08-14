@@ -13,25 +13,44 @@
       "description": "Endpoints relacionados a autenticação do usuário"
     },
     {
-      "name": "Address",
-      "description": "Endpoints relacionados aos endereços do usuário"
-    },
-    {
       "name": "User",
       "description": "Endpoints relacionados ao usuário"
+    },
+    {
+      "name": "Address",
+      "description": "Endpoints relacionados aos endereços do usuário"
     },
     {
       "name": "Search",
       "description": "Endpoints relacionados a busca de dados"
     },
     {
+      "name": "Agendamentos",
+      "description": "Endpoints relacionados a agendamentos de consultas"
+    },
+    {
+      "name": "Messages",
+      "description": "Endpoints relacionados a mensagens entre usuários"
+    },
+    {
       "name": "Test",
       "description": "Endpoints de teste"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Eventos enviados pelo servidor (documentação)"
     }
   ],
   "schemes": [
     "http"
   ],
+  "securityDefinitions": {
+    "bearerAuth": {
+      "type": "http",
+      "scheme": "bearer",
+      "bearerFormat": "JWT"
+    }
+  },
   "paths": {
     "/auth/sendOTP": {
       "post": {
@@ -98,14 +117,8 @@
           "200": {
             "description": "Còdigos OTP coincidem"
           },
-          "201": {
-            "description": "Criado"
-          },
           "401": {
             "description": "Códigos OTP não coincidem"
-          },
-          "404": {
-            "description": "Não Encontrado"
           },
           "422": {
             "description": "Parâmetros exigidos não estão sendo enviados no body"
@@ -176,9 +189,6 @@
           "201": {
             "description": "Usuário encontrado, cadastro completado com sucesso"
           },
-          "403": {
-            "description": "Acesso Negado"
-          },
           "404": {
             "description": "Usuário não encontrado"
           },
@@ -191,78 +201,35 @@
         }
       }
     },
-    "/search/highlightsWeek": {
+    "/user": {
       "get": {
         "tags": [
-          "Search"
+          "User"
         ],
-        "summary": "Pesquisa os profissionais destaques da semana",
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
-          },
-          "400": {
-            "description": "Solicitação Inválida"
-          },
-          "500": {
-            "description": "Erro no servidor"
-          }
-        }
-      }
-    },
-    "/search/professionalBySpeciality/{speciality}": {
-      "get": {
-        "tags": [
-          "Search"
-        ],
-        "summary": "Pesquisa um range de 10 profissionais de uma especialidade específica",
+        "summary": "Retorna todas as informações do usuário",
         "description": "",
         "parameters": [
           {
-            "name": "speciality",
-            "in": "path",
-            "required": true,
+            "name": "authorization",
+            "in": "header",
             "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "Profissional encontrado, retorna um range de 10 profissionais"
+            "description": "Usuário encontrado, dados retornados"
           },
-          "400": {
-            "description": "Solicitação Inválida"
+          "401": {
+            "description": "Cookie não encontrado"
           },
-          "500": {
-            "description": "Erro no servidor"
-          }
-        }
-      }
-    },
-    "/search/searchBar/{terms}": {
-      "get": {
-        "tags": [
-          "Search"
-        ],
-        "summary": "Barra de pesquisa",
-        "description": "",
-        "parameters": [
-          {
-            "name": "terms",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+          "403": {
+            "description": "Acesso Negado"
           },
-          "400": {
-            "description": "Solicitação Inválida"
+          "404": {
+            "description": "Não Encontrado"
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Bad request"
           }
         }
       }
@@ -573,27 +540,770 @@
         }
       }
     },
-    "/user": {
+    "/search/highlightsWeek": {
       "get": {
         "tags": [
-          "User"
+          "Search"
         ],
-        "summary": "Retorna todas as informações do usuário",
+        "summary": "Pesquisa os profissionais destaques da semana",
         "description": "",
         "responses": {
           "200": {
-            "description": "Usuário encontrado, dados retornados"
+            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/search/professionalBySpeciality/{speciality}": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Pesquisa um range de 10 profissionais de uma especialidade específica",
+        "description": "",
+        "parameters": [
+          {
+            "name": "speciality",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissional encontrado, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/search/searchBar/{terms}": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Barra de pesquisa",
+        "description": "",
+        "parameters": [
+          {
+            "name": "terms",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/appointments": {
+      "post": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Criar solicitação de agendamento (paciente)",
+        "description": "Paciente cria uma solicitação para um profissional em data/hora escolhidas.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente — formato: Bearer <token>"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "professionalId",
+                    "dateTime",
+                    "address"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "professionalId": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "6876317147871e2d7f74dd90"
+                        }
+                      }
+                    },
+                    "notes": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Trazer exames anteriores"
+                        }
+                      }
+                    },
+                    "dateTime": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "date-time"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "2025-09-10T10:00:00Z"
+                        }
+                      }
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "object"
+                        },
+                        "required": {
+                          "type": "array",
+                          "example": [
+                            "clinicId"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "clinicId": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "example": "string"
+                                },
+                                "example": {
+                                  "type": "string",
+                                  "example": "688d1507f086e02085acf44c"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Criado"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
           },
           "401": {
-            "description": "Cookie não encontrado"
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "409": {
+            "description": "Conflito"
+          },
+          "422": {
+            "description": ""
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/appointments/{id}/actions": {
+      "post": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Executa uma ação no agendamento",
+        "description": "Permite confirmar, cancelar, remarcar ou completar um agendamento.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do agendamento"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "action"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "action": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "enum": {
+                          "type": "array",
+                          "example": [
+                            "confirm",
+                            "cancel",
+                            "reschedule",
+                            "complete"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "object"
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "example": "string"
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "example": "Motivo do cancelamento (opcional)"
+                                }
+                              }
+                            },
+                            "dateTime": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "example": "string"
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "example": "date-time"
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "example": "Nova data/hora (ISO 8601) para remarcar"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ação executada com sucesso"
+          },
+          "400": {
+            "description": "Ação inválida ou payload ausente"
+          },
+          "401": {
+            "description": "Não autenticado"
+          },
+          "403": {
+            "description": "Sem permissão para executar a ação"
+          },
+          "404": {
+            "description": "Agendamento não encontrado"
+          },
+          "409": {
+            "description": "Conflito de agenda"
+          },
+          "422": {
+            "description": "Transição de status inválida"
+          },
+          "500": {
+            "description": "Erro interno"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/appointments/{id}": {
+      "get": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Buscar detalhes de um agendamento",
+        "description": "Retorna informações detalhadas de um agendamento específico. O agendamento não pode estar cancelado.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do agendamento"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "404": {
             "description": "Não Encontrado"
           },
           "500": {
-            "description": "Bad request"
+            "description": "Erro Interno do Servidor"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/appointments/me": {
+      "get": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Meus agendamentos (Paciente ou Profissional)",
+        "description": "Lista agendamentos do usuário autenticado (paciente ou profissional).",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/messages": {
+      "post": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Enviar mensagem em uma conversa",
+        "description": "Cria uma mensagem; se não for informado um ID de conversa, o backend cria automaticamente um novo. Atualiza o lastMessage e incrementa unreadCount dos participantes.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT — formato: Bearer <token>"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "content"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "conversation": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "conv123"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Identificador único da conversa. Opcional — se não enviado, será criado automaticamente."
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Olá, tudo bem?"
+                        }
+                      }
+                    },
+                    "participants": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "array"
+                        },
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            }
+                          }
+                        },
+                        "example": {
+                          "type": "array",
+                          "example": [
+                            "66b9f4e2f4a5a7d6f4b9c123",
+                            "66b9f4e2f4a5a7d6f4b9c456"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Lista de participantes da conversa. Obrigatório se conversation não for informado."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Mensagem criada com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "messageId": {
+                  "type": "string",
+                  "example": "66b9f4e2f4a5a7d6f4b9c789"
+                },
+                "conversation": {
+                  "type": "string",
+                  "example": "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros obrigatórios ausentes (content ou participants quando conversation não for informado)"
+          },
+          "401": {
+            "description": "Token JWT ausente ou inválido"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/messages/contacts": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Listar contatos do usuário",
+        "description": "Lista todos os contatos (pacientes ou profissionais) do usuário autenticado, incluindo último envio e mensagens não lidas.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/conversations/{conversationId}/read": {
+      "patch": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Marcar conversa como lida",
+        "description": "Zera o unreadCount do usuário autenticado nessa conversa.",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Identificador da conversa"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT — formato: Bearer <token>"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Conversa marcada como lida"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Usuário não participa da conversa"
+          },
+          "404": {
+            "description": "Conversa não encontrada"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/messages/unread": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Listar conversas com mensagens não lidas",
+        "description": "Retorna apenas as conversas onde o usuário logado tem unreadCount > 0.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT — formato: Bearer <token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de conversas com mensagens não lidas"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/teste": {
@@ -609,10 +1319,116 @@
           }
         }
       }
+    },
+    "/webhooks/message-created": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Evento enviado quando uma nova mensagem é criada",
+        "description": "",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "X-Event-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "example": "message.created",
+            "description": "Tipo do evento"
+          },
+          {
+            "name": "X-Event-Id",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "example": "e5ae2396-ff2c-4a6b-8906-73a4459d42cc",
+            "description": "UUID único do evento"
+          },
+          {
+            "name": "X-Signature-SHA256",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "example": "a8bcf7e31c9d8d...",
+            "description": "Assinatura HMAC SHA-256 do corpo com WEBHOOK_SECRET"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WebhookMessageCreated"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exemplo de payload recebido pelo webhook",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "eventId": {
+                  "type": "string",
+                  "example": "e5ae2396-ff2c-4a6b-8906-73a4459d42cc"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "message.created"
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "example": "2025-08-05T22:48:13.781Z"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "messageId": {
+                      "type": "string",
+                      "example": "68928a2d6acdb8a8dd58cc63"
+                    },
+                    "conversation": {
+                      "type": "string",
+                      "example": "conv_teste_123"
+                    },
+                    "sender": {
+                      "type": "string",
+                      "example": "68928a2d6acdb8a8dd58cc62"
+                    },
+                    "senderName": {
+                      "type": "string",
+                      "example": "Testador"
+                    },
+                    "content": {
+                      "type": "string",
+                      "example": "Mensagem teste webhook"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "example": "2025-08-05T22:48:13.592Z"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Assinatura inválida"
+          }
+        }
+      }
     }
   },
   "definitions": {
-    "AddUserProfessional": {
+    "AddUserPatient": {
       "type": "object",
       "properties": {
         "type": {
@@ -622,13 +1438,13 @@
         "required": {
           "type": "array",
           "example": [
+            "userId",
             "name",
             "birthdayDate",
-            "CNPJCPFProfissional",
             "residentialAddress",
-            "clinic",
-            "professionalSpecialties",
-            "professionalServicePreferences"
+            "userSpecialties",
+            "userServicePreferences",
+            "userAcessibilityPreferences"
           ],
           "items": {
             "type": "string"
@@ -637,6 +1453,19 @@
         "properties": {
           "type": "object",
           "properties": {
+            "userId": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "689dd16cfc1851d20da42b55"
+                }
+              }
+            },
             "name": {
               "type": "object",
               "properties": {
@@ -663,7 +1492,99 @@
                 }
               }
             },
-            "address": {
+            "residentialAddress": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "cep",
+                    "address",
+                    "neighborhood",
+                    "city",
+                    "state"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "cep": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "13295-000"
+                        }
+                      }
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Rua das Orquídeas"
+                        }
+                      }
+                    },
+                    "neighborhood": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Centro"
+                        }
+                      }
+                    },
+                    "city": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Itupeva"
+                        }
+                      }
+                    },
+                    "state": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "SP"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "userSpecialties": {
               "type": "object",
               "properties": {
                 "type": {
@@ -675,92 +1596,165 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "example": "object"
-                    },
-                    "properties": {
-                      "type": "object",
-                      "properties": {
-                        "cep": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "12345-678"
-                            }
-                          }
-                        },
-                        "address": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "Rua das Flores"
-                            }
-                          }
-                        },
-                        "neighborhood": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "Centro"
-                            }
-                          }
-                        },
-                        "city": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "São Paulo"
-                            }
-                          }
-                        },
-                        "state": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "SP"
-                            }
-                          }
-                        },
-                        "active": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "boolean"
-                            },
-                            "example": {
-                              "type": "boolean",
-                              "example": true
-                            }
-                          }
-                        }
-                      }
+                      "example": "string"
                     }
                   }
+                },
+                "example": {
+                  "type": "array",
+                  "example": [
+                    "Cardiologia",
+                    "Clínica Geral"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "userServicePreferences": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": [
+                    "Consulta",
+                    "Exame"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "userAcessibilityPreferences": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": [
+                    "Cadeira de rodas",
+                    "Deficiência visual"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Opcional"
+                }
+              }
+            },
+            "profilePhoto": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Base64 Data URL da foto de perfil"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "AddUserProfessional": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "userId",
+            "name",
+            "birthdayDate",
+            "CNPJCPFProfissional",
+            "residentialAddress",
+            "clinic",
+            "professionalSpecialties",
+            "professionalServicePreferences"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "689dd16cfc1851d20da42b55"
+                }
+              }
+            },
+            "name": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "João Silva"
+                }
+              }
+            },
+            "birthdayDate": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "number"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 1632824400000
                 }
               }
             },
@@ -777,12 +1771,119 @@
                 }
               }
             },
+            "residentialAddress": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "cep",
+                    "address",
+                    "neighborhood",
+                    "city",
+                    "state"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "cep": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "12345-678"
+                        }
+                      }
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Avenida Paulista"
+                        }
+                      }
+                    },
+                    "neighborhood": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Bela Vista"
+                        }
+                      }
+                    },
+                    "city": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "São Paulo"
+                        }
+                      }
+                    },
+                    "state": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "SP"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "clinic": {
               "type": "object",
               "properties": {
                 "type": {
                   "type": "string",
                   "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "name",
+                    "cep",
+                    "address",
+                    "neighborhood",
+                    "number",
+                    "city",
+                    "state"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
                 },
                 "properties": {
                   "type": "object",
@@ -975,6 +2076,27 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Opcional"
+                }
+              }
+            },
+            "profilePhoto": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Base64 Data URL da foto de perfil"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
                 }
               }
             }
@@ -982,30 +2104,17 @@
         }
       }
     },
-    "AddUserPatient": {
+    "Appointment": {
       "type": "object",
       "properties": {
         "type": {
           "type": "string",
           "example": "object"
         },
-        "required": {
-          "type": "array",
-          "example": [
-            "name",
-            "birthdayDate",
-            "address",
-            "userSpecialties",
-            "userServicePreferences"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
         "properties": {
           "type": "object",
           "properties": {
-            "name": {
+            "_id": {
               "type": "object",
               "properties": {
                 "type": {
@@ -1014,176 +2123,215 @@
                 },
                 "example": {
                   "type": "string",
-                  "example": "João Silva"
+                  "example": "64fae32bd00141c1a2eaa321"
                 }
               }
             },
-            "birthdayDate": {
+            "patient": {
               "type": "object",
               "properties": {
                 "type": {
                   "type": "string",
-                  "example": "number"
+                  "example": "string"
                 },
                 "example": {
-                  "type": "number",
-                  "example": 1632824400000
+                  "type": "string",
+                  "example": "64fae24ad00141c1a2eaa320"
                 }
               }
             },
-            "address": {
+            "professional": {
               "type": "object",
               "properties": {
                 "type": {
                   "type": "string",
-                  "example": "array"
+                  "example": "string"
                 },
-                "items": {
+                "example": {
+                  "type": "string",
+                  "example": "64fae109d00141c1a2eaa31f"
+                }
+              }
+            },
+            "dateTime": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "date-time"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "2025-08-01T14:00:00.000Z"
+                }
+              }
+            },
+            "status": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "confirmed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "WebhookMessageCreated": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "eventId": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "e5ae2396-ff2c-4a6b-8906-73a4459d42cc"
+                }
+              }
+            },
+            "type": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "message.created"
+                }
+              }
+            },
+            "occurredAt": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "date-time"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "2025-08-05T22:48:13.781Z"
+                }
+              }
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "properties": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "object"
-                    },
-                    "properties": {
+                    "messageId": {
                       "type": "object",
                       "properties": {
-                        "cep": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "12345-678"
-                            }
-                          }
+                        "type": {
+                          "type": "string",
+                          "example": "string"
                         },
-                        "address": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "Rua das Flores"
-                            }
-                          }
+                        "example": {
+                          "type": "string",
+                          "example": "68928a2d6acdb8a8dd58cc63"
+                        }
+                      }
+                    },
+                    "conversation": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
                         },
-                        "neighborhood": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "Centro"
-                            }
-                          }
+                        "example": {
+                          "type": "string",
+                          "example": "conv_teste_123"
+                        }
+                      }
+                    },
+                    "sender": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
                         },
-                        "city": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "São Paulo"
-                            }
-                          }
+                        "example": {
+                          "type": "string",
+                          "example": "68928a2d6acdb8a8dd58cc62"
+                        }
+                      }
+                    },
+                    "senderName": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
                         },
-                        "state": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "string"
-                            },
-                            "example": {
-                              "type": "string",
-                              "example": "SP"
-                            }
-                          }
+                        "example": {
+                          "type": "string",
+                          "example": "Testador"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
                         },
-                        "active": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "example": "boolean"
-                            },
-                            "example": {
-                              "type": "boolean",
-                              "example": true
-                            }
-                          }
+                        "example": {
+                          "type": "string",
+                          "example": "Mensagem teste webhook"
+                        }
+                      }
+                    },
+                    "createdAt": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "date-time"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "2025-08-05T22:48:13.592Z"
                         }
                       }
                     }
-                  }
-                }
-              }
-            },
-            "userSpecialties": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "example": "array"
-                },
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    }
-                  }
-                },
-                "example": {
-                  "type": "array",
-                  "example": [
-                    "Cardiologia",
-                    "Clínica Geral"
-                  ],
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "userServicePreferences": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "example": "array"
-                },
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    }
-                  }
-                },
-                "example": {
-                  "type": "array",
-                  "example": [
-                    "Consulta",
-                    "Exame"
-                  ],
-                  "items": {
-                    "type": "string"
                   }
                 }
               }
