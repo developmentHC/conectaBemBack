@@ -219,8 +219,8 @@ export const completeSignUpPatient = async (req, res) => {
         .json({ msg: "Registro bem-sucedido!", token: accessToken });
     } else {
       return res
-        .status(500)
-        .json({ error: "Usuário já está cadastrado no banco de dados" });
+        .status(200)  
+        .json({ msg: "Nenhuma alteração realizada" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
@@ -348,8 +348,8 @@ export const completeSignUpProfessional = async (req, res) => {
         .json({ msg: "Registro bem-sucedido", token: accessToken });
     } else {
       return res
-        .status(403)
-        .json({ error: "Usuário já está cadastrado no banco de dados" });
+        .status(200)
+        .json({ error: "Nenhuma alteração realizada" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
