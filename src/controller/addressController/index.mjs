@@ -58,23 +58,13 @@ export const changeAddress = async (req, res) => {
     }
   */
 
-  const {
-    addressId,
-    name,
-    cep,
-    endereco,
-    bairro,
-    estado,
-    complemento,
-    active,
-  } = req.body;
+  const { addressId, name, cep, endereco, bairro, estado, complemento, active } = req.body;
 
   const decoded = UserValidationService.validateToken(req.cookies.jwt);
 
   if (!addressId || !cep || !endereco || !bairro || !estado || !complemento) {
     return res.status(422).json({
-      error:
-        "Existem alguns parâmetros faltando para completar o cadastro do profissional",
+      error: "Existem alguns parâmetros faltando para completar o cadastro do profissional",
     });
   }
 
@@ -94,24 +84,15 @@ export const changeAddress = async (req, res) => {
   try {
     const result = await User.updateOne(
       { _id: decoded.userId, "address._id": addressId },
-      {
-        $set: {
-          "address.$": update,
-        },
-      },
+      { $set: { "address.$": update } }
     );
-
-    console.log("Resultado da atualização de endereço: ", result);
 
     if (result.modifiedCount > 0) {
       return res.status(200).json({ msg: "Atualização bem sucedida!" });
     } else {
-      return res
-        .status(304)
-        .json({ msg: "Não há nada para atualizar no endereço" });
+      return res.status(304).json({ msg: "Não há nada para atualizar no endereço" });
     }
-  } catch (error) {
-    console.error("Erro ao atualizar endereço de usuário:", error);
+  } catch {
     return res.status(500).json({ error: "Erro no servidor" });
   }
 };
@@ -143,25 +124,15 @@ export const getAddresses = async (req, res) => {
 
   const decoded = UserValidationService.validateToken(req.cookies.jwt);
   try {
-    const user = await User.findOne(
-      { _id: decoded.userId },
-      { address: 1, _id: 0 },
-    ).lean();
+    const user = await User.findOne({ _id: decoded.userId }, { address: 1, _id: 0 }).lean();
 
     if (!user) {
-      return res.status(404).json({
-        error: "Usuário não encontrado",
-      });
+      return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    return res.status(200).json({
-      addresses: user.address || [],
-    });
-  } catch (error) {
-    console.error("Erro ao buscar endereços:", error);
-    return res.status(500).json({
-      error: "Erro ao buscar endereços",
-    });
+    return res.status(200).json({ addresses: user.address || [] });
+  } catch {
+    return res.status(500).json({ error: "Erro ao buscar endereços" });
   }
 };
 
@@ -200,47 +171,25 @@ export const changeActiveAddress = async (req, res) => {
   try {
     const decoded = UserValidationService.validateToken(req.cookies.jwt);
 
-    const user = await User.findOne({
-      _id: decoded.userId,
-    });
-
-    console.log(
-      "Available addresses:",
-      user?.address.map((a) => a._id.toString()),
-    );
+    const user = await User.findOne({ _id: decoded.userId });
 
     if (!user) {
-      return res.status(404).json({
-        error: "Endereço não encontrado para este usuário",
-      });
+      return res.status(404).json({ error: "Endereço não encontrado para este usuário" });
     }
 
-    const resultUpdate = await User.updateOne(
-      { "address._id": addressId },
-      { $set: { "address.$[].active": false } },
-    );
-    console.log(resultUpdate);
+    await User.updateOne({ "address._id": addressId }, { $set: { "address.$[].active": false } });
 
     const result = await User.updateOne(
-      {
-        "address._id": addressId,
-      },
-      {
-        $set: { "address.$.active": true },
-      },
+      { "address._id": addressId },
+      { $set: { "address.$.active": true } }
     );
 
     if (result.modifiedCount > 0) {
-      return res.status(200).json({
-        msg: "Endereço principal atualizado com sucesso!",
-      });
+      return res.status(200).json({ msg: "Endereço principal atualizado com sucesso!" });
     }
 
-    return res.status(304).json({
-      msg: "Não houve alteração no endereço principal",
-    });
-  } catch (error) {
-    console.error("Erro ao atualizar endereço principal:", error);
+    return res.status(304).json({ msg: "Não houve alteração no endereço principal" });
+  } catch {
     return res.status(500).json({ error: "Erro no servidor" });
   }
 };

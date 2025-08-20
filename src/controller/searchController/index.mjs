@@ -38,12 +38,10 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
         userAcessibilityPreferences: 0,
         __v: 0,
         userType: 0,
-      },
+      }
     )
       .skip((page - 1) * limit)
       .limit(limit);
-
-    console.log(professionals);
 
     return res.status(200).json({
       professionals: professionals,
@@ -100,11 +98,10 @@ export const searchProfessionalBySpeciality = async (req, res) => {
         userAcessibilityPreferences: 0,
         __v: 0,
         userType: 0,
-      },
+      }
     )
       .skip((page - 1) * limit)
       .limit(limit);
-    console.log(professionals);
 
     return res.status(200).json({
       professionals: professionals,
@@ -133,9 +130,7 @@ export const searchBar = async (req, res) => {
     let page = parseInt(req.params.page) || 1;
 
     if (!terms) {
-      return res
-        .status(400)
-        .json({ error: "Parâmetros são obrigatórios para realizar a busca" });
+      return res.status(400).json({ error: "Parâmetros são obrigatórios para realizar a busca" });
     }
 
     if (isNaN(page)) {
@@ -171,12 +166,10 @@ export const searchBar = async (req, res) => {
         userAcessibilityPreferences: 0,
         __v: 0,
         userType: 0,
-      },
+      }
     )
       .skip((page - 1) * limit)
       .limit(limit);
-
-    console.log(professionals);
 
     return res.status(200).json({
       professionals: professionals,

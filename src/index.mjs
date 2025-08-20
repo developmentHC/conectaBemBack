@@ -5,7 +5,7 @@ import swaggerFile from "./../swagger-output.json" with { type: "json" };
 import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.mjs";
 import { initializeGridFS } from "./lib/gridFs.mjs";
-import { startInboxMessageWatcher } from "./watchers/inboxMessageWatcher.mjs"; 
+import { startInboxMessageWatcher } from "./watchers/inboxMessageWatcher.mjs";
 
 const app = express();
 app.use(cookieParser());
@@ -27,7 +27,7 @@ app.use("/", router);
 
 connectDB()
   .then(() => {
-    startInboxMessageWatcher(); 
+    startInboxMessageWatcher();
     app.listen(3000);
     console.log("Conectou ao banco com sucesso");
   })

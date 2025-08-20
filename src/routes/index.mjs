@@ -13,10 +13,10 @@ import {
   changeAddress,
   getAddresses,
 } from "../controller/addressController/index.mjs";
-import { 
+import {
   createAppointment,
   actOnAppointment,
-  getAppointmentById, 
+  getAppointmentById,
   getMyAppointments,
 } from "../controller/appointmentController/index.mjs";
 import {
@@ -28,7 +28,7 @@ import {
   createMessage,
   listMyContacts,
   markConversationAsRead,
-  listUnreadConversations
+  listUnreadConversations,
 } from "../controller/messageController/index.mjs";
 
 const allowedOrigins = [
@@ -79,10 +79,7 @@ router.get("/address", getAddresses);
 router.put("/active-address", changeActiveAddress);
 
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
-router.get(
-  "/search/professionalBySpeciality/:speciality",
-  searchProfessionalBySpeciality,
-);
+router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
 router.get("/search/searchBar/:terms", searchBar);
 
 router.post("/appointments", authenticateToken, createAppointment);
