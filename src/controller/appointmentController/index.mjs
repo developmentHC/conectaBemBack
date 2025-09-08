@@ -1,8 +1,8 @@
 import Appointment from "../../models/Appointment.mjs";
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 export const createAppointment = async (req, res) => {
-/*
+  /*
   #swagger.tags = ['Agendamentos']
   #swagger.summary = 'Criar solicitação de agendamento (paciente)'
   #swagger.description = 'Paciente cria uma solicitação para um profissional em data/hora escolhidas.'
@@ -36,57 +36,60 @@ export const createAppointment = async (req, res) => {
   try {
     const patientId = req.userId;
     if (!patientId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const { professionalId, dateTime, address, notes } = req.body || {};
     if (!professionalId || !dateTime || !address) {
-      return res.status(400).json({ error: 'Campos professionalId, dateTime e address são obrigatórios.' });
+      return res
+        .status(400)
+        .json({ error: "Campos professionalId, dateTime e address são obrigatórios." });
     }
 
-    const hasClinicId = typeof address?.clinicId === 'string' && address.clinicId.trim() !== '';
+    const hasClinicId = typeof address?.clinicId === "string" && address.clinicId.trim() !== "";
     if (!hasClinicId) {
-      return res.status(400).json({ error: 'É obrigatório informar clinicId no address.' });
+      return res.status(400).json({ error: "É obrigatório informar clinicId no address." });
     }
 
     const dt = new Date(dateTime);
     if (Number.isNaN(dt.getTime())) {
-      return res.status(400).json({ error: 'dateTime inválido. Use ISO 8601.' });
+      return res.status(400).json({ error: "dateTime inválido. Use ISO 8601." });
     }
     if (dt.getTime() <= Date.now()) {
-      return res.status(422).json({ error: 'Não é possível agendar no passado.' });
+      return res.status(422).json({ error: "Não é possível agendar no passado." });
     }
 
     if (String(patientId) === String(professionalId)) {
-      return res.status(422).json({ error: 'Não é possível se agendar como seu próprio paciente.' });
+      return res
+        .status(422)
+        .json({ error: "Não é possível se agendar como seu próprio paciente." });
     }
 
     const conflict = await Appointment.exists({
       professional: professionalId,
-      status: { $in: ['pending', 'confirmed'] },
-      dateTime: dt
+      status: { $in: ["pending", "confirmed"] },
+      dateTime: dt,
     });
     if (conflict) {
-      return res.status(409).json({ error: 'Este horário já está agendado.' });
+      return res.status(409).json({ error: "Este horário já está agendado." });
     }
 
     const appt = await Appointment.create({
       patient: patientId,
       professional: professionalId,
       dateTime: dt,
-      status: 'pending',
+      status: "pending",
       address,
-      notes: notes ?? undefined
+      notes: notes ?? undefined,
     });
 
-    res.setHeader('Location', `/appointments/${appt._id}`);
+    res.setHeader("Location", `/appointments/${appt._id}`);
     return res.status(201).json({
-      message: 'Solicitação enviada.',
-      data: { id: appt._id, status: appt.status, dateTime: appt.dateTime }
+      message: "Solicitação enviada.",
+      data: { id: appt._id, status: appt.status, dateTime: appt.dateTime },
     });
   } catch (error) {
-    console.error('Error creating appointment:', error);
-    return res.status(500).json({ error: 'Internal server error.' });
+    return res.status(500).json({ error: "Internal server error." });
   }
 };
 
@@ -129,121 +132,166 @@ export const actOnAppointment = async (req, res) => {
   */
   try {
     const userId = req.userId;
-    if (!userId) return res.status(401).json({ code: 'UNAUTHORIZED', error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ code: "UNAUTHORIZED", error: "Unauthorized" });
 
     const { id } = req.params;
     const { action, payload = {} } = req.body || {};
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ code: 'VALIDATION_ERROR', error: 'ID inválido.' });
+      return res.status(400).json({ code: "VALIDATION_ERROR", error: "ID inválido." });
     }
     if (!action) {
-      return res.status(400).json({ code: 'VALIDATION_ERROR', error: 'Campo "action" é obrigatório.' });
+      return res
+        .status(400)
+        .json({ code: "VALIDATION_ERROR", error: 'Campo "action" é obrigatório.' });
     }
 
     const appt = await Appointment.findById(id);
-    if (!appt) return res.status(404).json({ code: 'NOT_FOUND', error: 'Agendamento não encontrado.' });
+    if (!appt)
+      return res.status(404).json({ code: "NOT_FOUND", error: "Agendamento não encontrado." });
 
     const isProfessional = String(appt.professional) === String(userId);
-    const isPatient     = String(appt.patient) === String(userId);
-    const isTerminal    = appt.status === 'canceled' || appt.status === 'completed';
+    const isPatient = String(appt.patient) === String(userId);
+    const isTerminal = appt.status === "canceled" || appt.status === "completed";
 
     switch (action) {
-      case 'confirm': {
-        if (!isProfessional) return res.status(403).json({ code: 'FORBIDDEN', error: 'Somente o profissional pode confirmar.' });
-        if (isTerminal)      return res.status(422).json({ code: 'INVALID_TRANSITION', error: `Não é possível confirmar um agendamento ${appt.status}.` });
-        if (appt.status !== 'pending') {
-          return res.status(422).json({ code: 'INVALID_TRANSITION', error: `Transição inválida: ${appt.status} -> confirmed.` });
+      case "confirm": {
+        if (!isProfessional)
+          return res
+            .status(403)
+            .json({ code: "FORBIDDEN", error: "Somente o profissional pode confirmar." });
+        if (isTerminal)
+          return res.status(422).json({
+            code: "INVALID_TRANSITION",
+            error: `Não é possível confirmar um agendamento ${appt.status}.`,
+          });
+        if (appt.status !== "pending") {
+          return res.status(422).json({
+            code: "INVALID_TRANSITION",
+            error: `Transição inválida: ${appt.status} -> confirmed.`,
+          });
         }
 
-        // conflito: mesmo profissional, mesmo horário
         const conflict = await Appointment.exists({
           _id: { $ne: appt._id },
           professional: appt.professional,
-          status: { $in: ['pending', 'confirmed'] },
-          dateTime: appt.dateTime
+          status: { $in: ["pending", "confirmed"] },
+          dateTime: appt.dateTime,
         });
-        if (conflict) return res.status(409).json({ code: 'SCHEDULE_CONFLICT', error: 'Conflito de agenda para este horário.' });
+        if (conflict)
+          return res
+            .status(409)
+            .json({ code: "SCHEDULE_CONFLICT", error: "Conflito de agenda para este horário." });
 
-        appt.status = 'confirmed';
+        appt.status = "confirmed";
         appt.updatedAt = new Date();
         await appt.save();
 
         return res.status(200).json({
-          message: 'Agendamento confirmado.',
-          data: { id: String(appt._id), status: appt.status, dateTime: appt.dateTime }
+          message: "Agendamento confirmado.",
+          data: { id: String(appt._id), status: appt.status, dateTime: appt.dateTime },
         });
       }
 
-      case 'cancel': {
-        if (!isProfessional && !isPatient) return res.status(403).json({ code: 'FORBIDDEN', error: 'Sem permissão para cancelar.' });
-        if (isTerminal) return res.status(422).json({ code: 'INVALID_TRANSITION', error: `Não é possível cancelar um agendamento ${appt.status}.` });
+      case "cancel": {
+        if (!isProfessional && !isPatient)
+          return res.status(403).json({ code: "FORBIDDEN", error: "Sem permissão para cancelar." });
+        if (isTerminal)
+          return res.status(422).json({
+            code: "INVALID_TRANSITION",
+            error: `Não é possível cancelar um agendamento ${appt.status}.`,
+          });
 
-        appt.status = 'canceled';
+        appt.status = "canceled";
         appt.cancellationReason = payload.reason || null;
         appt.updatedAt = new Date();
         await appt.save();
 
         return res.status(200).json({
-          message: 'Agendamento cancelado.',
-          data: { id: String(appt._id), status: appt.status, reason: appt.cancellationReason }
+          message: "Agendamento cancelado.",
+          data: { id: String(appt._id), status: appt.status, reason: appt.cancellationReason },
         });
       }
 
-      case 'reschedule': {
-        if (!isProfessional) return res.status(403).json({ code: 'FORBIDDEN', error: 'Somente o profissional pode remarcar.' });
-        if (isTerminal)      return res.status(422).json({ code: 'INVALID_TRANSITION', error: `Não é possível remarcar um agendamento ${appt.status}.` });
+      case "reschedule": {
+        if (!isProfessional)
+          return res
+            .status(403)
+            .json({ code: "FORBIDDEN", error: "Somente o profissional pode remarcar." });
+        if (isTerminal)
+          return res.status(422).json({
+            code: "INVALID_TRANSITION",
+            error: `Não é possível remarcar um agendamento ${appt.status}.`,
+          });
 
         const { dateTime } = payload || {};
-        if (!dateTime) return res.status(400).json({ code: 'VALIDATION_ERROR', error: 'Payload inválido: "dateTime" é obrigatório.' });
+        if (!dateTime)
+          return res.status(400).json({
+            code: "VALIDATION_ERROR",
+            error: 'Payload inválido: "dateTime" é obrigatório.',
+          });
 
         const newDt = new Date(dateTime);
         if (Number.isNaN(newDt.getTime())) {
-          return res.status(400).json({ code: 'VALIDATION_ERROR', error: 'dateTime inválido (use ISO 8601).' });
+          return res
+            .status(400)
+            .json({ code: "VALIDATION_ERROR", error: "dateTime inválido (use ISO 8601)." });
         }
 
-        // conflito no novo horário
         const conflict = await Appointment.exists({
           _id: { $ne: appt._id },
           professional: appt.professional,
-          status: { $in: ['pending', 'confirmed'] },
-          dateTime: newDt
+          status: { $in: ["pending", "confirmed"] },
+          dateTime: newDt,
         });
-        if (conflict) return res.status(409).json({ code: 'SCHEDULE_CONFLICT', error: 'Conflito de agenda para a nova data/hora.' });
+        if (conflict)
+          return res.status(409).json({
+            code: "SCHEDULE_CONFLICT",
+            error: "Conflito de agenda para a nova data/hora.",
+          });
 
         appt.dateTime = newDt;
         appt.updatedAt = new Date();
         await appt.save();
 
         return res.status(200).json({
-          message: 'Agendamento remarcado.',
-          data: { id: String(appt._id), status: appt.status, dateTime: appt.dateTime }
+          message: "Agendamento remarcado.",
+          data: { id: String(appt._id), status: appt.status, dateTime: appt.dateTime },
         });
       }
 
-      case 'complete': {
-        if (!isProfessional) return res.status(403).json({ code: 'FORBIDDEN', error: 'Somente o profissional pode completar.' });
-        if (isTerminal)      return res.status(422).json({ code: 'INVALID_TRANSITION', error: `Não é possível completar um agendamento ${appt.status}.` });
-        if (appt.status !== 'confirmed') {
-          return res.status(422).json({ code: 'INVALID_TRANSITION', error: `Transição inválida: ${appt.status} -> completed.` });
+      case "complete": {
+        if (!isProfessional)
+          return res
+            .status(403)
+            .json({ code: "FORBIDDEN", error: "Somente o profissional pode completar." });
+        if (isTerminal)
+          return res.status(422).json({
+            code: "INVALID_TRANSITION",
+            error: `Não é possível completar um agendamento ${appt.status}.`,
+          });
+        if (appt.status !== "confirmed") {
+          return res.status(422).json({
+            code: "INVALID_TRANSITION",
+            error: `Transição inválida: ${appt.status} -> completed.`,
+          });
         }
 
-        appt.status = 'completed';
+        appt.status = "completed";
         appt.updatedAt = new Date();
         await appt.save();
 
         return res.status(200).json({
-          message: 'Agendamento concluído.',
-          data: { id: String(appt._id), status: appt.status }
+          message: "Agendamento concluído.",
+          data: { id: String(appt._id), status: appt.status },
         });
       }
 
       default:
-        return res.status(400).json({ code: 'UNKNOWN_ACTION', error: 'Ação desconhecida.' });
+        return res.status(400).json({ code: "UNKNOWN_ACTION", error: "Ação desconhecida." });
     }
   } catch (error) {
-    console.error('Error acting on appointment:', error);
-    return res.status(500).json({ code: 'INTERNAL_ERROR', error: 'Internal server error.' });
+    return res.status(500).json({ code: "INTERNAL_ERROR", error: "Internal server error." });
   }
 };
 
@@ -269,24 +317,24 @@ export const getAppointmentById = async (req, res) => {
   */
   try {
     if (!req.userId) {
-      return res.status(401).json({ code: 'UNAUTHORIZED', error: 'Unauthorized' });
+      return res.status(401).json({ code: "UNAUTHORIZED", error: "Unauthorized" });
     }
 
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ code: 'VALIDATION_ERROR', error: 'ID inválido.' });
+      return res.status(400).json({ code: "VALIDATION_ERROR", error: "ID inválido." });
     }
 
     const appt = await Appointment.findOne(
-      { _id: id, status: { $ne: 'canceled' } },
+      { _id: id, status: { $ne: "canceled" } },
       { status: 1, dateTime: 1, notes: 1, patient: 1, professional: 1 }
     )
-      .populate('patient', '_id')
-      .populate('professional', '_id name profileImage professionalSpecialties clinic')
+      .populate("patient", "_id")
+      .populate("professional", "_id name profileImage professionalSpecialties clinic")
       .lean();
 
     if (!appt) {
-      return res.status(404).json({ code: 'NOT_FOUND', error: 'Agendamento não encontrado.' });
+      return res.status(404).json({ code: "NOT_FOUND", error: "Agendamento não encontrado." });
     }
 
     const uid = String(req.userId);
@@ -294,11 +342,13 @@ export const getAppointmentById = async (req, res) => {
     const isProfessional = String(appt.professional?._id) === uid;
 
     if (!isPatient && !isProfessional) {
-      return res.status(403).json({ code: 'FORBIDDEN', error: 'Sem permissão para acessar este agendamento.' });
+      return res
+        .status(403)
+        .json({ code: "FORBIDDEN", error: "Sem permissão para acessar este agendamento." });
     }
 
-    const host = req.get('host');
-    const protocol = req.secure ? 'https' : (req.protocol || 'http');
+    const host = req.get("host");
+    const protocol = req.secure ? "https" : req.protocol || "http";
     const baseUrl = `${protocol}://${host}`;
 
     const photoUrl = appt.professional?.profileImage
@@ -306,11 +356,11 @@ export const getAppointmentById = async (req, res) => {
       : null;
 
     const clinic = appt.professional?.clinic || {};
-    const part1 = [clinic.address, clinic.number].filter(Boolean).join(', ');
+    const part1 = [clinic.address, clinic.number].filter(Boolean).join(", ");
     const part2 = [clinic.neighborhood, clinic.city && `${clinic.city} - ${clinic.state}`]
       .filter(Boolean)
-      .join(' • ');
-    const selectedAddress = [part1, part2].filter(Boolean).join(' • ') || null;
+      .join(" • ");
+    const selectedAddress = [part1, part2].filter(Boolean).join(" • ") || null;
 
     const data = {
       id: String(appt._id),
@@ -321,16 +371,16 @@ export const getAppointmentById = async (req, res) => {
         photoUrl,
         name: appt.professional?.name ?? null,
         distanceKm: null,
-        specialties: appt.professional?.professionalSpecialties ?? []
+        specialties: appt.professional?.professionalSpecialties ?? [],
       },
       yourObservation: appt.notes ?? null,
-      selectedAddress
+      selectedAddress,
     };
 
     return res.status(200).json({ data });
   } catch (error) {
-    console.error('Erro ao buscar agendamento:', error);
-    return res.status(500).json({ code: 'INTERNAL_ERROR', error: 'Erro interno no servidor.' });
+    console.error("Erro ao buscar agendamento:", error);
+    return res.status(500).json({ code: "INTERNAL_ERROR", error: "Erro interno no servidor." });
   }
 };
 
@@ -341,10 +391,8 @@ export const getMyAppointments = async (req, res) => {
     #swagger.description = 'Lista agendamentos do usuário autenticado (paciente ou profissional).'
     #swagger.security = [{ "bearerAuth": [] }]
 
-    // Força o Swagger a ignorar todos os detectados automaticamente
     #swagger.ignore = ['status', 'from', 'to', 'page', 'limit', 'sort', 'id', 'x-forwarded-proto', 'host']
 
-    // Adiciona manualmente só o Authorization
     #swagger.parameters['authorization'] = {
       in: 'header',
       required: true,
@@ -354,32 +402,29 @@ export const getMyAppointments = async (req, res) => {
   */
   try {
     const userId = req.userId;
-    if (!userId) return res.status(401).json({ code: 'UNAUTHORIZED', error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ code: "UNAUTHORIZED", error: "Unauthorized" });
 
-    const {
-      status, from, to,
-      page = '1', limit = '20', sort = 'asc'
-    } = req.query || {};
+    const { status, from, to, page = "1", limit = "20", sort = "asc" } = req.query || {};
 
-    const pageNum  = Math.max(parseInt(page, 10)  || 1, 1);
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
-    const skip     = (pageNum - 1) * limitNum;
-    const sortDir  = sort === 'desc' ? -1 : 1;
+    const skip = (pageNum - 1) * limitNum;
+    const sortDir = sort === "desc" ? -1 : 1;
 
     const role = req.userRole;
     const filter = {};
-    if (role === 'professional') {
+    if (role === "professional") {
       filter.professional = userId;
-    } else if (role === 'patient') {
+    } else if (role === "patient") {
       filter.patient = userId;
     } else {
       filter.$or = [{ patient: userId }, { professional: userId }];
     }
 
-    if (status && status !== 'all') {
+    if (status && status !== "all") {
       filter.status = status;
     } else if (!status) {
-      filter.status = { $ne: 'canceled' };
+      filter.status = { $ne: "canceled" };
     }
 
     if (from || to) {
@@ -400,45 +445,46 @@ export const getMyAppointments = async (req, res) => {
         .sort({ dateTime: sortDir })
         .skip(skip)
         .limit(limitNum)
-        .populate({ path: 'professional', select: 'name profileImage' })
-        .populate({ path: 'patient',     select: 'name' })
+        .populate({ path: "professional", select: "name profileImage" })
+        .populate({ path: "patient", select: "name" })
         .lean(),
-      Appointment.countDocuments(filter)
+      Appointment.countDocuments(filter),
     ]);
 
-    const host = req.get('host');
-    const protocol = req.secure ? 'https' : (req.protocol || 'http');
+    const host = req.get("host");
+    const protocol = req.secure ? "https" : req.protocol || "http";
     const baseUrl = `${protocol}://${host}`;
     const fileUrl = (fileId) => (fileId ? `${baseUrl}/files/${fileId}` : null);
 
     const nowTs = Date.now();
     const data = items.map((a) => {
       const dtIso = a.dateTime ? new Date(a.dateTime).toISOString() : null;
-      const isCompleted = a.status === 'confirmed' && a.dateTime && new Date(a.dateTime).getTime() < nowTs;
+      const isCompleted =
+        a.status === "confirmed" && a.dateTime && new Date(a.dateTime).getTime() < nowTs;
 
       return {
         id: String(a._id),
         status: a.status,
-        derivedStatus: isCompleted ? 'completed' : undefined,
+        derivedStatus: isCompleted ? "completed" : undefined,
         dateTime: dtIso,
         professional: a.professional && {
           id: String(a.professional._id),
           name: a.professional.name || null,
-          profileImageUrl: fileUrl(a.professional.profileImage)
+          profileImageUrl: fileUrl(a.professional.profileImage),
         },
         patient: a.patient && {
           id: String(a.patient._id),
-          name: a.patient.name || null
-        }
+          name: a.patient.name || null,
+        },
       };
     });
 
     return res.status(200).json({
       meta: { page: pageNum, limit: limitNum, total, hasNextPage: skip + data.length < total },
-      data
+      data,
     });
   } catch (error) {
-    console.error('Error fetching appointments:', error);
-    return res.status(500).json({ code: 'INTERNAL_ERROR', error: 'Internal server error' });
+    console.error("Error fetching appointments:", error);
+    return res.status(500).json({ code: "INTERNAL_ERROR", error: "Internal server error" });
   }
 };

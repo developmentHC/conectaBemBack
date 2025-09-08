@@ -18,15 +18,15 @@ export function startInboxMessageWatcher() {
         sender: String(d.sender),
         senderName: d.senderName || null,
         content: d.content,
-        createdAt: d.createdAt
-      }
+        createdAt: d.createdAt,
+      },
     };
 
     try {
       await sendWebhook({
         url: process.env.FRONT_WEBHOOK_URL,
         secret: process.env.WEBHOOK_SECRET,
-        payload
+        payload,
       });
       console.log(" Webhook enviado:", payload.data.messageId);
     } catch (e) {

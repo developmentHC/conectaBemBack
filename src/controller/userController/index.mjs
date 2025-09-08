@@ -6,10 +6,7 @@ import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
 import { gridFSBucket } from "../../lib/gridFs.mjs";
-import {
-  UserValidationService,
-  ValidationError,
-} from "../../services/validationService.mjs";
+import { UserValidationService, ValidationError } from "../../services/validationService.mjs";
 import mongoose from "mongoose";
 
 const saltRounds = 10;
@@ -46,8 +43,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
         status: "pending",
       });
 
-      console.log("Usuário criado:", result, OTP);
-
       return res.status(201).json({
         id: result._id,
         email: {
@@ -59,10 +54,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
         message: "User created and OTP sent through email",
       });
     } else {
-      console.log("Usuário existente:", userExists, OTP);
       await User.updateOne({ email }, { hashedOTP });
-      console.log("OTP do usuário atualizado");
-      console.log(`OTP gerado: ${OTP}`);
       return res.status(200).json({
         id: userExists._id,
         email: {
@@ -182,7 +174,6 @@ export const completeSignUpPatient = async (req, res) => {
     const fileId = await new Promise((resolve, reject) => {
       uploadStream.end(buffer);
       uploadStream.on("finish", () => {
-        console.log("Upload concluído com ID:", uploadStream.id);
         resolve(uploadStream.id);
       });
       uploadStream.on("error", (err) => {
@@ -191,36 +182,20 @@ export const completeSignUpPatient = async (req, res) => {
       });
     });
 
-    console.log(fileId);
-
     update.profileImage = fileId;
   }
-
-  console.log(update);
 
   const result = await User.updateOne({ _id: userId }, { $set: update });
 
   try {
-    console.log("Resultado da atualização:", result);
-
     if (result.modifiedCount > 0) {
-      console.log("Payload para JWT:", userId);
+      const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "12h",
+      });
 
-      const accessToken = jwt.sign(
-        { userId: userId },
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-          expiresIn: "12h",
-        },
-      );
-
-      return res
-        .status(201)
-        .json({ msg: "Registro bem-sucedido!", token: accessToken });
+      return res.status(201).json({ msg: "Registro bem-sucedido!", token: accessToken });
     } else {
-      return res
-        .status(200)  
-        .json({ msg: "Nenhuma alteração realizada" });
+      return res.status(200).json({ msg: "Nenhuma alteração realizada" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
@@ -314,7 +289,6 @@ export const completeSignUpProfessional = async (req, res) => {
       const fileId = await new Promise((resolve, reject) => {
         uploadStream.end(buffer);
         uploadStream.on("finish", () => {
-          console.log("Upload concluído com ID:", uploadStream.id);
           resolve(uploadStream.id);
         });
         uploadStream.on("error", (err) => {
@@ -327,7 +301,7 @@ export const completeSignUpProfessional = async (req, res) => {
     }
 
     const result = await User.updateOne({ _id: userId }, { $set: update });
-    console.log("Resultado da atualização:", result);
+
     if (result.modifiedCount > 0) {
       const updatedUser = await User.findOne({ _id: userId }, { hashedOTP: 0 });
 
@@ -335,21 +309,13 @@ export const completeSignUpProfessional = async (req, res) => {
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      const accessToken = jwt.sign(
-        { userId: userId },
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-          expiresIn: "1h",
-        },
-      );
+      const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
 
-      return res
-        .status(201)
-        .json({ msg: "Registro bem-sucedido", token: accessToken });
+      return res.status(201).json({ msg: "Registro bem-sucedido", token: accessToken });
     } else {
-      return res
-        .status(200)
-        .json({ error: "Nenhuma alteração realizada" });
+      return res.status(200).json({ error: "Nenhuma alteração realizada" });
     }
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
@@ -373,7 +339,7 @@ export const userInfo = async (req, res) => {
       {
         hashedOTP: 0,
         __v: 0,
-      },
+      }
     ).lean();
 
     if (!userExists) {
@@ -382,9 +348,7 @@ export const userInfo = async (req, res) => {
 
     if (userExists.profileImage) {
       try {
-        const downloadStream = gridFSBucket.openDownloadStream(
-          userExists.profileImage,
-        );
+        const downloadStream = gridFSBucket.openDownloadStream(userExists.profileImage);
 
         const chunks = [];
         await new Promise((resolve, reject) => {

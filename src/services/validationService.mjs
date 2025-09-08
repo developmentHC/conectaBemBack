@@ -27,10 +27,7 @@ export class UserValidationService {
     const missingFields = requiredFields.filter((field) => !data[field]);
 
     if (missingFields.length > 0) {
-      throw new ValidationError(
-        `Campos obrigatórios ausentes: ${missingFields.join(", ")}`,
-        422,
-      );
+      throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
     }
 
     this.validateAddressData(data.residentialAddress);
@@ -52,10 +49,7 @@ export class UserValidationService {
     const missingFields = requiredFields.filter((field) => !data[field]);
 
     if (missingFields.length > 0) {
-      throw new ValidationError(
-        `Campos obrigatórios ausentes: ${missingFields.join(", ")}`,
-        422,
-      );
+      throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
     }
 
     this.validateAddressData(data.residentialAddress);
@@ -65,10 +59,7 @@ export class UserValidationService {
 
   static validateBirthDate(birthdayDate) {
     if (typeof birthdayDate !== "number") {
-      throw new ValidationError(
-        "O campo 'birthdayDate' deve ser um número (timestamp)",
-        400,
-      );
+      throw new ValidationError("O campo 'birthdayDate' deve ser um número (timestamp)", 400);
     }
 
     if (
@@ -77,55 +68,36 @@ export class UserValidationService {
       birthdayDate <= 0 ||
       birthdayDate > Date.now()
     ) {
-      throw new ValidationError(
-        "Timestamp inválido. Envie um timestamp correto",
-        400,
-      );
+      throw new ValidationError("Timestamp inválido. Envie um timestamp correto", 400);
     }
   }
 
   static validateAddressData(residentialAddress) {
     const requiredFields = ["cep", "address", "neighborhood", "city", "state"];
 
-    const missingFields = requiredFields.filter(
-      (field) => !residentialAddress[field],
-    );
+    const missingFields = requiredFields.filter((field) => !residentialAddress[field]);
 
     if (missingFields.length > 0) {
       throw new ValidationError(
         `Dados do endereço residencial imcompletos: ${missingFields.join(", ")}`,
-        422,
+        422
       );
     }
   }
 
   static validateClinicData(clinic) {
-    const requiredFields = [
-      "name",
-      "cep",
-      "address",
-      "neighborhood",
-      "number",
-      "city",
-      "state",
-    ];
+    const requiredFields = ["name", "cep", "address", "neighborhood", "number", "city", "state"];
 
     const missingFields = requiredFields.filter((field) => !clinic[field]);
 
     if (missingFields.length > 0) {
-      throw new ValidationError(
-        `Dados da clínica incompletos: ${missingFields.join(", ")}`,
-        422,
-      );
+      throw new ValidationError(`Dados da clínica incompletos: ${missingFields.join(", ")}`, 422);
     }
   }
 
   static validateProfilePhoto(profilePhoto) {
     if (!profilePhoto.startsWith("data:image")) {
-      throw new ValidationError(
-        "String Base64 inválida para foto do perfil",
-        400,
-      );
+      throw new ValidationError("String Base64 inválida para foto do perfil", 400);
     }
   }
 

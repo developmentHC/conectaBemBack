@@ -6,7 +6,7 @@ import ConversationMember from "../../models/ConversationMember.mjs";
 import User from "../../models/User.mjs";
 
 export async function createMessage(req, res) {
-/*
+  /*
   #swagger.tags = ['Messages']
   #swagger.summary = 'Enviar mensagem em uma conversa'
   #swagger.description = 'Cria uma mensagem; se não for informado um ID de conversa, o backend cria automaticamente um novo. Atualiza o lastMessage e incrementa unreadCount dos participantes.'
@@ -50,10 +50,8 @@ export async function createMessage(req, res) {
   #swagger.responses[500] = { description: 'Erro interno do servidor' }
 */
 
-
-
   try {
-    const userId = req.user?.id ?? req.userId; 
+    const userId = req.user?.id ?? req.userId;
     let { conversation, content, participants } = req.body;
 
     if (!userId) {
@@ -65,7 +63,9 @@ export async function createMessage(req, res) {
 
     if (!conversation) {
       if (!participants || participants.length === 0) {
-        return res.status(400).json({ error: "participants é obrigatório quando não há conversation" });
+        return res
+          .status(400)
+          .json({ error: "participants é obrigatório quando não há conversation" });
       }
       conversation = randomUUID();
     }
@@ -74,7 +74,7 @@ export async function createMessage(req, res) {
       participants = [...(participants || []), userId];
     }
 
-    const participantsObjIds = participants.map(id => new mongoose.Types.ObjectId(id));
+    const participantsObjIds = participants.map((id) => new mongoose.Types.ObjectId(id));
     const userObjId = new mongoose.Types.ObjectId(userId);
 
     await Conversation.updateOne(
@@ -82,8 +82,8 @@ export async function createMessage(req, res) {
       {
         $setOnInsert: {
           conversation,
-          participants: participantsObjIds
-        }
+          participants: participantsObjIds,
+        },
       },
       { upsert: true }
     );
@@ -91,7 +91,7 @@ export async function createMessage(req, res) {
     const msg = await InboxMessage.create({
       conversation,
       sender: userObjId,
-      content
+      content,
     });
 
     await Conversation.updateOne(
@@ -99,37 +99,36 @@ export async function createMessage(req, res) {
       { $set: { lastMessage: { content, sender: userObjId, createdAt: msg.createdAt } } }
     );
 
-for (const memberId of participants) {
-  const isSelf = String(memberId) === String(userId);
+    for (const memberId of participants) {
+      const isSelf = String(memberId) === String(userId);
 
-  if (isSelf) {
-    await ConversationMember.updateOne(
-      { conversation, user: new mongoose.Types.ObjectId(memberId) },
-      { $setOnInsert: { unreadCount: 0 } },
-      { upsert: true }
-    );
-  } else {
-    const res = await ConversationMember.updateOne(
-      { conversation, user: new mongoose.Types.ObjectId(memberId) },
-      { $inc: { unreadCount: 1 } },
-      { upsert: false }
-    );
+      if (isSelf) {
+        await ConversationMember.updateOne(
+          { conversation, user: new mongoose.Types.ObjectId(memberId) },
+          { $setOnInsert: { unreadCount: 0 } },
+          { upsert: true }
+        );
+      } else {
+        const res = await ConversationMember.updateOne(
+          { conversation, user: new mongoose.Types.ObjectId(memberId) },
+          { $inc: { unreadCount: 1 } },
+          { upsert: false }
+        );
 
-    if (res.matchedCount === 0) {
-      await ConversationMember.updateOne(
-        { conversation, user: new mongoose.Types.ObjectId(memberId) },
-        { $setOnInsert: { unreadCount: 1 } },
-        { upsert: true }
-      );
+        if (res.matchedCount === 0) {
+          await ConversationMember.updateOne(
+            { conversation, user: new mongoose.Types.ObjectId(memberId) },
+            { $setOnInsert: { unreadCount: 1 } },
+            { upsert: true }
+          );
+        }
+      }
     }
-  }
-}
-
 
     return res.status(201).json({
       success: true,
       messageId: msg._id,
-      conversation
+      conversation,
     });
   } catch (err) {
     console.error("Erro ao criar mensagem:", err);
@@ -148,20 +147,20 @@ export async function listMyContacts(req, res) {
     const userId = req.user?.id ?? req.userId;
     if (!userId) return res.status(401).json({ error: "Não autenticado" });
 
-    const myConvMembers = await ConversationMember
-      .find({ user: new mongoose.Types.ObjectId(userId) })
+    const myConvMembers = await ConversationMember.find({
+      user: new mongoose.Types.ObjectId(userId),
+    })
       .select({ conversation: 1, unreadCount: 1, _id: 0 })
       .lean();
 
-    const convIds = myConvMembers.map(c => c.conversation);
+    const convIds = myConvMembers.map((c) => c.conversation);
     if (convIds.length === 0) {
       return res.status(200).json({ items: [] });
     }
 
-    const unreadByConv = new Map(myConvMembers.map(c => [c.conversation, c.unreadCount]));
+    const unreadByConv = new Map(myConvMembers.map((c) => [c.conversation, c.unreadCount]));
 
-    const conversations = await Conversation
-      .find({ conversation: { $in: convIds } })
+    const conversations = await Conversation.find({ conversation: { $in: convIds } })
       .sort({ "lastMessage.createdAt": -1 })
       .lean();
 
@@ -170,7 +169,7 @@ export async function listMyContacts(req, res) {
     const otherByConv = new Map();
 
     for (const c of conversations) {
-      const others = (c.participants ?? []).map(String).filter(p => p !== me);
+      const others = (c.participants ?? []).map(String).filter((p) => p !== me);
       const otherId = others[0];
       if (otherId) {
         otherByConv.set(c.conversation, otherId);
@@ -182,14 +181,14 @@ export async function listMyContacts(req, res) {
       .select("name profileImage userType")
       .lean();
 
-    const userMap = new Map(users.map(u => [String(u._id), u]));
+    const userMap = new Map(users.map((u) => [String(u._id), u]));
 
     const buildAvatarUrl = (profileImageId) => {
       if (!profileImageId) return null;
       return `${process.env.BASE_URL}/uploads/${profileImageId}`;
     };
 
-    const items = conversations.map(c => {
+    const items = conversations.map((c) => {
       const otherId = otherByConv.get(c.conversation);
       const u = userMap.get(otherId);
 
@@ -200,7 +199,7 @@ export async function listMyContacts(req, res) {
         contactAvatar: buildAvatarUrl(u?.profileImage),
         userType: u?.userType?.[0] || null,
         lastMessage: c.lastMessage ?? null,
-        unreadCount: unreadByConv.get(c.conversation) ?? 0
+        unreadCount: unreadByConv.get(c.conversation) ?? 0,
       };
     });
 
@@ -238,13 +237,14 @@ export async function markConversationAsRead(req, res) {
     const conv = await Conversation.findOne({ conversation: conversationId }).lean();
     if (!conv) return res.status(404).json({ error: "Conversa não encontrada" });
 
-    const isParticipant = (conv.participants ?? []).some(p => String(p) === String(userId));
-    if (!isParticipant) return res.status(403).json({ error: "Você não tem acesso a esta conversa" });
+    const isParticipant = (conv.participants ?? []).some((p) => String(p) === String(userId));
+    if (!isParticipant)
+      return res.status(403).json({ error: "Você não tem acesso a esta conversa" });
 
     await ConversationMember.updateOne(
       { conversation: conversationId, user: new mongoose.Types.ObjectId(userId) },
       { $set: { unreadCount: 0 } },
-      { upsert: true } 
+      { upsert: true }
     );
 
     return res.status(204).send();
@@ -272,7 +272,7 @@ export async function listUnreadConversations(req, res) {
 
     const unreadConvMembers = await ConversationMember.find({
       user: new mongoose.Types.ObjectId(userId),
-      unreadCount: { $gt: 0 }
+      unreadCount: { $gt: 0 },
     })
       .select({ conversation: 1, unreadCount: 1, _id: 0 })
       .lean();
@@ -281,9 +281,9 @@ export async function listUnreadConversations(req, res) {
       return res.status(200).json({ items: [] });
     }
 
-    const unreadByConv = new Map(unreadConvMembers.map(c => [c.conversation, c.unreadCount]));
+    const unreadByConv = new Map(unreadConvMembers.map((c) => [c.conversation, c.unreadCount]));
 
-    const convIds = unreadConvMembers.map(c => c.conversation);
+    const convIds = unreadConvMembers.map((c) => c.conversation);
 
     const conversations = await Conversation.find({ conversation: { $in: convIds } })
       .sort({ "lastMessage.createdAt": -1 })
@@ -292,7 +292,7 @@ export async function listUnreadConversations(req, res) {
     const items = [];
     for (const c of conversations) {
       const participants = (c.participants ?? []).map(String);
-      const otherId = participants.find(p => p !== String(userId));
+      const otherId = participants.find((p) => p !== String(userId));
 
       const otherUser = await User.findById(otherId).select("name avatar").lean();
 
@@ -302,7 +302,7 @@ export async function listUnreadConversations(req, res) {
         otherName: otherUser?.name || "Usuário",
         otherAvatar: otherUser?.avatar || null,
         lastMessage: c.lastMessage ?? null,
-        unreadCount: unreadByConv.get(c.conversation) ?? 0
+        unreadCount: unreadByConv.get(c.conversation) ?? 0,
       });
     }
 

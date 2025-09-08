@@ -10,8 +10,8 @@ export const professionalsSample = [
     careTypes: ["Consulta Presencial", "Telemedicina"],
     services: [
       { id: "srv_001", name: "Consulta Clínica Geral" },
-      { id: "srv_002", name: "Consulta Cardiológica" }
-    ]
+      { id: "srv_002", name: "Consulta Cardiológica" },
+    ],
   },
   {
     id: "prof_002",
@@ -24,7 +24,7 @@ export const professionalsSample = [
     careTypes: ["Consulta Domiciliar"],
     services: [
       { id: "srv_003", name: "Consulta Ortopédica" },
-      { id: "srv_004", name: "Aplicação de Gesso" }
-    ]
-  }
+      { id: "srv_004", name: "Aplicação de Gesso" },
+    ],
+  },
 ];

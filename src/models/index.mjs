@@ -1,4 +1,4 @@
-import User from './User.mjs';
-import Appointment from './Appointment.mjs';
+import User from "./User.mjs";
+import Appointment from "./Appointment.mjs";
 
 export { User, Appointment };
