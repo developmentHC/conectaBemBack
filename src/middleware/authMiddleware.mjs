@@ -11,7 +11,7 @@ export const authenticateToken = async (req, res, next) => {
       });
   }
 
-  const token = authHeader.substring(7);
+  const token = authHeader.split(' ')[1];
 
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);

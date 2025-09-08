@@ -13,16 +13,20 @@
       "description": "Endpoints relacionados a autenticação do usuário"
     },
     {
-      "name": "Address",
-      "description": "Endpoints relacionados aos endereços do usuário"
-    },
-    {
       "name": "User",
       "description": "Endpoints relacionados ao usuário"
     },
     {
+      "name": "Address",
+      "description": "Endpoints relacionados aos endereços do usuário"
+    },
+    {
       "name": "Search",
       "description": "Endpoints relacionados a busca de dados"
+    },
+    {
+      "name": "Agendamentos",
+      "description": "Endpoints relacionados a agendamentos de consultas"
     },
     {
       "name": "Test",
@@ -32,6 +36,13 @@
   "schemes": [
     "http"
   ],
+  "securityDefinitions": {
+    "bearerAuth": {
+      "type": "http",
+      "scheme": "bearer",
+      "bearerFormat": "JWT"
+    }
+  },
   "paths": {
     "/auth/sendOTP": {
       "post": {
@@ -98,14 +109,8 @@
           "200": {
             "description": "Còdigos OTP coincidem"
           },
-          "201": {
-            "description": "Criado"
-          },
           "401": {
             "description": "Códigos OTP não coincidem"
-          },
-          "404": {
-            "description": "Não Encontrado"
           },
           "422": {
             "description": "Parâmetros exigidos não estão sendo enviados no body"
@@ -189,6 +194,460 @@
             "description": "Erro no servidor"
           }
         }
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Retorna todas as informações do usuário",
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário encontrado, dados retornados"
+          },
+          "401": {
+            "description": "Cookie não encontrado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "404": {
+            "description": "Não Encontrado"
+          },
+          "500": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/appointments": {
+      "post": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Criar solicitação de agendamento (paciente)",
+        "description": "Paciente cria uma solicitação para um profissional em data/hora escolhidas.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente — formato: Bearer <token>"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "professionalId",
+                    "dateTime",
+                    "address"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "professionalId": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "6876317147871e2d7f74dd90"
+                        }
+                      }
+                    },
+                    "notes": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Trazer exames anteriores"
+                        }
+                      }
+                    },
+                    "dateTime": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "date-time"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "2025-09-10T10:00:00Z"
+                        }
+                      }
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "object"
+                        },
+                        "required": {
+                          "type": "array",
+                          "example": [
+                            "clinicId"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "clinicId": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "example": "string"
+                                },
+                                "example": {
+                                  "type": "string",
+                                  "example": "688d1507f086e02085acf44c"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Criado"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "409": {
+            "description": "Conflito"
+          },
+          "422": {
+            "description": ""
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/appointments/{id}/actions": {
+      "post": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Executa uma ação no agendamento",
+        "description": "Permite confirmar, cancelar, remarcar ou completar um agendamento.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do agendamento"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "action"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "action": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "enum": {
+                          "type": "array",
+                          "example": [
+                            "confirm",
+                            "cancel",
+                            "reschedule",
+                            "complete"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "object"
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "example": "string"
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "example": "Motivo do cancelamento (opcional)"
+                                }
+                              }
+                            },
+                            "dateTime": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "example": "string"
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "example": "date-time"
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "example": "Nova data/hora (ISO 8601) para remarcar"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ação executada com sucesso"
+          },
+          "400": {
+            "description": "Ação inválida ou payload ausente"
+          },
+          "401": {
+            "description": "Não autenticado"
+          },
+          "403": {
+            "description": "Sem permissão para executar a ação"
+          },
+          "404": {
+            "description": "Agendamento não encontrado"
+          },
+          "409": {
+            "description": "Conflito de agenda"
+          },
+          "422": {
+            "description": "Transição de status inválida"
+          },
+          "500": {
+            "description": "Erro interno"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/appointments/{id}": {
+      "get": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Buscar detalhes de um agendamento",
+        "description": "Retorna informações detalhadas de um agendamento específico. O agendamento não pode estar cancelado.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do agendamento"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "404": {
+            "description": "Não Encontrado"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/appointments/me": {
+      "get": {
+        "tags": [
+          "Agendamentos"
+        ],
+        "summary": "Meus agendamentos (Paciente ou Profissional)",
+        "description": "Lista agendamentos do usuário autenticado (paciente ou profissional).",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/search/highlightsWeek": {
@@ -573,29 +1032,6 @@
         }
       }
     },
-    "/user": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "summary": "Retorna todas as informações do usuário",
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "Usuário encontrado, dados retornados"
-          },
-          "401": {
-            "description": "Cookie não encontrado"
-          },
-          "404": {
-            "description": "Não Encontrado"
-          },
-          "500": {
-            "description": "Bad request"
-          }
-        }
-      }
-    },
     "/teste": {
       "get": {
         "tags": [
@@ -622,13 +1058,15 @@
         "required": {
           "type": "array",
           "example": [
+            "userId",
             "name",
             "birthdayDate",
             "CNPJCPFProfissional",
             "residentialAddress",
             "clinic",
             "professionalSpecialties",
-            "professionalServicePreferences"
+            "professionalServicePreferences",
+            "otherProfessionalSpecialties"
           ],
           "items": {
             "type": "string"
@@ -992,11 +1430,13 @@
         "required": {
           "type": "array",
           "example": [
+            "userId",
             "name",
             "birthdayDate",
             "address",
             "userSpecialties",
-            "userServicePreferences"
+            "userServicePreferences",
+            "userAcessibilityPreferences"
           ],
           "items": {
             "type": "string"
@@ -1185,6 +1625,117 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "userAcessibilityPreferences": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        }
+                      }
+                    },
+                    "example": {
+                      "type": "array",
+                      "example": [
+                        "Cadeira de rodas",
+                        "Deficiência visual"
+                      ],
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Appointment": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "64fae32bd00141c1a2eaa321"
+                }
+              }
+            },
+            "patient": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "64fae24ad00141c1a2eaa320"
+                }
+              }
+            },
+            "professional": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "64fae109d00141c1a2eaa31f"
+                }
+              }
+            },
+            "dateTime": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "date-time"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "2025-08-01T14:00:00.000Z"
+                }
+              }
+            },
+            "status": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "confirmed"
                 }
               }
             }

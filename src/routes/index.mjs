@@ -7,6 +7,12 @@ import {
   completeSignUpProfessional,
   userInfo,
 } from "../controller/userController/index.mjs";
+import { 
+  createAppointment,
+  actOnAppointment,
+  getAppointmentById, 
+  getMyAppointments,
+} from "../controller/appointmentController/index.mjs";
 import {
   searchProfessionalsHighlightsWeek,
   searchProfessionalBySpeciality,
@@ -59,6 +65,13 @@ router.post("/auth/sendOTP", checkUserEmailSendOTP);
 router.post("/auth/checkOTP", checkOTP);
 router.post("/auth/createPatient", completeSignUpPatient);
 router.post("/auth/createProfessional", completeSignUpProfessional);
+
+router.get("/user", authenticateToken, userInfo);
+
+router.post("/appointments", authenticateToken, createAppointment);
+router.post("/appointments/:id/actions", authenticateToken, actOnAppointment);
+router.get("/appointments/:id", authenticateToken, getAppointmentById);
+router.get("/appointments/me", authenticateToken, getMyAppointments);
 
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get(
