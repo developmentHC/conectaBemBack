@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import {
   checkUserEmailSendOTP,
   checkOTP,
@@ -7,6 +8,11 @@ import {
   completeSignUpProfessional,
   userInfo,
 } from "../controller/userController/index.mjs";
+import {
+  changeActiveAddress,
+  changeAddress,
+  getAddresses,
+} from "../controller/addressController/index.mjs";
 import { 
   createAppointment,
   actOnAppointment,
@@ -18,12 +24,12 @@ import {
   searchProfessionalBySpeciality,
   searchBar,
 } from "../controller/searchController/index.mjs";
-import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import {
-  changeActiveAddress,
-  changeAddress,
-  getAddresses,
-} from "../controller/addressController/index.mjs";
+  createMessage,
+  listMyContacts,
+  markConversationAsRead,
+  listUnreadConversations
+} from "../controller/messageController/index.mjs";
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -68,10 +74,9 @@ router.post("/auth/createProfessional", completeSignUpProfessional);
 
 router.get("/user", authenticateToken, userInfo);
 
-router.post("/appointments", authenticateToken, createAppointment);
-router.post("/appointments/:id/actions", authenticateToken, actOnAppointment);
-router.get("/appointments/:id", authenticateToken, getAppointmentById);
-router.get("/appointments/me", authenticateToken, getMyAppointments);
+router.put("/address", changeAddress);
+router.get("/address", getAddresses);
+router.put("/active-address", changeActiveAddress);
 
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get(
@@ -80,11 +85,15 @@ router.get(
 );
 router.get("/search/searchBar/:terms", searchBar);
 
-router.put("/address", changeAddress);
-router.get("/address", getAddresses);
-router.put("/active-address", changeActiveAddress);
+router.post("/appointments", authenticateToken, createAppointment);
+router.post("/appointments/:id/actions", authenticateToken, actOnAppointment);
+router.get("/appointments/:id", authenticateToken, getAppointmentById);
+router.get("/appointments/me", authenticateToken, getMyAppointments);
 
-router.get("/user", authenticateToken, userInfo);
+router.post("/messages", authenticateToken, createMessage);
+router.get("/messages/contacts", authenticateToken, listMyContacts);
+router.patch("/conversations/:conversationId/read", authenticateToken, markConversationAsRead);
+router.get("/messages/unread", authenticateToken, listUnreadConversations);
 
 router.get("/teste", (req, res) => {
   /*

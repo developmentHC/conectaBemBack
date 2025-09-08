@@ -29,6 +29,10 @@
       "description": "Endpoints relacionados a agendamentos de consultas"
     },
     {
+      "name": "Messages",
+      "description": "Endpoints relacionados a mensagens entre usuários"
+    },
+    {
       "name": "Test",
       "description": "Endpoints de teste"
     },
@@ -229,6 +233,388 @@
           },
           "500": {
             "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/address": {
+      "put": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Atualizar endereço do usuário",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Dados do endereço atualizado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "addressId": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "507f1f77bcf86cd799439011"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "ID do endereço a ser atualizado"
+                    }
+                  }
+                },
+                "cep": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "12345678"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "CEP do endereço"
+                    }
+                  }
+                },
+                "name": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Casa"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Nome do local"
+                    }
+                  }
+                },
+                "endereco": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Rua Example, 123"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Logradouro"
+                    }
+                  }
+                },
+                "bairro": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Centro"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Bairro"
+                    }
+                  }
+                },
+                "estado": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "SP"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Estado"
+                    }
+                  }
+                },
+                "complemento": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "example": {
+                      "type": "string",
+                      "example": "Apto 123"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Complemento do endereço"
+                    }
+                  }
+                },
+                "active": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "example": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Indica se é o endereço ativo"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endereço atualizado com sucesso"
+          },
+          "304": {
+            "description": "Endereço está idêntico ao banco de dados"
+          },
+          "422": {
+            "description": "Parâmetros exigidos não estão sendo enviados no body"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Retorna todos os endereços do usuário",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Endereços encontrados",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "507f1f77bcf86cd799439011"
+                      },
+                      "cep": {
+                        "type": "string",
+                        "example": "12345678"
+                      },
+                      "address": {
+                        "type": "string",
+                        "example": "Rua Example, 123"
+                      },
+                      "neighborhood": {
+                        "type": "string",
+                        "example": "Centro"
+                      },
+                      "city": {
+                        "type": "string",
+                        "example": "São Paulo"
+                      },
+                      "state": {
+                        "type": "string",
+                        "example": "SP"
+                      },
+                      "active": {
+                        "type": "boolean",
+                        "example": true
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/active-address": {
+      "put": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Alterar endereço principal do usuário",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "ID do endereço que será definido como principal",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "addressId"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "addressId": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "507f1f77bcf86cd799439011"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endereço principal atualizado com sucesso"
+          },
+          "304": {
+            "description": "Não Modificado"
+          },
+          "404": {
+            "description": "Endereço não encontrado"
+          },
+          "422": {
+            "description": "ID do endereço não fornecido"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/search/highlightsWeek": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Pesquisa os profissionais destaques da semana",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/search/professionalBySpeciality/{speciality}": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Pesquisa um range de 10 profissionais de uma especialidade específica",
+        "description": "",
+        "parameters": [
+          {
+            "name": "speciality",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissional encontrado, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      }
+    },
+    "/search/searchBar/{terms}": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Barra de pesquisa",
+        "description": "",
+        "parameters": [
+          {
+            "name": "terms",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro no servidor"
           }
         }
       }
@@ -654,330 +1040,24 @@
         ]
       }
     },
-    "/search/highlightsWeek": {
-      "get": {
+    "/messages": {
+      "post": {
         "tags": [
-          "Search"
+          "Messages"
         ],
-        "summary": "Pesquisa os profissionais destaques da semana",
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
-          },
-          "400": {
-            "description": "Solicitação Inválida"
-          },
-          "500": {
-            "description": "Erro no servidor"
-          }
-        }
-      }
-    },
-    "/search/professionalBySpeciality/{speciality}": {
-      "get": {
-        "tags": [
-          "Search"
-        ],
-        "summary": "Pesquisa um range de 10 profissionais de uma especialidade específica",
-        "description": "",
+        "summary": "Enviar mensagem em uma conversa",
+        "description": "Cria uma mensagem; se não for informado um ID de conversa, o backend cria automaticamente um novo. Atualiza o lastMessage e incrementa unreadCount dos participantes.",
         "parameters": [
           {
-            "name": "speciality",
-            "in": "path",
+            "name": "authorization",
+            "in": "header",
             "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Profissional encontrado, retorna um range de 10 profissionais"
+            "type": "string",
+            "description": "Token JWT — formato: Bearer <token>"
           },
-          "400": {
-            "description": "Solicitação Inválida"
-          },
-          "500": {
-            "description": "Erro no servidor"
-          }
-        }
-      }
-    },
-    "/search/searchBar/{terms}": {
-      "get": {
-        "tags": [
-          "Search"
-        ],
-        "summary": "Barra de pesquisa",
-        "description": "",
-        "parameters": [
-          {
-            "name": "terms",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
-          },
-          "400": {
-            "description": "Solicitação Inválida"
-          },
-          "500": {
-            "description": "Erro no servidor"
-          }
-        }
-      }
-    },
-    "/address": {
-      "put": {
-        "tags": [
-          "Address"
-        ],
-        "summary": "Atualizar endereço do usuário",
-        "description": "",
-        "parameters": [
           {
             "name": "body",
             "in": "body",
-            "description": "Dados do endereço atualizado",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "addressId": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "507f1f77bcf86cd799439011"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "ID do endereço a ser atualizado"
-                    }
-                  }
-                },
-                "cep": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "12345678"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "CEP do endereço"
-                    }
-                  }
-                },
-                "name": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "Casa"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Nome do local"
-                    }
-                  }
-                },
-                "endereco": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "Rua Example, 123"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Logradouro"
-                    }
-                  }
-                },
-                "bairro": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "Centro"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Bairro"
-                    }
-                  }
-                },
-                "estado": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "SP"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Estado"
-                    }
-                  }
-                },
-                "complemento": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "Apto 123"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Complemento do endereço"
-                    }
-                  }
-                },
-                "active": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "boolean"
-                    },
-                    "example": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Indica se é o endereço ativo"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Endereço atualizado com sucesso"
-          },
-          "304": {
-            "description": "Endereço está idêntico ao banco de dados"
-          },
-          "422": {
-            "description": "Parâmetros exigidos não estão sendo enviados no body"
-          },
-          "500": {
-            "description": "Erro no servidor"
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Address"
-        ],
-        "summary": "Retorna todos os endereços do usuário",
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "Endereços encontrados",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "address": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "_id": {
-                        "type": "string",
-                        "example": "507f1f77bcf86cd799439011"
-                      },
-                      "cep": {
-                        "type": "string",
-                        "example": "12345678"
-                      },
-                      "address": {
-                        "type": "string",
-                        "example": "Rua Example, 123"
-                      },
-                      "neighborhood": {
-                        "type": "string",
-                        "example": "Centro"
-                      },
-                      "city": {
-                        "type": "string",
-                        "example": "São Paulo"
-                      },
-                      "state": {
-                        "type": "string",
-                        "example": "SP"
-                      },
-                      "active": {
-                        "type": "boolean",
-                        "example": true
-                      }
-                    }
-                  }
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "401": {
-            "description": "Não autorizado"
-          },
-          "404": {
-            "description": "Usuário não encontrado"
-          },
-          "500": {
-            "description": "Erro no servidor"
-          }
-        }
-      }
-    },
-    "/active-address": {
-      "put": {
-        "tags": [
-          "Address"
-        ],
-        "summary": "Alterar endereço principal do usuário",
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "description": "ID do endereço que será definido como principal",
             "required": true,
             "schema": {
               "type": "object",
@@ -989,7 +1069,7 @@
                 "required": {
                   "type": "array",
                   "example": [
-                    "addressId"
+                    "content"
                   ],
                   "items": {
                     "type": "string"
@@ -998,7 +1078,7 @@
                 "properties": {
                   "type": "object",
                   "properties": {
-                    "addressId": {
+                    "conversation": {
                       "type": "object",
                       "properties": {
                         "type": {
@@ -1007,7 +1087,56 @@
                         },
                         "example": {
                           "type": "string",
-                          "example": "507f1f77bcf86cd799439011"
+                          "example": "conv123"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Identificador único da conversa. Opcional — se não enviado, será criado automaticamente."
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Olá, tudo bem?"
+                        }
+                      }
+                    },
+                    "participants": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "array"
+                        },
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "string"
+                            }
+                          }
+                        },
+                        "example": {
+                          "type": "array",
+                          "example": [
+                            "66b9f4e2f4a5a7d6f4b9c123",
+                            "66b9f4e2f4a5a7d6f4b9c456"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Lista de participantes da conversa. Obrigatório se conversation não for informado."
                         }
                       }
                     }
@@ -1018,22 +1147,166 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Endereço principal atualizado com sucesso"
+          "201": {
+            "description": "Mensagem criada com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "messageId": {
+                  "type": "string",
+                  "example": "66b9f4e2f4a5a7d6f4b9c789"
+                },
+                "conversation": {
+                  "type": "string",
+                  "example": "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
-          "304": {
-            "description": "Não Modificado"
+          "400": {
+            "description": "Parâmetros obrigatórios ausentes (content ou participants quando conversation não for informado)"
           },
-          "404": {
-            "description": "Endereço não encontrado"
+          "401": {
+            "description": "Token JWT ausente ou inválido"
           },
-          "422": {
-            "description": "ID do endereço não fornecido"
+          "403": {
+            "description": "Acesso Negado"
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno do servidor"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/messages/contacts": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Listar contatos do usuário",
+        "description": "Lista todos os contatos (pacientes ou profissionais) do usuário autenticado, incluindo último envio e mensagens não lidas.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/conversations/{conversationId}/read": {
+      "patch": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Marcar conversa como lida",
+        "description": "Zera o unreadCount do usuário autenticado nessa conversa.",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Identificador da conversa"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT — formato: Bearer <token>"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Conversa marcada como lida"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Usuário não participa da conversa"
+          },
+          "404": {
+            "description": "Conversa não encontrada"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/messages/unread": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Listar conversas com mensagens não lidas",
+        "description": "Retorna apenas as conversas onde o usuário logado tem unreadCount > 0.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT — formato: Bearer <token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de conversas com mensagens não lidas"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/teste": {

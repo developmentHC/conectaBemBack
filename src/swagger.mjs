@@ -83,6 +83,10 @@ const doc = {
         description: "Endpoints relacionados a agendamentos de consultas" 
     },
     {
+      name: "Messages",
+      description: "Endpoints relacionados a mensagens entre usuários",
+    },
+    {
       name: "Test",
       description: "Endpoints de teste",
     },
