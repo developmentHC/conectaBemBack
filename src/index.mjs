@@ -5,11 +5,11 @@ import swaggerFile from "./../swagger-output.json" with { type: "json" };
 import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.mjs";
 import { initializeGridFS } from "./lib/gridFs.mjs";
+import { startInboxMessageWatcher } from "./watchers/inboxMessageWatcher.mjs"; 
 
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
-console.log();
 
 app.use("/docs", swaggerUi.serve, (req, res, next) => {
   swaggerUi.setup(swaggerFile, {
@@ -22,13 +22,12 @@ app.use("/docs", swaggerUi.serve, (req, res, next) => {
   })(req, res, next);
 });
 
-app.get("/", (req, res) => {
-  res.redirect("/docs");
-});
+app.get("/", (req, res) => res.redirect("/docs"));
 app.use("/", router);
 
 connectDB()
   .then(() => {
+    startInboxMessageWatcher(); 
     app.listen(3000);
     console.log("Conectou ao banco com sucesso");
   })

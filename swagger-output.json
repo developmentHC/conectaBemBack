@@ -31,6 +31,10 @@
     {
       "name": "Test",
       "description": "Endpoints de teste"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Eventos enviados pelo servidor (documentação)"
     }
   ],
   "schemes": [
@@ -1045,6 +1049,112 @@
           }
         }
       }
+    },
+    "/webhooks/message-created": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Evento enviado quando uma nova mensagem é criada",
+        "description": "",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "X-Event-Type",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "example": "message.created",
+            "description": "Tipo do evento"
+          },
+          {
+            "name": "X-Event-Id",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "example": "e5ae2396-ff2c-4a6b-8906-73a4459d42cc",
+            "description": "UUID único do evento"
+          },
+          {
+            "name": "X-Signature-SHA256",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "example": "a8bcf7e31c9d8d...",
+            "description": "Assinatura HMAC SHA-256 do corpo com WEBHOOK_SECRET"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WebhookMessageCreated"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exemplo de payload recebido pelo webhook",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "eventId": {
+                  "type": "string",
+                  "example": "e5ae2396-ff2c-4a6b-8906-73a4459d42cc"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "message.created"
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "example": "2025-08-05T22:48:13.781Z"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "messageId": {
+                      "type": "string",
+                      "example": "68928a2d6acdb8a8dd58cc63"
+                    },
+                    "conversation": {
+                      "type": "string",
+                      "example": "conv_teste_123"
+                    },
+                    "sender": {
+                      "type": "string",
+                      "example": "68928a2d6acdb8a8dd58cc62"
+                    },
+                    "senderName": {
+                      "type": "string",
+                      "example": "Testador"
+                    },
+                    "content": {
+                      "type": "string",
+                      "example": "Mensagem teste webhook"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "example": "2025-08-05T22:48:13.592Z"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Assinatura inválida"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1736,6 +1846,159 @@
                 "example": {
                   "type": "string",
                   "example": "confirmed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "WebhookMessageCreated": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "eventId": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "e5ae2396-ff2c-4a6b-8906-73a4459d42cc"
+                }
+              }
+            },
+            "type": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "message.created"
+                }
+              }
+            },
+            "occurredAt": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "date-time"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "2025-08-05T22:48:13.781Z"
+                }
+              }
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "messageId": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "68928a2d6acdb8a8dd58cc63"
+                        }
+                      }
+                    },
+                    "conversation": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "conv_teste_123"
+                        }
+                      }
+                    },
+                    "sender": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "68928a2d6acdb8a8dd58cc62"
+                        }
+                      }
+                    },
+                    "senderName": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Testador"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Mensagem teste webhook"
+                        }
+                      }
+                    },
+                    "createdAt": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "date-time"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "2025-08-05T22:48:13.592Z"
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
