@@ -59,6 +59,16 @@ const clinicSchema = new mongoose.Schema({
   addition: String,
 });
 
+const acceptedPaymentsSchema = new mongoose.Schema(
+  {
+    pix: { type: Boolean, default: false },
+    wellhub: { type: Boolean, default: false },
+    mastercard: { type: Boolean, default: false },
+    visa: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -90,6 +100,9 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "fs.files",
   },
+  ratingsCount: { type: Number, default: 0 },
+  ratingsAvg: { type: Number, default: 0 },
+  acceptedPayments: { type: acceptedPaymentsSchema, default: () => ({}) },
 });
 
 const User = mongoose.model("User", userSchema);

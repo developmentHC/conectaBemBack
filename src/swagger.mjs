@@ -1,6 +1,6 @@
 import swaggerAutogen from "swagger-autogen";
 
-const isProduction = process.env.VERCEL == 1;
+const isProduction = process.env.VERCEL === "1";
 const vercelUrl = process.env.VERCEL_URL;
 
 export const sharedProperties = {

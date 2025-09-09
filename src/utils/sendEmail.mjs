@@ -1,7 +1,9 @@
 import config from "./../config/config.mjs";
 import sgMail from "@sendgrid/mail";
 
-sgMail.setApiKey(config.SENDGRID_API_KEY);
+if (config.SENDGRID_API_KEY) {
+  sgMail.setApiKey(config.SENDGRID_API_KEY);
+}
 
 function buildMsg(to, OTP, sandbox = false) {
   return {
@@ -28,15 +30,17 @@ function isRateOrAuthError(err) {
 
 export async function sendEmail(to, OTP) {
   const isProd = process.env.NODE_ENV === "production";
-  const forceSandbox = String(config.EMAIL_SANDBOX || "").toLowerCase() === "true";
-  const useSandboxByDefault = !isProd || forceSandbox;
+
+  if (!config.SENDGRID_API_KEY || !isProd) {
+    console.log("[MOCK EMAIL] ->", {
+      to,
+      subject: "Seu código de verificação",
+      text: `Seu código OTP está logo abaixo: ${OTP}`,
+    });
+    return true;
+  }
 
   try {
-    if (useSandboxByDefault) {
-      await sgMail.send(buildMsg(to, OTP, true));
-      return true;
-    }
-
     await sgMail.send(buildMsg(to, OTP, false));
     return true;
   } catch (err) {

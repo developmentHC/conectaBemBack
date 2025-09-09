@@ -9,25 +9,35 @@ export async function createMessage(req, res) {
   /*
   #swagger.tags = ['Messages']
   #swagger.summary = 'Enviar mensagem em uma conversa'
-  #swagger.description = 'Cria uma mensagem; se não for informado um ID de conversa, o backend cria automaticamente um novo. Atualiza o lastMessage e incrementa unreadCount dos participantes.'
+  #swagger.description = 'Cria uma nova mensagem em uma conversa existente ou inicia uma nova conversa caso não seja informado um ID. Atualiza o lastMessage e incrementa o unreadCount dos participantes.'
   #swagger.security = [{ "bearerAuth": [] }]
+
   #swagger.parameters['authorization'] = {
-    in: 'header', required: true, type: 'string',
-    description: 'Token JWT — formato: Bearer <token>'
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   }
+
   #swagger.parameters['body'] = {
     in: 'body',
     required: true,
+    description: 'Dados da mensagem a ser enviada',
     schema: {
       type: 'object',
       required: ['content'],
       properties: {
         conversation: { 
           type: 'string', 
-          example: 'conv123', 
+          example: 'a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab', 
           description: 'Identificador único da conversa. Opcional — se não enviado, será criado automaticamente.'
         },
-        content: { type: 'string', example: 'Olá, tudo bem?' },
+        content: { 
+          type: 'string', 
+          example: 'Olá, tudo bem?', 
+          description: 'Conteúdo da mensagem enviada'
+        },
         participants: {
           type: 'array',
           items: { type: 'string' },
@@ -37,17 +47,30 @@ export async function createMessage(req, res) {
       }
     }
   }
+
   #swagger.responses[201] = {
     description: 'Mensagem criada com sucesso',
     schema: { 
-      success: true, 
-      messageId: '66b9f4e2f4a5a7d6f4b9c789',
-      conversation: 'a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab'
+      success: true,
+      messageId: "66b9f4e2f4a5a7d6f4b9c789",
+      conversation: "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab"
     }
   }
-  #swagger.responses[400] = { description: 'Parâmetros obrigatórios ausentes (content ou participants quando conversation não for informado)' }
-  #swagger.responses[401] = { description: 'Token JWT ausente ou inválido' }
-  #swagger.responses[500] = { description: 'Erro interno do servidor' }
+
+  #swagger.responses[400] = { 
+    description: 'Parâmetros obrigatórios ausentes ou inválidos',
+    schema: { error: "content é obrigatório" }
+  }
+
+  #swagger.responses[401] = { 
+    description: 'Usuário não autenticado (JWT ausente ou inválido)',
+    schema: { error: "Não autenticado" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Erro interno" }
+  }
 */
 
   try {
@@ -138,11 +161,51 @@ export async function createMessage(req, res) {
 
 export async function listMyContacts(req, res) {
   /*
-    #swagger.tags = ['Messages']
-    #swagger.summary = 'Listar contatos do usuário'
-    #swagger.description = 'Lista todos os contatos (pacientes ou profissionais) do usuário autenticado, incluindo último envio e mensagens não lidas.'
-    #swagger.security = [{ "bearerAuth": [] }]
-  */
+  #swagger.tags = ['Messages']
+  #swagger.summary = 'Listar contatos do usuário'
+  #swagger.description = 'Lista todos os contatos (pacientes ou profissionais) do usuário autenticado, incluindo último envio e quantidade de mensagens não lidas.'
+  #swagger.security = [{ "bearerAuth": [] }]
+
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
+
+  #swagger.responses[200] = {
+    description: 'Contatos listados com sucesso',
+    schema: {
+      items: [
+        {
+          conversation: "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab",
+          contactId: "66b9f4e2f4a5a7d6f4b9c123",
+          contactName: "Maria Souza",
+          contactAvatar: "https://api.seusistema.com/uploads/66b9f4e2f4a5a7d6f4b9c999",
+          userType: "patient",
+          lastMessage: {
+            content: "Olá, tudo bem?",
+            sender: "66b9f4e2f4a5a7d6f4b9c123",
+            createdAt: "2025-09-10T14:00:00Z"
+          },
+          unreadCount: 2
+        }
+      ]
+    }
+  }
+
+  #swagger.responses[401] = {
+    description: 'Usuário não autenticado',
+    schema: { error: "Não autenticado" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Erro interno" }
+  }
+*/
+
   try {
     const userId = req.user?.id ?? req.userId;
     if (!userId) return res.status(401).json({ error: "Não autenticado" });
@@ -212,22 +275,52 @@ export async function listMyContacts(req, res) {
 
 export async function markConversationAsRead(req, res) {
   /*
-    #swagger.tags = ['Messages']
-    #swagger.summary = 'Marcar conversa como lida'
-    #swagger.description = 'Zera o unreadCount do usuário autenticado nessa conversa.'
-    #swagger.security = [{ "bearerAuth": [] }]
-    #swagger.parameters['authorization'] = {
-      in: 'header', required: true, type: 'string',
-      description: 'Token JWT — formato: Bearer <token>'
-    }
-    #swagger.parameters['conversationId'] = {
-      in: 'path', required: true, type: 'string',
-      description: 'Identificador da conversa'
-    }
-    #swagger.responses[204] = { description: 'Conversa marcada como lida' }
-    #swagger.responses[403] = { description: 'Usuário não participa da conversa' }
-    #swagger.responses[404] = { description: 'Conversa não encontrada' }
-  */
+  #swagger.tags = ['Messages']
+  #swagger.summary = 'Marcar conversa como lida'
+  #swagger.description = 'Zera o campo unreadCount do usuário autenticado nessa conversa.'
+  #swagger.security = [{ "bearerAuth": [] }]
+
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
+
+  #swagger.parameters['conversationId'] = {
+    in: 'path',
+    required: true,
+    type: 'string',
+    description: 'Identificador único da conversa',
+    example: 'a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab'
+  }
+
+  #swagger.responses[204] = {
+    description: 'Conversa marcada como lida (sem conteúdo de resposta)'
+  }
+
+  #swagger.responses[401] = {
+    description: 'Usuário não autenticado',
+    schema: { error: "Não autenticado" }
+  }
+
+  #swagger.responses[403] = {
+    description: 'Usuário não participa da conversa',
+    schema: { error: "Você não tem acesso a esta conversa" }
+  }
+
+  #swagger.responses[404] = {
+    description: 'Conversa não encontrada',
+    schema: { error: "Conversa não encontrada" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Erro interno" }
+  }
+*/
+
   try {
     const userId = req.user?.id ?? req.userId;
     const { conversationId } = req.params;
@@ -256,16 +349,50 @@ export async function markConversationAsRead(req, res) {
 
 export async function listUnreadConversations(req, res) {
   /*
-    #swagger.tags = ['Messages']
-    #swagger.summary = 'Listar conversas com mensagens não lidas'
-    #swagger.description = 'Retorna apenas as conversas onde o usuário logado tem unreadCount > 0.'
-    #swagger.security = [{ "bearerAuth": [] }]
-    #swagger.parameters['authorization'] = {
-      in: 'header', required: true, type: 'string',
-      description: 'Token JWT — formato: Bearer <token>'
+  #swagger.tags = ['Messages']
+  #swagger.summary = 'Listar conversas com mensagens não lidas'
+  #swagger.description = 'Retorna apenas as conversas onde o usuário logado possui mensagens não lidas (unreadCount > 0).'
+  #swagger.security = [{ "bearerAuth": [] }]
+
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
+
+  #swagger.responses[200] = {
+    description: 'Lista de conversas com mensagens não lidas retornada com sucesso',
+    schema: {
+      items: [
+        {
+          conversation: "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab",
+          otherId: "66b9f4e2f4a5a7d6f4b9c123",
+          otherName: "Maria Souza",
+          otherAvatar: "https://api.seusistema.com/uploads/avatar123.png",
+          lastMessage: {
+            content: "Oi, tudo bem?",
+            sender: "66b9f4e2f4a5a7d6f4b9c123",
+            createdAt: "2025-09-10T14:00:00Z"
+          },
+          unreadCount: 3
+        }
+      ]
     }
-    #swagger.responses[200] = { description: 'Lista de conversas com mensagens não lidas' }
-  */
+  }
+
+  #swagger.responses[401] = {
+    description: 'Usuário não autenticado',
+    schema: { error: "Não autenticado" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Erro interno" }
+  }
+*/
+
   try {
     const userId = req.user?.id ?? req.userId;
     if (!userId) return res.status(401).json({ error: "Não autenticado" });
