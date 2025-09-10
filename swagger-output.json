@@ -57,17 +57,20 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Envia o código OTP para o e-mail enviado pelo body",
-        "description": "Envia o código OTP para registro/login da conta no e-mail enviado no body",
+        "summary": "Envia código OTP para o e-mail informado",
+        "description": "Fluxo de registro/login: envia um código OTP para o e-mail passado no body da requisição.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "description": "E-mail do usuário para envio do OTP",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "usuario@teste.com"
                 }
               }
             }
@@ -75,16 +78,107 @@
         ],
         "responses": {
           "200": {
-            "description": "Usuário já existente, código OTP enviado por e-mail"
+            "description": "Usuário já existente, OTP atualizado e enviado por e-mail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "64f1b2c3d4e5f6a7b8c9"
+                },
+                "email": {
+                  "type": "object",
+                  "properties": {
+                    "address": {
+                      "type": "string",
+                      "example": "usuario@teste.com"
+                    },
+                    "exists": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "pending"
+                    }
+                  }
+                },
+                "message": {
+                  "type": "string",
+                  "example": "User OTP updated and sent"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "201": {
-            "description": "Usuário criado com sucesso e código OTP enviado por e-mail"
+            "description": "Usuário criado com sucesso e OTP enviado por e-mail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "64f1b2c3d4e5f6a7b8c9"
+                },
+                "email": {
+                  "type": "object",
+                  "properties": {
+                    "address": {
+                      "type": "string",
+                      "example": "usuario@teste.com"
+                    },
+                    "exists": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "pending"
+                    }
+                  }
+                },
+                "role": {},
+                "message": {
+                  "type": "string",
+                  "example": "User created and OTP sent through email"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "422": {
-            "description": "Parâmetros exigidos não estão sendo enviados no body"
+            "description": "Parâmetros inválidos ou não enviados",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Um e-mail é exigido"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Server error"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -94,20 +188,24 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Checa se OTPs coincidem, e parte para o login/registro do usuário",
-        "description": "Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro",
+        "summary": "Checa se OTP coincide e realiza login/registro",
+        "description": "Verifica se o OTP enviado no body corresponde ao OTP encriptado no backend. Se coincidir: se o usuário já existir, é logado; caso contrário, fica liberado para registro.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "description": "E-mail do usuário e OTP recebido",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "usuario@teste.com"
                 },
                 "OTP": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "<código enviado por e-mail>"
                 }
               }
             }
@@ -115,16 +213,76 @@
         ],
         "responses": {
           "200": {
-            "description": "Còdigos OTP coincidem"
+            "description": "Códigos OTP coincidem e login/registro autorizado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "64f1b2c3d4e5f6a7b8c9"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "usuario@teste.com"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "active"
+                },
+                "token": {
+                  "type": "string",
+                  "example": "eyJhbGciOiJIUzI1NiIsInR..."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Códigos OTP não coincidem"
+            "description": "Códigos OTP não coincidem",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "OTP inválido ou expirado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "422": {
-            "description": "Parâmetros exigidos não estão sendo enviados no body"
+            "description": "Parâmetros obrigatórios não enviados",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Email e OTP são obrigatórios."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Ocorreu um erro no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -135,12 +293,13 @@
           "Authentication"
         ],
         "summary": "Completa o cadastro do usuário paciente",
-        "description": "",
+        "description": "Este endpoint finaliza o cadastro do paciente após o fluxo de sendOTP e checkOTP. É necessário já existir um usuário pendente antes da chamada.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
-            "description": "É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint",
+            "description": "Dados obrigatórios para completar o cadastro do paciente. Necessário ter passado antes por sendOTP e checkOTP.",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/AddUserPatient"
             }
@@ -148,19 +307,83 @@
         ],
         "responses": {
           "200": {
-            "description": "Usuário encontardo, mas nenhuma alteração realizada no seu cadastro"
+            "description": "Usuário encontrado, mas nenhuma alteração realizada",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Nenhuma alteração realizada"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "201": {
-            "description": "Usuário encontrado, cadastro completado com sucesso"
+            "description": "Usuário encontrado e cadastro completado com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Registro bem-sucedido!"
+                },
+                "token": {
+                  "type": "string",
+                  "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "404": {
-            "description": "Usuário não encontrado"
+            "description": "Usuário não encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Usuário não existe ou não foi cadastrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "422": {
-            "description": "Parâmetros exigidos não estão sendo enviados no body"
+            "description": "Parâmetros obrigatórios não enviados ou inválidos",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Campo 'name' é obrigatório"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Bad request"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -171,12 +394,13 @@
           "Authentication"
         ],
         "summary": "Completa o cadastro do usuário profissional",
-        "description": "",
+        "description": "Finaliza o cadastro do profissional após os passos de sendOTP e checkOTP. É necessário que o usuário já exista como pendente antes de chamar este endpoint.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
-            "description": "É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint",
+            "description": "Dados obrigatórios para completar o cadastro do profissional. Necessário ter passado antes por sendOTP e checkOTP.",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/AddUserProfessional"
             }
@@ -184,19 +408,83 @@
         ],
         "responses": {
           "200": {
-            "description": "Usuário encontardo, mas nenhuma alteração realizada no seu cadastro"
+            "description": "Usuário encontrado, mas nenhuma alteração realizada",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Nenhuma alteração realizada"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "201": {
-            "description": "Usuário encontrado, cadastro completado com sucesso"
+            "description": "Usuário encontrado e cadastro completado com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Registro bem-sucedido"
+                },
+                "token": {
+                  "type": "string",
+                  "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "404": {
-            "description": "Usuário não encontrado"
+            "description": "Usuário não encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Usuário não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "422": {
-            "description": "Parâmetros exigidos não estão sendo enviados no body"
+            "description": "Parâmetros obrigatórios não enviados ou inválidos",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Campo 'clinic' é obrigatório"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Mensagem de erro interno do servidor"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -206,30 +494,150 @@
         "tags": [
           "User"
         ],
-        "summary": "Retorna todas as informações do usuário",
-        "description": "",
+        "summary": "Retorna todas as informações do usuário logado",
+        "description": "Endpoint protegido que retorna todos os dados do usuário autenticado, exceto campos sensíveis (hashedOTP, __v). Caso exista imagem de perfil, retorna também em formato base64.",
         "parameters": [
           {
             "name": "authorization",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "authToken",
+            "in": "cookie",
+            "description": "JWT de autenticação do usuário",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "Usuário encontrado, dados retornados"
+            "description": "Usuário encontrado, dados retornados com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "64f1b2c3d4e5f6a7b8c9"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "João da Silva"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "usuario@teste.com"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "active"
+                },
+                "userType": {
+                  "type": "array",
+                  "example": [
+                    "patient"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "profilePhoto": {
+                  "type": "string",
+                  "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+                },
+                "residentialAddress": {
+                  "type": "object",
+                  "properties": {
+                    "cep": {
+                      "type": "string",
+                      "example": "12345678"
+                    },
+                    "address": {
+                      "type": "string",
+                      "example": "Rua Exemplo, 123"
+                    },
+                    "neighborhood": {
+                      "type": "string",
+                      "example": "Centro"
+                    },
+                    "city": {
+                      "type": "string",
+                      "example": "São Paulo"
+                    },
+                    "state": {
+                      "type": "string",
+                      "example": "SP"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Cookie não encontrado"
+            "description": "Cookie de autenticação não encontrado ou inválido",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Cookie não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
             "description": "Acesso Negado"
           },
           "404": {
-            "description": "Não Encontrado"
+            "description": "Usuário não encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Usuário não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "422": {
+            "description": "Parâmetros inválidos durante a validação",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Mensagem de validação"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Bad request"
+            "description": "Erro interno ao buscar informações do usuário",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Bad request"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -239,149 +647,173 @@
         "tags": [
           "Address"
         ],
-        "summary": "Atualizar endereço do usuário",
-        "description": "",
+        "summary": "Atualiza um endereço do usuário",
+        "description": "Endpoint protegido que atualiza um endereço existente de um usuário logado. É necessário fornecer o ID do endereço e os novos dados no corpo da requisição.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
-            "description": "Dados do endereço atualizado",
+            "description": "Dados do endereço a ser atualizado",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
-                "addressId": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "507f1f77bcf86cd799439011"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "ID do endereço a ser atualizado"
-                    }
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "addressId",
+                    "cep",
+                    "endereco",
+                    "bairro",
+                    "estado",
+                    "complemento"
+                  ],
+                  "items": {
+                    "type": "string"
                   }
                 },
-                "cep": {
+                "properties": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
+                    "addressId": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "507f1f77bcf86cd799439011"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "ID do endereço a ser atualizado"
+                        }
+                      }
                     },
-                    "example": {
-                      "type": "string",
-                      "example": "12345678"
+                    "cep": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "12345678"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "CEP do endereço"
+                        }
+                      }
                     },
-                    "description": {
-                      "type": "string",
-                      "example": "CEP do endereço"
-                    }
-                  }
-                },
-                "name": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
+                    "name": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Casa"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Nome do local"
+                        }
+                      }
                     },
-                    "example": {
-                      "type": "string",
-                      "example": "Casa"
+                    "endereco": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Rua Example, 123"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Logradouro"
+                        }
+                      }
                     },
-                    "description": {
-                      "type": "string",
-                      "example": "Nome do local"
-                    }
-                  }
-                },
-                "endereco": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
+                    "bairro": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Centro"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Bairro"
+                        }
+                      }
                     },
-                    "example": {
-                      "type": "string",
-                      "example": "Rua Example, 123"
+                    "estado": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "SP"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Estado"
+                        }
+                      }
                     },
-                    "description": {
-                      "type": "string",
-                      "example": "Logradouro"
-                    }
-                  }
-                },
-                "bairro": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
+                    "complemento": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Apto 123"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Complemento do endereço"
+                        }
+                      }
                     },
-                    "example": {
-                      "type": "string",
-                      "example": "Centro"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Bairro"
-                    }
-                  }
-                },
-                "estado": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "SP"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Estado"
-                    }
-                  }
-                },
-                "complemento": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "example": {
-                      "type": "string",
-                      "example": "Apto 123"
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Complemento do endereço"
-                    }
-                  }
-                },
-                "active": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "boolean"
-                    },
-                    "example": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "description": {
-                      "type": "string",
-                      "example": "Indica se é o endereço ativo"
+                    "active": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "boolean"
+                        },
+                        "example": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Indica se é o endereço ativo"
+                        }
+                      }
                     }
                   }
                 }
@@ -391,16 +823,64 @@
         ],
         "responses": {
           "200": {
-            "description": "Endereço atualizado com sucesso"
+            "description": "Endereço atualizado com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Atualização bem sucedida!"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "304": {
-            "description": "Endereço está idêntico ao banco de dados"
+            "description": "Endereço está idêntico ao banco de dados (nenhuma modificação realizada)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Não há nada para atualizar no endereço"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "422": {
-            "description": "Parâmetros exigidos não estão sendo enviados no body"
+            "description": "Parâmetros obrigatórios não enviados no body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Existem alguns parâmetros faltando para completar o cadastro do profissional"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro no servidor"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       },
@@ -409,14 +889,14 @@
           "Address"
         ],
         "summary": "Retorna todos os endereços do usuário",
-        "description": "",
+        "description": "Endpoint protegido que retorna todos os endereços cadastrados do usuário logado.",
         "responses": {
           "200": {
-            "description": "Endereços encontrados",
+            "description": "Endereços encontrados com sucesso",
             "schema": {
               "type": "object",
               "properties": {
-                "address": {
+                "addresses": {
                   "type": "array",
                   "items": {
                     "type": "object",
@@ -429,21 +909,21 @@
                         "type": "string",
                         "example": "12345678"
                       },
-                      "address": {
+                      "endereco": {
                         "type": "string",
                         "example": "Rua Example, 123"
                       },
-                      "neighborhood": {
+                      "bairro": {
                         "type": "string",
                         "example": "Centro"
                       },
-                      "city": {
-                        "type": "string",
-                        "example": "São Paulo"
-                      },
-                      "state": {
+                      "estado": {
                         "type": "string",
                         "example": "SP"
+                      },
+                      "complemento": {
+                        "type": "string",
+                        "example": "Apto 123"
                       },
                       "active": {
                         "type": "boolean",
@@ -459,13 +939,49 @@
             }
           },
           "401": {
-            "description": "Não autorizado"
+            "description": "Não autorizado (token inválido ou ausente)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Não autorizado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "404": {
-            "description": "Usuário não encontrado"
+            "description": "Usuário não encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Usuário não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro ao buscar endereços"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -476,7 +992,7 @@
           "Address"
         ],
         "summary": "Alterar endereço principal do usuário",
-        "description": "",
+        "description": "Endpoint protegido que define um endereço como principal (ativo) para o usuário logado. O campo `addressId` é obrigatório.",
         "parameters": [
           {
             "name": "body",
@@ -512,6 +1028,10 @@
                         "example": {
                           "type": "string",
                           "example": "507f1f77bcf86cd799439011"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "ID do endereço a ser definido como principal"
                         }
                       }
                     }
@@ -523,19 +1043,79 @@
         ],
         "responses": {
           "200": {
-            "description": "Endereço principal atualizado com sucesso"
+            "description": "Endereço principal atualizado com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Endereço principal atualizado com sucesso!"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "304": {
-            "description": "Não Modificado"
+            "description": "Não houve alteração no endereço principal",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Não houve alteração no endereço principal"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "404": {
-            "description": "Endereço não encontrado"
+            "description": "Usuário ou endereço não encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Endereço não encontrado para este usuário"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "422": {
-            "description": "ID do endereço não fornecido"
+            "description": "ID do endereço não fornecido",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "ID do endereço é obrigatório"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro no servidor"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -546,16 +1126,102 @@
           "Search"
         ],
         "summary": "Pesquisa os profissionais destaques da semana",
-        "description": "",
+        "description": "Retorna uma lista paginada de até 10 profissionais que são destaques da semana. A paginação é controlada pelo parâmetro `page` na rota.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "path",
+            "description": "Número da página para paginação (cada página retorna até 10 profissionais)",
+            "required": true,
+            "type": "integer",
+            "example": 1
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+            "description": "Profissionais encontrados com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "professionals": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "66d98e1f7c19f5f7a0f4c1d3"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "Pedro Henrique"
+                      },
+                      "birthdayDate": {
+                        "type": "string",
+                        "example": "1995-05-12"
+                      },
+                      "clinic": {
+                        "type": "string",
+                        "example": "Clínica XYZ"
+                      },
+                      "residentialAddress": {
+                        "type": "string",
+                        "example": "Rua Exemplo, 123"
+                      },
+                      "phoneNumber": {
+                        "type": "string",
+                        "example": "+55 11 91234-5678"
+                      },
+                      "profilePhoto": {
+                        "type": "string",
+                        "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+                      }
+                    }
+                  }
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
+                },
+                "pageCount": {
+                  "type": "number",
+                  "example": 5
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
-            "description": "Solicitação Inválida"
+            "description": "Página inválida",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Página inválida"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -565,25 +1231,120 @@
         "tags": [
           "Search"
         ],
-        "summary": "Pesquisa um range de 10 profissionais de uma especialidade específica",
-        "description": "",
+        "summary": "Pesquisa profissionais por especialidade",
+        "description": "Retorna uma lista paginada de até 10 profissionais de uma especialidade específica. A especialidade deve ser informada como parâmetro de rota.",
         "parameters": [
           {
             "name": "speciality",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Especialidade a ser pesquisada",
+            "example": "Cardiologia"
+          },
+          {
+            "name": "page",
+            "in": "path",
+            "description": "Número da página para paginação (cada página retorna até 10 profissionais)",
+            "required": true,
+            "type": "integer",
+            "example": 1
           }
         ],
         "responses": {
           "200": {
-            "description": "Profissional encontrado, retorna um range de 10 profissionais"
+            "description": "Profissionais encontrados com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "professionals": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "66d98e1f7c19f5f7a0f4c1d3"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "Maria Silva"
+                      },
+                      "birthdayDate": {
+                        "type": "string",
+                        "example": "1988-11-20"
+                      },
+                      "clinic": {
+                        "type": "string",
+                        "example": "Clínica Coração Saudável"
+                      },
+                      "residentialAddress": {
+                        "type": "string",
+                        "example": "Rua das Flores, 456"
+                      },
+                      "phoneNumber": {
+                        "type": "string",
+                        "example": "+55 21 99876-5432"
+                      },
+                      "professionalSpecialties": {
+                        "type": "array",
+                        "example": [
+                          "Cardiologia"
+                        ],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "profilePhoto": {
+                        "type": "string",
+                        "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+                      }
+                    }
+                  }
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
+                },
+                "pageCount": {
+                  "type": "number",
+                  "example": 3
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
-            "description": "Solicitação Inválida"
+            "description": "Requisição inválida (falta de parâmetros ou página inválida)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Especialidade é obrigatória"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -593,25 +1354,120 @@
         "tags": [
           "Search"
         ],
-        "summary": "Barra de pesquisa",
-        "description": "",
+        "summary": "Busca de profissionais pela barra de pesquisa",
+        "description": "Retorna até 10 profissionais por página, pesquisando pelo nome ou pela especialidade. A busca é case-insensitive e suporta paginação.",
         "parameters": [
           {
             "name": "terms",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Termo de busca (nome ou especialidade do profissional)",
+            "example": "Cardiologia"
+          },
+          {
+            "name": "page",
+            "in": "path",
+            "description": "Número da página para paginação (cada página retorna até 10 profissionais)",
+            "required": true,
+            "type": "integer",
+            "example": 1
           }
         ],
         "responses": {
           "200": {
-            "description": "Profissionais encontrados, retorna um range de 10 profissionais"
+            "description": "Profissionais encontrados com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "professionals": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "66d98e1f7c19f5f7a0f4c1d3"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "Ana Paula"
+                      },
+                      "birthdayDate": {
+                        "type": "string",
+                        "example": "1990-03-10"
+                      },
+                      "clinic": {
+                        "type": "string",
+                        "example": "Clínica Bem Estar"
+                      },
+                      "residentialAddress": {
+                        "type": "string",
+                        "example": "Av. Central, 789"
+                      },
+                      "phoneNumber": {
+                        "type": "string",
+                        "example": "+55 31 91234-9876"
+                      },
+                      "professionalSpecialties": {
+                        "type": "array",
+                        "example": [
+                          "Nutrição"
+                        ],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "profilePhoto": {
+                        "type": "string",
+                        "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+                      }
+                    }
+                  }
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
+                },
+                "pageCount": {
+                  "type": "number",
+                  "example": 4
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
-            "description": "Solicitação Inválida"
+            "description": "Requisição inválida (parâmetros ausentes ou página inválida)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Parâmetros são obrigatórios para realizar a busca"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro no servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -629,12 +1485,14 @@
             "in": "header",
             "required": true,
             "type": "string",
-            "description": "Token JWT do paciente — formato: Bearer <token>"
+            "description": "Token JWT do paciente — formato: Bearer <token>",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
+            "description": "Dados necessários para criar um agendamento",
             "schema": {
               "type": "object",
               "properties": {
@@ -666,6 +1524,10 @@
                         "example": {
                           "type": "string",
                           "example": "6876317147871e2d7f74dd90"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "ID do profissional com quem o paciente deseja agendar"
                         }
                       }
                     },
@@ -679,6 +1541,10 @@
                         "example": {
                           "type": "string",
                           "example": "Trazer exames anteriores"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Observações adicionais para o profissional"
                         }
                       }
                     },
@@ -696,6 +1562,10 @@
                         "example": {
                           "type": "string",
                           "example": "2025-09-10T10:00:00Z"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Data/hora do agendamento no formato ISO 8601"
                         }
                       }
                     },
@@ -728,6 +1598,10 @@
                                 "example": {
                                   "type": "string",
                                   "example": "688d1507f086e02085acf44c"
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "example": "ID da clínica/endereço onde ocorrerá o atendimento"
                                 }
                               }
                             }
@@ -743,25 +1617,122 @@
         ],
         "responses": {
           "201": {
-            "description": "Criado"
+            "description": "Solicitação criada com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Solicitação enviada."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "66e012aa3e934eb3dd9d71f4"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "pending"
+                    },
+                    "dateTime": {
+                      "type": "string",
+                      "example": "2025-09-10T10:00:00.000Z"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
-            "description": "Solicitação Inválida"
+            "description": "Campos obrigatórios ausentes ou inválidos",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Campos professionalId, dateTime e address são obrigatórios."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Não autorizado"
+            "description": "Paciente não autorizado (JWT inválido ou ausente)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Unauthorized"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
             "description": "Acesso Negado"
           },
           "409": {
-            "description": "Conflito"
+            "description": "Horário já ocupado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Este horário já está agendado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "422": {
-            "description": ""
+            "description": "Tentativa inválida (agendamento no passado ou paciente = profissional)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "VALIDATION_ERROR"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Não é possível agendar no passado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro Interno do Servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "INTERNAL_ERROR"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -776,27 +1747,28 @@
         "tags": [
           "Agendamentos"
         ],
-        "summary": "Executa uma ação no agendamento",
-        "description": "Permite confirmar, cancelar, remarcar ou completar um agendamento.",
+        "summary": "Criar solicitação de agendamento (paciente)",
+        "description": "Paciente cria uma solicitação para um profissional em data/hora escolhidas.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "ID do agendamento"
+            "type": "string"
           },
           {
             "name": "authorization",
             "in": "header",
             "required": true,
             "type": "string",
-            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+            "description": "Token JWT do paciente — formato: Bearer <token>",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
+            "description": "Dados necessários para criar um agendamento",
             "schema": {
               "type": "object",
               "properties": {
@@ -807,7 +1779,9 @@
                 "required": {
                   "type": "array",
                   "example": [
-                    "action"
+                    "professionalId",
+                    "dateTime",
+                    "address"
                   ],
                   "items": {
                     "type": "string"
@@ -816,64 +1790,94 @@
                 "properties": {
                   "type": "object",
                   "properties": {
-                    "action": {
+                    "professionalId": {
                       "type": "object",
                       "properties": {
                         "type": {
                           "type": "string",
                           "example": "string"
                         },
-                        "enum": {
-                          "type": "array",
-                          "example": [
-                            "confirm",
-                            "cancel",
-                            "reschedule",
-                            "complete"
-                          ],
-                          "items": {
-                            "type": "string"
-                          }
+                        "example": {
+                          "type": "string",
+                          "example": "6876317147871e2d7f74dd90"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "ID do profissional com quem o paciente deseja agendar"
                         }
                       }
                     },
-                    "payload": {
+                    "notes": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "Trazer exames anteriores"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Observações adicionais para o profissional"
+                        }
+                      }
+                    },
+                    "dateTime": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "date-time"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "2025-09-10T10:00:00Z"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Data/hora do agendamento no formato ISO 8601"
+                        }
+                      }
+                    },
+                    "address": {
                       "type": "object",
                       "properties": {
                         "type": {
                           "type": "string",
                           "example": "object"
                         },
+                        "required": {
+                          "type": "array",
+                          "example": [
+                            "clinicId"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
                         "properties": {
                           "type": "object",
                           "properties": {
-                            "reason": {
+                            "clinicId": {
                               "type": "object",
                               "properties": {
                                 "type": {
                                   "type": "string",
                                   "example": "string"
                                 },
-                                "description": {
+                                "example": {
                                   "type": "string",
-                                  "example": "Motivo do cancelamento (opcional)"
-                                }
-                              }
-                            },
-                            "dateTime": {
-                              "type": "object",
-                              "properties": {
-                                "type": {
-                                  "type": "string",
-                                  "example": "string"
-                                },
-                                "format": {
-                                  "type": "string",
-                                  "example": "date-time"
+                                  "example": "688d1507f086e02085acf44c"
                                 },
                                 "description": {
                                   "type": "string",
-                                  "example": "Nova data/hora (ISO 8601) para remarcar"
+                                  "example": "ID da clínica/endereço onde ocorrerá o atendimento"
                                 }
                               }
                             }
@@ -889,28 +1893,120 @@
         ],
         "responses": {
           "200": {
-            "description": "Ação executada com sucesso"
+            "description": "OK"
+          },
+          "201": {
+            "description": "Solicitação criada com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Solicitação enviada."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "66e012aa3e934eb3dd9d71f4"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "pending"
+                    },
+                    "dateTime": {
+                      "type": "string",
+                      "example": "2025-09-10T10:00:00.000Z"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
-            "description": "Ação inválida ou payload ausente"
+            "description": "Campos obrigatórios ausentes ou inválidos",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Campos professionalId, dateTime e address são obrigatórios."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Não autenticado"
+            "description": "Paciente não autorizado (JWT inválido ou ausente)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Unauthorized"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
-            "description": "Sem permissão para executar a ação"
+            "description": "Acesso Negado"
           },
           "404": {
-            "description": "Agendamento não encontrado"
+            "description": "Não Encontrado"
           },
           "409": {
-            "description": "Conflito de agenda"
+            "description": "Horário já ocupado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Este horário já está agendado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "422": {
-            "description": "Transição de status inválida"
+            "description": "Tentativa inválida (agendamento no passado ou paciente = profissional)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Não é possível agendar no passado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro interno"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -933,34 +2029,177 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "ID do agendamento"
+            "description": "ID do agendamento",
+            "example": "66e012aa3e934eb3dd9d71f4"
           },
           {
             "name": "authorization",
             "in": "header",
             "required": true,
             "type": "string",
-            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Detalhes do agendamento retornados com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "66e012aa3e934eb3dd9d71f4"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "confirmed"
+                    },
+                    "dateTime": {
+                      "type": "string",
+                      "example": "2025-09-10T10:00:00.000Z"
+                    },
+                    "professional": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "66e013ff4d20a3e1128e92b7"
+                        },
+                        "photoUrl": {
+                          "type": "string",
+                          "example": "https://api.seusistema.com/files/66e013ff4d20a3e1128e92b7"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Dr. João Silva"
+                        },
+                        "distanceKm": {},
+                        "specialties": {
+                          "type": "array",
+                          "example": [
+                            "Cardiologia",
+                            "Clínica Geral"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "yourObservation": {
+                      "type": "string",
+                      "example": "Trazer exames anteriores"
+                    },
+                    "selectedAddress": {
+                      "type": "string",
+                      "example": "Rua Exemplo, 123 • Centro • São Paulo - SP"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
-            "description": "Solicitação Inválida"
+            "description": "ID inválido",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "VALIDATION_ERROR"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "ID inválido."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Não autorizado"
+            "description": "Usuário não autenticado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "UNAUTHORIZED"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Unauthorized"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
-            "description": "Acesso Negado"
+            "description": "Usuário não tem permissão para acessar este agendamento",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "FORBIDDEN"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Sem permissão para acessar este agendamento."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "404": {
-            "description": "Não Encontrado"
+            "description": "Agendamento não encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "NOT_FOUND"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Agendamento não encontrado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro Interno do Servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "INTERNAL_ERROR"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -976,58 +2215,223 @@
           "Agendamentos"
         ],
         "summary": "Meus agendamentos (Paciente ou Profissional)",
-        "description": "Lista agendamentos do usuário autenticado (paciente ou profissional).",
+        "description": "Lista agendamentos do usuário autenticado (paciente ou profissional). Suporta paginação, filtros de status e intervalo de datas.",
         "parameters": [
           {
             "name": "authorization",
             "in": "header",
             "required": true,
             "type": "string",
-            "description": "Token JWT do paciente ou profissional (Bearer <token>)"
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "status",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "string",
+            "description": "Filtra os agendamentos por status (pending, confirmed, completed, canceled ou all)",
+            "example": "confirmed"
           },
           {
             "name": "from",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "string",
+            "format": "date-time",
+            "description": "Data inicial do filtro (ISO 8601)",
+            "example": "2025-09-01T00:00:00Z"
           },
           {
             "name": "to",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "string",
+            "format": "date-time",
+            "description": "Data final do filtro (ISO 8601)",
+            "example": "2025-09-30T23:59:59Z"
           },
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "integer",
+            "description": "Número da página (default = 1)",
+            "example": 1
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "integer",
+            "description": "Quantidade máxima por página (default = 20, max = 100)",
+            "example": 20
           },
           {
             "name": "sort",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Ordenação por data do agendamento",
+            "example": "asc"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "derivedStatus",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "dateTime",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "professional",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "patient",
             "in": "query",
             "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Lista de agendamentos retornada com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "meta": {
+                  "type": "object",
+                  "properties": {
+                    "page": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 20
+                    },
+                    "total": {
+                      "type": "number",
+                      "example": 2
+                    },
+                    "hasNextPage": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "66e012aa3e934eb3dd9d71f4"
+                      },
+                      "status": {
+                        "type": "string",
+                        "example": "confirmed"
+                      },
+                      "derivedStatus": {
+                        "type": "string",
+                        "example": "completed"
+                      },
+                      "dateTime": {
+                        "type": "string",
+                        "example": "2025-09-10T10:00:00.000Z"
+                      },
+                      "professional": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "66e013ff4d20a3e1128e92b7"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Dr. João Silva"
+                          },
+                          "profileImageUrl": {
+                            "type": "string",
+                            "example": "https://api.seusistema.com/files/66e013ff4d20a3e1128e92b7"
+                          }
+                        }
+                      },
+                      "patient": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "66e013ff4d20a3e1128e92c9"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Maria Souza"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Não autorizado"
+            "description": "Usuário não autenticado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "UNAUTHORIZED"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Unauthorized"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
             "description": "Acesso Negado"
           },
           "500": {
-            "description": "Erro Interno do Servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "INTERNAL_ERROR"
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -1043,19 +2447,21 @@
           "Messages"
         ],
         "summary": "Enviar mensagem em uma conversa",
-        "description": "Cria uma mensagem; se não for informado um ID de conversa, o backend cria automaticamente um novo. Atualiza o lastMessage e incrementa unreadCount dos participantes.",
+        "description": "Cria uma nova mensagem em uma conversa existente ou inicia uma nova conversa caso não seja informado um ID. Atualiza o lastMessage e incrementa o unreadCount dos participantes.",
         "parameters": [
           {
             "name": "authorization",
             "in": "header",
             "required": true,
             "type": "string",
-            "description": "Token JWT — formato: Bearer <token>"
+            "description": "Token JWT — formato: Bearer <token>",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
+            "description": "Dados da mensagem a ser enviada",
             "schema": {
               "type": "object",
               "properties": {
@@ -1084,7 +2490,7 @@
                         },
                         "example": {
                           "type": "string",
-                          "example": "conv123"
+                          "example": "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab"
                         },
                         "description": {
                           "type": "string",
@@ -1102,6 +2508,10 @@
                         "example": {
                           "type": "string",
                           "example": "Olá, tudo bem?"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Conteúdo da mensagem enviada"
                         }
                       }
                     },
@@ -1168,16 +2578,52 @@
             }
           },
           "400": {
-            "description": "Parâmetros obrigatórios ausentes (content ou participants quando conversation não for informado)"
+            "description": "Parâmetros obrigatórios ausentes ou inválidos",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "content é obrigatório"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Token JWT ausente ou inválido"
+            "description": "Usuário não autenticado (JWT ausente ou inválido)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Não autenticado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
             "description": "Acesso Negado"
           },
           "500": {
-            "description": "Erro interno do servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -1193,26 +2639,110 @@
           "Messages"
         ],
         "summary": "Listar contatos do usuário",
-        "description": "Lista todos os contatos (pacientes ou profissionais) do usuário autenticado, incluindo último envio e mensagens não lidas.",
+        "description": "Lista todos os contatos (pacientes ou profissionais) do usuário autenticado, incluindo último envio e quantidade de mensagens não lidas.",
         "parameters": [
           {
             "name": "authorization",
             "in": "header",
-            "type": "string"
+            "required": true,
+            "type": "string",
+            "description": "Token JWT — formato: Bearer <token>",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Contatos listados com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "conversation": {
+                        "type": "string",
+                        "example": "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab"
+                      },
+                      "contactId": {
+                        "type": "string",
+                        "example": "66b9f4e2f4a5a7d6f4b9c123"
+                      },
+                      "contactName": {
+                        "type": "string",
+                        "example": "Maria Souza"
+                      },
+                      "contactAvatar": {
+                        "type": "string",
+                        "example": "https://api.seusistema.com/uploads/66b9f4e2f4a5a7d6f4b9c999"
+                      },
+                      "userType": {
+                        "type": "string",
+                        "example": "patient"
+                      },
+                      "lastMessage": {
+                        "type": "object",
+                        "properties": {
+                          "content": {
+                            "type": "string",
+                            "example": "Olá, tudo bem?"
+                          },
+                          "sender": {
+                            "type": "string",
+                            "example": "66b9f4e2f4a5a7d6f4b9c123"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2025-09-10T14:00:00Z"
+                          }
+                        }
+                      },
+                      "unreadCount": {
+                        "type": "number",
+                        "example": 2
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Não autorizado"
+            "description": "Usuário não autenticado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Não autenticado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
             "description": "Acesso Negado"
           },
           "500": {
-            "description": "Erro Interno do Servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -1228,38 +2758,88 @@
           "Messages"
         ],
         "summary": "Marcar conversa como lida",
-        "description": "Zera o unreadCount do usuário autenticado nessa conversa.",
+        "description": "Zera o campo unreadCount do usuário autenticado nessa conversa.",
         "parameters": [
           {
             "name": "conversationId",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Identificador da conversa"
+            "description": "Identificador único da conversa",
+            "example": "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab"
           },
           {
             "name": "authorization",
             "in": "header",
             "required": true,
             "type": "string",
-            "description": "Token JWT — formato: Bearer <token>"
+            "description": "Token JWT — formato: Bearer <token>",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "responses": {
           "204": {
-            "description": "Conversa marcada como lida"
+            "description": "Conversa marcada como lida (sem conteúdo de resposta)"
           },
           "401": {
-            "description": "Não autorizado"
+            "description": "Usuário não autenticado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Não autenticado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
-            "description": "Usuário não participa da conversa"
+            "description": "Usuário não participa da conversa",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Você não tem acesso a esta conversa"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "404": {
-            "description": "Conversa não encontrada"
+            "description": "Conversa não encontrada",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Conversa não encontrada"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Erro Interno do Servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -1275,28 +2855,106 @@
           "Messages"
         ],
         "summary": "Listar conversas com mensagens não lidas",
-        "description": "Retorna apenas as conversas onde o usuário logado tem unreadCount > 0.",
+        "description": "Retorna apenas as conversas onde o usuário logado possui mensagens não lidas (unreadCount > 0).",
         "parameters": [
           {
             "name": "authorization",
             "in": "header",
             "required": true,
             "type": "string",
-            "description": "Token JWT — formato: Bearer <token>"
+            "description": "Token JWT — formato: Bearer <token>",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "responses": {
           "200": {
-            "description": "Lista de conversas com mensagens não lidas"
+            "description": "Lista de conversas com mensagens não lidas retornada com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "conversation": {
+                        "type": "string",
+                        "example": "a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab"
+                      },
+                      "otherId": {
+                        "type": "string",
+                        "example": "66b9f4e2f4a5a7d6f4b9c123"
+                      },
+                      "otherName": {
+                        "type": "string",
+                        "example": "Maria Souza"
+                      },
+                      "otherAvatar": {
+                        "type": "string",
+                        "example": "https://api.seusistema.com/uploads/avatar123.png"
+                      },
+                      "lastMessage": {
+                        "type": "object",
+                        "properties": {
+                          "content": {
+                            "type": "string",
+                            "example": "Oi, tudo bem?"
+                          },
+                          "sender": {
+                            "type": "string",
+                            "example": "66b9f4e2f4a5a7d6f4b9c123"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2025-09-10T14:00:00Z"
+                          }
+                        }
+                      },
+                      "unreadCount": {
+                        "type": "number",
+                        "example": 3
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
-            "description": "Não autorizado"
+            "description": "Usuário não autenticado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Não autenticado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "403": {
             "description": "Acesso Negado"
           },
           "500": {
-            "description": "Erro Interno do Servidor"
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [

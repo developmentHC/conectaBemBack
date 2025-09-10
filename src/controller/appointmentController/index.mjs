@@ -7,30 +7,94 @@ export const createAppointment = async (req, res) => {
   #swagger.summary = 'Criar solicitação de agendamento (paciente)'
   #swagger.description = 'Paciente cria uma solicitação para um profissional em data/hora escolhidas.'
   #swagger.security = [{ "bearerAuth": [] }]
+
   #swagger.parameters['authorization'] = {
-    in: 'header', required: true, type: 'string',
-    description: 'Token JWT do paciente — formato: Bearer <token>'
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do paciente — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   }
+
   #swagger.parameters['body'] = {
     in: 'body',
     required: true,
+    description: 'Dados necessários para criar um agendamento',
     schema: {
       type: 'object',
       required: ['professionalId','dateTime','address'],
       properties: {
-        professionalId: { type: 'string', example: '6876317147871e2d7f74dd90' },
-        notes: { type: 'string', example: 'Trazer exames anteriores' },
-        dateTime: { type: 'string', format: 'date-time', example: '2025-09-10T10:00:00Z' },
+        professionalId: {
+          type: 'string',
+          example: '6876317147871e2d7f74dd90',
+          description: 'ID do profissional com quem o paciente deseja agendar'
+        },
+        notes: {
+          type: 'string',
+          example: 'Trazer exames anteriores',
+          description: 'Observações adicionais para o profissional'
+        },
+        dateTime: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-09-10T10:00:00Z',
+          description: 'Data/hora do agendamento no formato ISO 8601'
+        },
         address: {
           type: 'object',
           required: ['clinicId'],
           properties: {
-            clinicId: { type: 'string', example: '688d1507f086e02085acf44c' }
+            clinicId: {
+              type: 'string',
+              example: '688d1507f086e02085acf44c',
+              description: 'ID da clínica/endereço onde ocorrerá o atendimento'
+            }
           }
         }
       }
     }
   }
+
+  #swagger.responses[201] = {
+    description: 'Solicitação criada com sucesso',
+    schema: {
+      message: "Solicitação enviada.",
+      data: {
+        id: "66e012aa3e934eb3dd9d71f4",
+        status: "pending",
+        dateTime: "2025-09-10T10:00:00.000Z"
+      }
+    }
+  }
+
+  #swagger.responses[400] = {
+    description: 'Campos obrigatórios ausentes ou inválidos',
+    schema: { error: "Campos professionalId, dateTime e address são obrigatórios." }
+  }
+
+  #swagger.responses[401] = {
+    description: 'Paciente não autorizado (JWT inválido ou ausente)',
+    schema: { error: "Unauthorized" }
+  }
+
+  #swagger.responses[409] = {
+    description: 'Horário já ocupado',
+    schema: { error: "Este horário já está agendado." }
+  }
+
+#swagger.responses[422] = {
+  description: 'Tentativa inválida (agendamento no passado ou paciente = profissional)',
+  schema: { code: "VALIDATION_ERROR", error: "Não é possível agendar no passado." }
+}
+
+#swagger.responses[500] = {
+  description: 'Erro interno no servidor',
+  schema: { 
+    code: "INTERNAL_ERROR", 
+    error: "Internal server error" 
+  }
+}
+
 */
 
   try {
@@ -95,41 +159,96 @@ export const createAppointment = async (req, res) => {
 
 export const actOnAppointment = async (req, res) => {
   /*
-    #swagger.tags = ['Agendamentos']
-    #swagger.summary = 'Executa uma ação no agendamento'
-    #swagger.description = 'Permite confirmar, cancelar, remarcar ou completar um agendamento.'
-    #swagger.security = [{ "bearerAuth": [] }]
-    #swagger.parameters['authorization'] = {
-      in: 'header', required: true, type: 'string',
-      description: 'Token JWT do paciente ou profissional (Bearer <token>)'
-    }
-    #swagger.parameters['id'] = { in: 'path', required: true, type: 'string', description: 'ID do agendamento' }
-    #swagger.parameters['body'] = {
-      in: 'body', required: true,
-      schema: {
-        type: 'object',
-        required: ['action'],
-        properties: {
-          action: { type: 'string', enum: ['confirm', 'cancel', 'reschedule', 'complete'] },
-          payload: {
-            type: 'object',
-            properties: {
-              reason:  { type: 'string', description: 'Motivo do cancelamento (opcional)' },
-              dateTime:{ type: 'string', format: 'date-time', description: 'Nova data/hora (ISO 8601) para remarcar' }
+  #swagger.tags = ['Agendamentos']
+  #swagger.summary = 'Criar solicitação de agendamento (paciente)'
+  #swagger.description = 'Paciente cria uma solicitação para um profissional em data/hora escolhidas.'
+  #swagger.security = [{ "bearerAuth": [] }]
+
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do paciente — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
+
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    description: 'Dados necessários para criar um agendamento',
+    schema: {
+      type: 'object',
+      required: ['professionalId','dateTime','address'],
+      properties: {
+        professionalId: {
+          type: 'string',
+          example: '6876317147871e2d7f74dd90',
+          description: 'ID do profissional com quem o paciente deseja agendar'
+        },
+        notes: {
+          type: 'string',
+          example: 'Trazer exames anteriores',
+          description: 'Observações adicionais para o profissional'
+        },
+        dateTime: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-09-10T10:00:00Z',
+          description: 'Data/hora do agendamento no formato ISO 8601'
+        },
+        address: {
+          type: 'object',
+          required: ['clinicId'],
+          properties: {
+            clinicId: {
+              type: 'string',
+              example: '688d1507f086e02085acf44c',
+              description: 'ID da clínica/endereço onde ocorrerá o atendimento'
             }
           }
         }
       }
     }
-    #swagger.responses[200] = { description: 'Ação executada com sucesso' }
-    #swagger.responses[400] = { description: 'Ação inválida ou payload ausente' }
-    #swagger.responses[401] = { description: 'Não autenticado' }
-    #swagger.responses[403] = { description: 'Sem permissão para executar a ação' }
-    #swagger.responses[404] = { description: 'Agendamento não encontrado' }
-    #swagger.responses[409] = { description: 'Conflito de agenda' }
-    #swagger.responses[422] = { description: 'Transição de status inválida' }
-    #swagger.responses[500] = { description: 'Erro interno' }
-  */
+  }
+
+  #swagger.responses[201] = {
+    description: 'Solicitação criada com sucesso',
+    schema: {
+      message: "Solicitação enviada.",
+      data: {
+        id: "66e012aa3e934eb3dd9d71f4",
+        status: "pending",
+        dateTime: "2025-09-10T10:00:00.000Z"
+      }
+    }
+  }
+
+  #swagger.responses[400] = {
+    description: 'Campos obrigatórios ausentes ou inválidos',
+    schema: { error: "Campos professionalId, dateTime e address são obrigatórios." }
+  }
+
+  #swagger.responses[401] = {
+    description: 'Paciente não autorizado (JWT inválido ou ausente)',
+    schema: { error: "Unauthorized" }
+  }
+
+  #swagger.responses[409] = {
+    description: 'Horário já ocupado',
+    schema: { error: "Este horário já está agendado." }
+  }
+
+  #swagger.responses[422] = {
+    description: 'Tentativa inválida (agendamento no passado ou paciente = profissional)',
+    schema: { error: "Não é possível agendar no passado." }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Internal server error." }
+  }
+*/
+
   try {
     const userId = req.userId;
     if (!userId) return res.status(401).json({ code: "UNAUTHORIZED", error: "Unauthorized" });
@@ -297,24 +416,73 @@ export const actOnAppointment = async (req, res) => {
 
 export const getAppointmentById = async (req, res) => {
   /*
-    #swagger.tags = ['Agendamentos']
-    #swagger.summary = 'Buscar detalhes de um agendamento'
-    #swagger.description = 'Retorna informações detalhadas de um agendamento específico. O agendamento não pode estar cancelado.'
-    #swagger.security = [{ "bearerAuth": [] }]
-    #swagger.parameters['authorization'] = {
-      in: 'header',
-      required: true,
-      type: 'string',
-      description: 'Token JWT do paciente ou profissional (Bearer <token>)'
-}
-#swagger.parameters['id'] = {
-  in: 'path',
-  required: true,
-  type: 'string',
-  description: 'ID do agendamento'
-}
+  #swagger.tags = ['Agendamentos']
+  #swagger.summary = 'Buscar detalhes de um agendamento'
+  #swagger.description = 'Retorna informações detalhadas de um agendamento específico. O agendamento não pode estar cancelado.'
+  #swagger.security = [{ "bearerAuth": [] }]
 
-  */
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do paciente ou profissional (Bearer <token>)',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
+
+  #swagger.parameters['id'] = {
+    in: 'path',
+    required: true,
+    type: 'string',
+    description: 'ID do agendamento',
+    example: '66e012aa3e934eb3dd9d71f4'
+  }
+
+  #swagger.responses[200] = { 
+    description: 'Detalhes do agendamento retornados com sucesso',
+    schema: {
+      data: {
+        id: "66e012aa3e934eb3dd9d71f4",
+        status: "confirmed",
+        dateTime: "2025-09-10T10:00:00.000Z",
+        professional: {
+          id: "66e013ff4d20a3e1128e92b7",
+          photoUrl: "https://api.seusistema.com/files/66e013ff4d20a3e1128e92b7",
+          name: "Dr. João Silva",
+          distanceKm: null,
+          specialties: ["Cardiologia", "Clínica Geral"]
+        },
+        yourObservation: "Trazer exames anteriores",
+        selectedAddress: "Rua Exemplo, 123 • Centro • São Paulo - SP"
+      }
+    }
+  }
+
+  #swagger.responses[400] = { 
+    description: 'ID inválido',
+    schema: { code: "VALIDATION_ERROR", error: "ID inválido." }
+  }
+
+  #swagger.responses[401] = { 
+    description: 'Usuário não autenticado',
+    schema: { code: "UNAUTHORIZED", error: "Unauthorized" }
+  }
+
+  #swagger.responses[403] = { 
+    description: 'Usuário não tem permissão para acessar este agendamento',
+    schema: { code: "FORBIDDEN", error: "Sem permissão para acessar este agendamento." }
+  }
+
+  #swagger.responses[404] = { 
+    description: 'Agendamento não encontrado',
+    schema: { code: "NOT_FOUND", error: "Agendamento não encontrado." }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { code: "INTERNAL_ERROR", error: "Erro interno no servidor." }
+  }
+*/
+
   try {
     if (!req.userId) {
       return res.status(401).json({ code: "UNAUTHORIZED", error: "Unauthorized" });
@@ -386,20 +554,110 @@ export const getAppointmentById = async (req, res) => {
 
 export const getMyAppointments = async (req, res) => {
   /*
-    #swagger.tags = ['Agendamentos']
-    #swagger.summary = 'Meus agendamentos (Paciente ou Profissional)'
-    #swagger.description = 'Lista agendamentos do usuário autenticado (paciente ou profissional).'
-    #swagger.security = [{ "bearerAuth": [] }]
+  #swagger.tags = ['Agendamentos']
+  #swagger.summary = 'Meus agendamentos (Paciente ou Profissional)'
+  #swagger.description = 'Lista agendamentos do usuário autenticado (paciente ou profissional). Suporta paginação, filtros de status e intervalo de datas.'
+  #swagger.security = [{ "bearerAuth": [] }]
 
-    #swagger.ignore = ['status', 'from', 'to', 'page', 'limit', 'sort', 'id', 'x-forwarded-proto', 'host']
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do paciente ou profissional (Bearer <token>)',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
 
-    #swagger.parameters['authorization'] = {
-      in: 'header',
-      required: true,
-      type: 'string',
-      description: 'Token JWT do paciente ou profissional (Bearer <token>)'
+  #swagger.parameters['status'] = {
+    in: 'query',
+    required: false,
+    type: 'string',
+    description: 'Filtra os agendamentos por status (pending, confirmed, completed, canceled ou all)',
+    example: 'confirmed'
+  }
+
+  #swagger.parameters['from'] = {
+    in: 'query',
+    required: false,
+    type: 'string',
+    format: 'date-time',
+    description: 'Data inicial do filtro (ISO 8601)',
+    example: '2025-09-01T00:00:00Z'
+  }
+
+  #swagger.parameters['to'] = {
+    in: 'query',
+    required: false,
+    type: 'string',
+    format: 'date-time',
+    description: 'Data final do filtro (ISO 8601)',
+    example: '2025-09-30T23:59:59Z'
+  }
+
+  #swagger.parameters['page'] = {
+    in: 'query',
+    required: false,
+    type: 'integer',
+    description: 'Número da página (default = 1)',
+    example: 1
+  }
+
+  #swagger.parameters['limit'] = {
+    in: 'query',
+    required: false,
+    type: 'integer',
+    description: 'Quantidade máxima por página (default = 20, max = 100)',
+    example: 20
+  }
+
+  #swagger.parameters['sort'] = {
+    in: 'query',
+    required: false,
+    type: 'string',
+    enum: ['asc', 'desc'],
+    description: 'Ordenação por data do agendamento',
+    example: 'asc'
+  }
+
+  #swagger.responses[200] = {
+    description: 'Lista de agendamentos retornada com sucesso',
+    schema: {
+      meta: {
+        page: 1,
+        limit: 20,
+        total: 2,
+        hasNextPage: false
+      },
+      data: [
+        {
+          id: "66e012aa3e934eb3dd9d71f4",
+          status: "confirmed",
+          derivedStatus: "completed",
+          dateTime: "2025-09-10T10:00:00.000Z",
+          professional: {
+            id: "66e013ff4d20a3e1128e92b7",
+            name: "Dr. João Silva",
+            profileImageUrl: "https://api.seusistema.com/files/66e013ff4d20a3e1128e92b7"
+          },
+          patient: {
+            id: "66e013ff4d20a3e1128e92c9",
+            name: "Maria Souza"
+          }
+        }
+      ]
     }
-  */
+  }
+
+  #swagger.responses[401] = {
+    description: 'Usuário não autenticado',
+    schema: { code: "UNAUTHORIZED", error: "Unauthorized" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { code: "INTERNAL_ERROR", error: "Internal server error" }
+  }
+*/
+
   try {
     const userId = req.userId;
     if (!userId) return res.status(401).json({ code: "UNAUTHORIZED", error: "Unauthorized" });

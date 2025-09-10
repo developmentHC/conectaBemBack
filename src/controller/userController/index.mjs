@@ -13,15 +13,57 @@ const saltRounds = 10;
 
 export const checkUserEmailSendOTP = async (req, res) => {
   /*
-    #swagger.tags = ['Authentication']
-    #swagger.summary = 'Envia o código OTP para o e-mail enviado pelo body'
-    #swagger.description = 'Envia o código OTP para registro/login da conta no e-mail enviado no body'
-    #swagger.responses[200] = { description: 'Usuário já existente, código OTP enviado por e-mail' }
-    #swagger.responses[201] = { description: 'Usuário criado com sucesso e código OTP enviado por e-mail' }
-    #swagger.responses[201] = { description: 'Usuário criado com sucesso e código OTP enviado por e-mail' }
-    #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' }
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-  */
+  #swagger.tags = ['Authentication']
+  #swagger.summary = 'Envia código OTP para o e-mail informado'
+  #swagger.description = 'Fluxo de registro/login: envia um código OTP para o e-mail passado no body da requisição.'
+
+  #swagger.parameters['body'] = {
+    in: 'body',
+    description: 'E-mail do usuário para envio do OTP',
+    required: true,
+    schema: {
+      email: "usuario@teste.com"
+    }
+  }
+
+  #swagger.responses[200] = {
+    description: 'Usuário já existente, OTP atualizado e enviado por e-mail',
+    schema: {
+      id: "64f1b2c3d4e5f6a7b8c9",
+      email: {
+        address: "usuario@teste.com",
+        exists: true,
+        status: "pending"
+      },
+      message: "User OTP updated and sent"
+    }
+  }
+
+  #swagger.responses[201] = {
+    description: 'Usuário criado com sucesso e OTP enviado por e-mail',
+    schema: {
+      id: "64f1b2c3d4e5f6a7b8c9",
+      email: {
+        address: "usuario@teste.com",
+        exists: false,
+        status: "pending"
+      },
+      role: null,
+      message: "User created and OTP sent through email"
+    }
+  }
+
+  #swagger.responses[422] = {
+    description: 'Parâmetros inválidos ou não enviados',
+    schema: { message: "Um e-mail é exigido" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { message: "Server error" }
+  }
+*/
+
   const { email } = req.body;
 
   if (!email || testEmailSyntax(email) === false) {
@@ -73,14 +115,46 @@ export const checkUserEmailSendOTP = async (req, res) => {
 
 export const checkOTP = async (req, res) => {
   /*
-    #swagger.tags = ['Authentication']
-    #swagger.summary = 'Checa se OTPs coincidem, e parte para o login/registro do usuário'
-    #swagger.description = 'Checa se o OTP enviado no body é o mesmo OTP encriptado no backend. Se for o mesmo, será checado se o usuário já está cadastrado no backend, se estiver, o usuário é logado, se não estiver, o usuário está liberado para o registro'
-    #swagger.responses[200] = { description: 'Còdigos OTP coincidem' }
-    #swagger.responses[401] = { description: 'Códigos OTP não coincidem' }
-    #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' }
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-  */
+  #swagger.tags = ['Authentication']
+  #swagger.summary = 'Checa se OTP coincide e realiza login/registro'
+  #swagger.description = 'Verifica se o OTP enviado no body corresponde ao OTP encriptado no backend. Se coincidir: se o usuário já existir, é logado; caso contrário, fica liberado para registro.'
+
+  #swagger.parameters['body'] = {
+    in: 'body',
+    description: 'E-mail do usuário e OTP recebido',
+    required: true,
+    schema: {
+      email: "usuario@teste.com",
+      OTP: "<código enviado por e-mail>"
+    }
+  }
+
+  #swagger.responses[200] = {
+    description: 'Códigos OTP coincidem e login/registro autorizado',
+    schema: {
+      id: "64f1b2c3d4e5f6a7b8c9",
+      email: "usuario@teste.com",
+      status: "active",
+      token: "eyJhbGciOiJIUzI1NiIsInR..."
+    }
+  }
+
+  #swagger.responses[401] = {
+    description: 'Códigos OTP não coincidem',
+    schema: { message: "OTP inválido ou expirado" }
+  }
+
+  #swagger.responses[422] = {
+    description: 'Parâmetros obrigatórios não enviados',
+    schema: { message: "Email e OTP são obrigatórios." }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { message: "Ocorreu um erro no servidor." }
+  }
+*/
+
   const { email, OTP } = req.body;
 
   if (!email || !OTP || testEmailSyntax(email) === false) {
@@ -101,19 +175,47 @@ export const checkOTP = async (req, res) => {
 
 export const completeSignUpPatient = async (req, res) => {
   /*
-    #swagger.tags = ['Authentication']
-    #swagger.summary = 'Completa o cadastro do usuário paciente'
-    #swagger.responses[201] = { description: 'Usuário encontrado, cadastro completado com sucesso' } 
-    #swagger.responses[200] = { description: 'Usuário encontardo, mas nenhuma alteração realizada no seu cadastro' } 
-    #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' } 
-    #swagger.responses[404] = { description: 'Usuário não encontrado' } 
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-    #swagger.parameters['body'] = {
-            in: 'body',
-            description: 'É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint',
-            schema: { $ref: '#/definitions/AddUserPatient' }
+  #swagger.tags = ['Authentication']
+  #swagger.summary = 'Completa o cadastro do usuário paciente'
+  #swagger.description = 'Este endpoint finaliza o cadastro do paciente após o fluxo de sendOTP e checkOTP. É necessário já existir um usuário pendente antes da chamada.'
+
+  #swagger.parameters['body'] = {
+    in: 'body',
+    description: 'Dados obrigatórios para completar o cadastro do paciente. Necessário ter passado antes por sendOTP e checkOTP.',
+    required: true,
+    schema: { $ref: '#/definitions/AddUserPatient' }
+  }
+
+  #swagger.responses[201] = {
+    description: 'Usuário encontrado e cadastro completado com sucesso',
+    schema: {
+      msg: "Registro bem-sucedido!",
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     }
-  */
+  }
+
+  #swagger.responses[200] = {
+    description: 'Usuário encontrado, mas nenhuma alteração realizada',
+    schema: {
+      msg: "Nenhuma alteração realizada"
+    }
+  }
+
+  #swagger.responses[422] = {
+    description: 'Parâmetros obrigatórios não enviados ou inválidos',
+    schema: { error: "Campo 'name' é obrigatório" }
+  }
+
+  #swagger.responses[404] = {
+    description: 'Usuário não encontrado',
+    schema: { error: "Usuário não existe ou não foi cadastrado" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Bad request" }
+  }
+*/
 
   const {
     userId,
@@ -205,19 +307,45 @@ export const completeSignUpPatient = async (req, res) => {
 
 export const completeSignUpProfessional = async (req, res) => {
   /*
-    #swagger.tags = ['Authentication']
-    #swagger.summary = 'Completa o cadastro do usuário profissional'
-    #swagger.responses[201] = { description: 'Usuário encontrado, cadastro completado com sucesso' } 
-    #swagger.responses[200] = { description: 'Usuário encontardo, mas nenhuma alteração realizada no seu cadastro' } 
-    #swagger.responses[422] = { description: 'Parâmetros exigidos não estão sendo enviados no body' } 
-    #swagger.responses[404] = { description: 'Usuário não encontrado' } 
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-    #swagger.parameters['body'] = {
-            in: 'body',
-            description: 'É necessário já ter feito o cadastro anterior do usuário nos endpoints de sendOTP e checkOTP para conseguir utilizar este endpoint',
-            schema: { $ref: '#/definitions/AddUserProfessional' }
+  #swagger.tags = ['Authentication']
+  #swagger.summary = 'Completa o cadastro do usuário profissional'
+  #swagger.description = 'Finaliza o cadastro do profissional após os passos de sendOTP e checkOTP. É necessário que o usuário já exista como pendente antes de chamar este endpoint.'
+
+  #swagger.parameters['body'] = {
+    in: 'body',
+    description: 'Dados obrigatórios para completar o cadastro do profissional. Necessário ter passado antes por sendOTP e checkOTP.',
+    required: true,
+    schema: { $ref: '#/definitions/AddUserProfessional' }
+  }
+
+  #swagger.responses[201] = {
+    description: 'Usuário encontrado e cadastro completado com sucesso',
+    schema: {
+      msg: "Registro bem-sucedido",
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     }
-  */
+  }
+
+  #swagger.responses[200] = {
+    description: 'Usuário encontrado, mas nenhuma alteração realizada',
+    schema: { error: "Nenhuma alteração realizada" }
+  }
+
+  #swagger.responses[422] = {
+    description: 'Parâmetros obrigatórios não enviados ou inválidos',
+    schema: { error: "Campo 'clinic' é obrigatório" }
+  }
+
+  #swagger.responses[404] = {
+    description: 'Usuário não encontrado',
+    schema: { error: "Usuário não encontrado" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Mensagem de erro interno do servidor" }
+  }
+*/
 
   const {
     userId,
@@ -325,12 +453,57 @@ export const completeSignUpProfessional = async (req, res) => {
 
 export const userInfo = async (req, res) => {
   /*
-    #swagger.tags = ['User']
-    #swagger.summary = 'Retorna todas as informações do usuário'
-    #swagger.responses[200] = { description: 'Usuário encontrado, dados retornados' } 
-    #swagger.responses[401] = { description: 'Cookie não encontrado' } 
-    #swagger.responses[500] = { description: 'Bad request' } 
-  */
+  #swagger.tags = ['User']
+  #swagger.summary = 'Retorna todas as informações do usuário logado'
+  #swagger.description = 'Endpoint protegido que retorna todos os dados do usuário autenticado, exceto campos sensíveis (hashedOTP, __v). Caso exista imagem de perfil, retorna também em formato base64.'
+
+  #swagger.parameters['authToken'] = {
+    in: 'cookie',
+    description: 'JWT de autenticação do usuário',
+    required: true,
+    type: 'string'
+  }
+
+  #swagger.responses[200] = { 
+    description: 'Usuário encontrado, dados retornados com sucesso',
+    schema: {
+      _id: "64f1b2c3d4e5f6a7b8c9",
+      name: "João da Silva",
+      email: "usuario@teste.com",
+      status: "active",
+      userType: ["patient"],
+      profilePhoto: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...",
+      residentialAddress: {
+        cep: "12345678",
+        address: "Rua Exemplo, 123",
+        neighborhood: "Centro",
+        city: "São Paulo",
+        state: "SP"
+      }
+    }
+  }
+
+  #swagger.responses[401] = { 
+    description: 'Cookie de autenticação não encontrado ou inválido',
+    schema: { error: "Cookie não encontrado" }
+  }
+
+  #swagger.responses[404] = { 
+    description: 'Usuário não encontrado',
+    schema: { error: "Usuário não encontrado" }
+  }
+
+  #swagger.responses[422] = {
+    description: 'Parâmetros inválidos durante a validação',
+    schema: { error: "Mensagem de validação" }
+  }
+
+  #swagger.responses[500] = { 
+    description: 'Erro interno ao buscar informações do usuário',
+    schema: { error: "Bad request" }
+  }
+*/
+
   try {
     const userId = req.userId;
 

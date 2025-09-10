@@ -2,11 +2,47 @@ import { User } from "../../models/index.mjs";
 
 export const searchProfessionalsHighlightsWeek = async (req, res) => {
   /*
-    #swagger.tags = ['Search']
-    #swagger.summary = 'Pesquisa os profissionais destaques da semana'
-    #swagger.responses[200] = { description: 'Profissionais encontrados, retorna um range de 10 profissionais' } 
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-  */
+  #swagger.tags = ['Search']
+  #swagger.summary = 'Pesquisa os profissionais destaques da semana'
+  #swagger.description = 'Retorna uma lista paginada de até 10 profissionais que são destaques da semana. A paginação é controlada pelo parâmetro `page` na rota.'
+
+  #swagger.parameters['page'] = {
+    in: 'path',
+    description: 'Número da página para paginação (cada página retorna até 10 profissionais)',
+    required: false,
+    type: 'integer',
+    example: 1
+  }
+
+  #swagger.responses[200] = { 
+    description: 'Profissionais encontrados com sucesso',
+    schema: {
+      professionals: [
+        {
+          _id: "66d98e1f7c19f5f7a0f4c1d3",
+          name: "Pedro Henrique",
+          birthdayDate: "1995-05-12",
+          clinic: "Clínica XYZ",
+          residentialAddress: "Rua Exemplo, 123",
+          phoneNumber: "+55 11 91234-5678",
+          profilePhoto: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+        }
+      ],
+      page: 1,
+      pageCount: 5
+    }
+  }
+
+  #swagger.responses[400] = {
+    description: 'Página inválida',
+    schema: { error: "Página inválida" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Erro interno" }
+  }
+*/
 
   try {
     let page = parseInt(req.params.page) || 1;
@@ -57,11 +93,57 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
 
 export const searchProfessionalBySpeciality = async (req, res) => {
   /*
-    #swagger.tags = ['Search']
-    #swagger.summary = 'Pesquisa um range de 10 profissionais de uma especialidade específica'
-    #swagger.responses[200] = { description: 'Profissional encontrado, retorna um range de 10 profissionais' } 
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-  */
+  #swagger.tags = ['Search']
+  #swagger.summary = 'Pesquisa profissionais por especialidade'
+  #swagger.description = 'Retorna uma lista paginada de até 10 profissionais de uma especialidade específica. A especialidade deve ser informada como parâmetro de rota.'
+
+  #swagger.parameters['speciality'] = {
+    in: 'path',
+    description: 'Especialidade a ser pesquisada',
+    required: true,
+    type: 'string',
+    example: 'Cardiologia'
+  }
+
+  #swagger.parameters['page'] = {
+    in: 'path',
+    description: 'Número da página para paginação (cada página retorna até 10 profissionais)',
+    required: false,
+    type: 'integer',
+    example: 1
+  }
+
+  #swagger.responses[200] = { 
+    description: 'Profissionais encontrados com sucesso',
+    schema: {
+      professionals: [
+        {
+          _id: "66d98e1f7c19f5f7a0f4c1d3",
+          name: "Maria Silva",
+          birthdayDate: "1988-11-20",
+          clinic: "Clínica Coração Saudável",
+          residentialAddress: "Rua das Flores, 456",
+          phoneNumber: "+55 21 99876-5432",
+          professionalSpecialties: ["Cardiologia"],
+          profilePhoto: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+        }
+      ],
+      page: 1,
+      pageCount: 3
+    }
+  }
+
+  #swagger.responses[400] = { 
+    description: 'Requisição inválida (falta de parâmetros ou página inválida)',
+    schema: { error: "Especialidade é obrigatória" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Erro interno" }
+  }
+*/
+
   const speciality = req.params.speciality;
 
   if (!speciality) {
@@ -117,11 +199,56 @@ export const searchProfessionalBySpeciality = async (req, res) => {
 
 export const searchBar = async (req, res) => {
   /*
-    #swagger.tags = ['Search']
-    #swagger.summary = 'Barra de pesquisa'
-    #swagger.responses[200] = { description: 'Profissionais encontrados, retorna um range de 10 profissionais' } 
-    #swagger.responses[500] = { description: 'Erro no servidor' }
-  */
+  #swagger.tags = ['Search']
+  #swagger.summary = 'Busca de profissionais pela barra de pesquisa'
+  #swagger.description = 'Retorna até 10 profissionais por página, pesquisando pelo nome ou pela especialidade. A busca é case-insensitive e suporta paginação.'
+
+  #swagger.parameters['terms'] = {
+    in: 'path',
+    description: 'Termo de busca (nome ou especialidade do profissional)',
+    required: true,
+    type: 'string',
+    example: 'Cardiologia'
+  }
+
+  #swagger.parameters['page'] = {
+    in: 'path',
+    description: 'Número da página para paginação (cada página retorna até 10 profissionais)',
+    required: false,
+    type: 'integer',
+    example: 1
+  }
+
+  #swagger.responses[200] = { 
+    description: 'Profissionais encontrados com sucesso',
+    schema: {
+      professionals: [
+        {
+          _id: "66d98e1f7c19f5f7a0f4c1d3",
+          name: "Ana Paula",
+          birthdayDate: "1990-03-10",
+          clinic: "Clínica Bem Estar",
+          residentialAddress: "Av. Central, 789",
+          phoneNumber: "+55 31 91234-9876",
+          professionalSpecialties: ["Nutrição"],
+          profilePhoto: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+        }
+      ],
+      page: 1,
+      pageCount: 4
+    }
+  }
+
+  #swagger.responses[400] = { 
+    description: 'Requisição inválida (parâmetros ausentes ou página inválida)',
+    schema: { error: "Parâmetros são obrigatórios para realizar a busca" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor',
+    schema: { error: "Erro interno" }
+  }
+*/
 
   const terms = req.params.terms;
   const limit = 10;
