@@ -69,6 +69,7 @@ const corsOptions = {
 const router = express.Router();
 
 router.use(cors(corsOptions));
+router.options("*", cors(corsOptions));
 router.use(express.json());
 
 // -------------------
