@@ -1,4 +1,6 @@
 import express from "express";
+import cors from "cors";
+import { corsOptions } from "./routes/index.mjs";
 import router from "./routes/index.mjs";
 import swaggerUi from "swagger-ui-express";
 import swaggerFile from "./../swagger-output.json" with { type: "json" };
@@ -8,6 +10,9 @@ import { initializeGridFS } from "./lib/gridFs.mjs";
 import { startInboxMessageWatcher } from "./watchers/inboxMessageWatcher.mjs";
 
 const app = express();
+
+app.use(cors(corsOptions));   
+app.options("*", cors(corsOptions))
 app.use(cookieParser());
 app.use(express.json());
 

@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import {
   checkUserEmailSendOTP,
@@ -31,18 +30,18 @@ import {
   listUnreadConversations,
 } from "../controller/messageController/index.mjs";
 
-const allowedOrigins = [
+export const allowedOrigins = [
   "http://localhost:3000",
   "https://conecta-bem-front.vercel.app",
   "https://conecta-bem-back.vercel.app",
-  /https:\/\/conecta-bem-front-.*-conectabems-projects\.vercel\.app/, 
-  /https:\/\/conecta-bem-front-git-[a-zA-Z0-9-]+-conectabems-projects\.vercel\.app/,
-  /https:\/\/conecta-bem-back-.*-conectabems-projects\.vercel\.app/,
-  /https:\/\/conecta-bem-back-git-[a-zA-Z0-9-]+-conectabems-projects\.vercel\.app/,
+  /^https:\/\/conecta-bem-front-.*\.vercel\.app$/,
+  /^https:\/\/conecta-bem-front-git-[a-zA-Z0-9-]+-conectabems-projects\.vercel\.app$/,
+  /^https:\/\/conecta-bem-back-.*\.vercel\.app$/,
+  /^https:\/\/conecta-bem-back-git-[a-zA-Z0-9-]+-conectabems-projects\.vercel\.app$/,
 ];
 
 
-const corsOptions = {
+export const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
@@ -58,23 +57,20 @@ const corsOptions = {
     if (isAllowed) {
       callback(null, true);
     } else {
+      console.warn("❌ CORS bloqueado para:", origin);
       callback(new Error("Acesso bloqueado pelo CORS"));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
+
 const router = express.Router();
 
-router.use(cors(corsOptions));
-router.options("*", cors(corsOptions));
 router.use(express.json());
 
-// -------------------
-// 🔹 Rotas principais
-// -------------------
 router.post("/auth/sendOTP", checkUserEmailSendOTP);
 router.post("/auth/checkOTP", checkOTP);
 router.post("/auth/createPatient", completeSignUpPatient);
