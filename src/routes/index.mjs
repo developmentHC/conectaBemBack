@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import {
   checkUserEmailSendOTP,
@@ -31,14 +30,14 @@ import {
   listUnreadConversations,
 } from "../controller/messageController/index.mjs";
 
-const allowedOrigins = [
+export const allowedOrigins = [
   "http://localhost:3000",
   "https://conecta-bem-front.vercel.app",
-  /https:\/\/conecta-bem-front-.*-conectabems-projects\.vercel\.app/,
-  /https:\/\/conecta-bem-front-git-[a-zA-Z0-9-]+-conectabems-projects\.vercel\.app/,
+  "https://conecta-bem-back.vercel.app",
+  /^https:\/\/.*\.vercel\.app$/, 
 ];
 
-const corsOptions = {
+export const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
@@ -54,17 +53,18 @@ const corsOptions = {
     if (isAllowed) {
       callback(null, true);
     } else {
+      console.warn("❌ CORS bloqueado para:", origin);
       callback(new Error("Acesso bloqueado pelo CORS"));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
+
 const router = express.Router();
 
-router.use(cors(corsOptions));
 router.use(express.json());
 
 router.post("/auth/sendOTP", checkUserEmailSendOTP);
@@ -97,7 +97,6 @@ router.get("/teste", (req, res) => {
     #swagger.tags = ['Test']
     #swagger.summary = 'Teste para verificar se API está funcionando'
   */
-  console.log("API is working!");
   return res.status(200).json({ message: "API is working" });
 });
 
@@ -156,4 +155,11 @@ router.post("/webhooks/message-created", (req, res) => {
   return res.status(200).json({ received: true });
 });
 
+// 🔹 Cleanup só em dev/test
+if (process.env.NODE_ENV !== "production") {
+  const cleanupRoutes = await import("./cleanup.mjs");
+  router.use("/", cleanupRoutes.default);
+}
+
 export default router;
+

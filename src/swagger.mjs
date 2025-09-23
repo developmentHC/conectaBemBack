@@ -1,7 +1,16 @@
 import swaggerAutogen from "swagger-autogen";
+import path from "path";
+import { fileURLToPath } from "url";
+import glob from "glob";
 
-const isProduction = process.env.VERCEL === "1";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 const vercelUrl = process.env.VERCEL_URL;
+
+const host = isProduction ? vercelUrl : `localhost:${process.env.PORT || 3000}`;
+const schemes = isProduction ? ["https"] : ["http"];
 
 export const sharedProperties = {
   userId: {
@@ -61,6 +70,9 @@ const doc = {
       description: "Endpoints de teste",
     },
     { name: "Webhooks", description: "Eventos enviados pelo servidor (documentação)" },
+  ...(isProduction ? [] : [
+    { name: "Cleanup", description: "Endpoints para limpar dados de teste" }
+  ])
   ],
   definitions: {
     AddUserPatient: {
@@ -208,7 +220,30 @@ const doc = {
   },
 };
 
-const outputFile = "./../swagger-output.json";
-const routes = ["./routes/*.mjs"];
+const options = {
+  language: "pt-BR",
+  ...(isProduction && { ignore: ["/cleanup"] }),
+};
 
-swaggerAutogen({ language: "pt-BR" })(outputFile, routes, doc);
+const outputFile = "../swagger-output.json";
+let routes = [
+  ...glob.sync(path.resolve(__dirname, "./routes/*.mjs")),        
+  ...glob.sync(path.resolve(__dirname, "../routes/*.mjs"), {     
+    ignore: isProduction ? [path.resolve(__dirname, "../routes/cleanup.mjs")] : []
+  }),
+  path.resolve(__dirname, "./controllers/**/*.mjs"),              
+  path.resolve(__dirname, "../controllers/**/*.mjs")              
+];
+  
+if (isProduction) {
+  routes = routes.filter(route => !route.includes("cleanup.mjs"));
+}
+
+routes.forEach(routeGlob => {
+  try {
+    const fullPath = path.resolve(__dirname, routeGlob);
+  } catch (err) {
+  }
+});
+
+swaggerAutogen(options)(outputFile, routes, doc);
