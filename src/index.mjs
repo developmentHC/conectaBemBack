@@ -2,19 +2,28 @@ import express from "express";
 import cors from "cors";
 import { corsOptions } from "./routes/index.mjs";
 import router from "./routes/index.mjs";
-import swaggerUi from "swagger-ui-express";
-import swaggerFile from "./../swagger-output.json" with { type: "json" };
 import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.mjs";
 import { initializeGridFS } from "./lib/gridFs.mjs";
 import { startInboxMessageWatcher } from "./watchers/inboxMessageWatcher.mjs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(cors(corsOptions));   
-app.options("*", cors(corsOptions))
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname, "..")));
+
+app.get("/favicon.ico", (req, res) => {
+  res.redirect("https://unpkg.com/swagger-ui-dist/favicon-32x32.png");
+});
 
 app.get("/docs", (req, res) => {
   res.send(`
@@ -45,6 +54,7 @@ app.get("/docs", (req, res) => {
 });
 
 app.get("/", (req, res) => res.redirect("/docs"));
+
 app.use("/", router);
 
 connectDB()
@@ -56,3 +66,4 @@ connectDB()
   .catch((error) => console.log(error));
 
 initializeGridFS();
+
