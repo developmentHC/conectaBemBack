@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import {
   checkUserEmailSendOTP,
@@ -36,9 +35,8 @@ export const allowedOrigins = [
   "https://conecta-bem-front.vercel.app",
   "https://conecta-bem-back.vercel.app",
   /^https:\/\/conecta-bem-front-.*\.vercel\.app$/,
-  /^https:\/\/conecta-bem-front-git-[a-zA-Z0-9-]+-conectabems-projects\.vercel\.app$/,
   /^https:\/\/conecta-bem-back-.*\.vercel\.app$/,
-  /^https:\/\/conecta-bem-back-git-[a-zA-Z0-9-]+-conectabems-projects\.vercel\.app$/,
+  /^https:\/\/conecta-bem-(front|back)-.*\.conectabems-projects\.vercel\.app$/,
 ];
 
 export const corsOptions = {
@@ -68,10 +66,6 @@ export const corsOptions = {
 
 
 const router = express.Router();
-
-router.use(cors(corsOptions));
-router.options("*", cors(corsOptions));
-router.use(express.json());
 
 router.use(express.json());
 

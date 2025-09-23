@@ -16,16 +16,14 @@ app.options("*", cors(corsOptions))
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/docs", swaggerUi.serve, (req, res, next) => {
+app.use(
+  "/docs",
+  swaggerUi.serve,
   swaggerUi.setup(swaggerFile, {
     customSiteTitle: "API Docs",
     customCssUrl: "https://unpkg.com/swagger-ui-dist@4.18.1/swagger-ui.css",
-    customJs: [
-      "https://unpkg.com/swagger-ui-dist@4.18.1/swagger-ui-bundle.js",
-      "https://unpkg.com/swagger-ui-dist@4.18.1/swagger-ui-standalone-preset.js",
-    ],
-  })(req, res, next);
-});
+  })
+);
 
 app.get("/", (req, res) => res.redirect("/docs"));
 app.use("/", router);
