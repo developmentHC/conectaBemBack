@@ -21,6 +21,10 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "..")));
 
+app.get("/swagger-output.json", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "swagger-output.json"));
+});
+
 app.get("/favicon.ico", (req, res) => {
   res.redirect("https://unpkg.com/swagger-ui-dist/favicon-32x32.png");
 });
