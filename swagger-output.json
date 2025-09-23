@@ -5,7 +5,7 @@
     "title": "ConectaBem APIs",
     "description": "APIs para o projeto ConectaBem"
   },
-  "host": "localhost:3000",
+  "host": "conecta-bem-back.vercel.app",
   "basePath": "/",
   "tags": [
     {
@@ -42,7 +42,7 @@
     }
   ],
   "schemes": [
-    "http"
+    "https"
   ],
   "securityDefinitions": {
     "bearerAuth": {

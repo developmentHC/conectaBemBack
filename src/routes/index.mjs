@@ -67,6 +67,9 @@ const router = express.Router();
 router.use(cors(corsOptions));
 router.use(express.json());
 
+// -------------------
+// 🔹 Rotas principais
+// -------------------
 router.post("/auth/sendOTP", checkUserEmailSendOTP);
 router.post("/auth/checkOTP", checkOTP);
 router.post("/auth/createPatient", completeSignUpPatient);
@@ -97,7 +100,6 @@ router.get("/teste", (req, res) => {
     #swagger.tags = ['Test']
     #swagger.summary = 'Teste para verificar se API está funcionando'
   */
-  console.log("API is working!");
   return res.status(200).json({ message: "API is working" });
 });
 
@@ -156,4 +158,11 @@ router.post("/webhooks/message-created", (req, res) => {
   return res.status(200).json({ received: true });
 });
 
+// 🔹 Cleanup só em dev/test
+if (process.env.NODE_ENV !== "production") {
+  const cleanupRoutes = await import("./cleanup.mjs");
+  router.use("/", cleanupRoutes.default);
+}
+
 export default router;
+
