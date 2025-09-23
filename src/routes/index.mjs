@@ -34,9 +34,7 @@ export const allowedOrigins = [
   "http://localhost:3000",
   "https://conecta-bem-front.vercel.app",
   "https://conecta-bem-back.vercel.app",
-  /^https:\/\/conecta-bem-front-.*\.vercel\.app$/,
-  /^https:\/\/conecta-bem-back-.*\.vercel\.app$/,
-  /^https:\/\/conecta-bem-(front|back)-.*\.conectabems-projects\.vercel\.app$/,
+  /^https:\/\/.*\.vercel\.app$/, 
 ];
 
 export const corsOptions = {
