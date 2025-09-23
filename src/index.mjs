@@ -23,6 +23,7 @@ app.get("/docs", (req, res) => {
       <head>
         <title>API Docs</title>
         <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
+        <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist/favicon-32x32.png" />
       </head>
       <body>
         <div id="swagger-ui"></div>
