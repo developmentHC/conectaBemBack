@@ -19,9 +19,10 @@ app.use(express.json());
 app.use(
   "/docs",
   swaggerUi.serve,
-  swaggerUi.setup(swaggerFile, {
+  swaggerUi.setup(null, {
+    swaggerUrl: "/swagger-output.json",
     customSiteTitle: "API Docs",
-    customCssUrl: "https://unpkg.com/swagger-ui-dist@4.18.1/swagger-ui.css",
+    customCssUrl: "https://unpkg.com/swagger-ui-dist@4.18.1/swagger-ui.css"
   })
 );
 
