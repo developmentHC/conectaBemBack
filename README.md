@@ -34,7 +34,7 @@ REFRESH_TOKEN_SECRET=JWT_REFRESH_TOKEN_SECRET
 
 ```sh
 docker build -t conectabem .
-docker run -it --rm -p 3000:3000 conectabem
+docker run -it --rm -p 3000:3000 conectabem npm run dev
 ```
 
 4. Acesse sua aplicação:
