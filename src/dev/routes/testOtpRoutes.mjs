@@ -1,6 +1,4 @@
-import express from "express";
-
-const router = express.Router();
+import crypto from "crypto";
 
 /**
  * Endpoint de teste para gerar OTP (sem envio por e-mail).
@@ -8,7 +6,7 @@ const router = express.Router();
  */
 router.post("/auth/otp/test", async (req, res) => {
   try {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 999999).toString();
 
     console.log(`🔐 OTP de teste gerado para ${req.body.email || "teste"}: ${otp}`);
 
@@ -22,5 +20,3 @@ router.post("/auth/otp/test", async (req, res) => {
     });
   }
 });
-
-export default router;
