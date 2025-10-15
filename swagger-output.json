@@ -3101,8 +3101,7 @@
             "birthdayDate",
             "residentialAddress",
             "userSpecialties",
-            "userServicePreferences",
-            "userAcessibilityPreferences"
+            "userServicePreferences"
           ],
           "items": {
             "type": "string"
