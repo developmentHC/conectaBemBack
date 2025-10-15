@@ -21,7 +21,6 @@ export class UserValidationService {
       "residentialAddress",
       "userSpecialties",
       "userServicePreferences",
-      "userAcessibilityPreferences",
     ];
 
     const missingFields = requiredFields.filter((field) => !data[field]);
