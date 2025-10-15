@@ -84,7 +84,6 @@ const doc = {
         "residentialAddress",
         "userSpecialties",
         "userServicePreferences",
-        "userAcessibilityPreferences",
       ],
       properties: {
         ...sharedProperties,
