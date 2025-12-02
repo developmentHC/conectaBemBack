@@ -4,7 +4,6 @@ import { corsOptions } from "./routes/index.mjs";
 import router from "./routes/index.mjs";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.mjs";
-import { initializeGridFS } from "./lib/gridFs.mjs";
 import { startInboxMessageWatcher } from "./watchers/inboxMessageWatcher.mjs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -68,6 +67,4 @@ connectDB()
     console.log("Conectou ao banco com sucesso");
   })
   .catch((error) => console.log(error));
-
-initializeGridFS();
 

@@ -6,6 +6,7 @@ import {
   completeSignUpPatient,
   completeSignUpProfessional,
   userInfo,
+  uploadProfilePhoto,
 } from "../controller/userController/index.mjs";
 import {
   changeActiveAddress,
@@ -29,6 +30,8 @@ import {
   markConversationAsRead,
   listUnreadConversations,
 } from "../controller/messageController/index.mjs";
+import { validatePhotoUpload } from "../middleware/validatePhotoUpload.js";
+import { uploadPhoto } from "../middleware/uploadPhoto.mjs";
 
 export const allowedOrigins = [
   "http://localhost:3000",
@@ -69,8 +72,15 @@ router.use(express.json());
 
 router.post("/auth/sendOTP", checkUserEmailSendOTP);
 router.post("/auth/checkOTP", checkOTP);
-router.post("/auth/createPatient", completeSignUpPatient);
-router.post("/auth/createProfessional", completeSignUpProfessional);
+router.post("/auth/createPatient", uploadPhoto, completeSignUpPatient);
+router.post("/auth/createProfessional", uploadPhoto, completeSignUpProfessional);
+
+router.post(
+  "/auth/uploadPhoto",
+  uploadPhoto,          
+  validatePhotoUpload,  
+  uploadProfilePhoto
+);
 
 router.get("/user", authenticateToken, userInfo);
 
@@ -166,4 +176,3 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export default router;
-

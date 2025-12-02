@@ -5,9 +5,8 @@ import { User } from "../../models/index.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
-import { gridFSBucket } from "../../lib/gridFs.mjs";
 import { UserValidationService, ValidationError } from "../../services/validationService.mjs";
-import mongoose from "mongoose";
+import cloudinary from "../../config/cloudinary.mjs";
 
 const saltRounds = 10;
 
@@ -218,91 +217,78 @@ export const completeSignUpPatient = async (req, res) => {
   }
 */
 
-  const {
-    userId,
-    name,
-    birthdayDate,
-    residentialAddress,
-    userSpecialties,
-    userServicePreferences,
-    userAcessibilityPreferences,
-    profilePhoto,
-  } = req.body;
-
   try {
+    const {
+      userId,
+      name,
+      birthdayDate,
+      residentialAddress,
+      userSpecialties,
+      userServicePreferences,
+      userAcessibilityPreferences,
+    } = req.body;
+
     UserValidationService.validatePatientData(req.body);
-    UserValidationService.validateProfilePhoto(profilePhoto);
     UserValidationService.validateUserExists(userId);
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(error.statusCode).json({
-        error: error.message,
-      });
+
+    const update = {
+      name,
+      birthdayDate,
+      address: [
+        {
+          cep: residentialAddress.cep,
+          address: residentialAddress.address,
+          neighborhood: residentialAddress.neighborhood,
+          city: residentialAddress.city,
+          state: residentialAddress.state,
+          active: true,
+        },
+      ],
+      userSpecialties,
+      userServicePreferences,
+      userType: ["patient"],
+      status: "completed",
+    };
+
+    if (userAcessibilityPreferences !== undefined) {
+      update.userAcessibilityPreferences = userAcessibilityPreferences;
     }
-  }
 
-  const update = {
-    name,
-    birthdayDate,
-    address: [
+    const result = await User.updateOne(
+      { _id: userId },
       {
-        cep: residentialAddress.cep,
-        address: residentialAddress.address,
-        neighborhood: residentialAddress.neighborhood,
-        city: residentialAddress.city,
-        state: residentialAddress.state,
-        active: true,
-      },
-    ],
-    userSpecialties,
-    userServicePreferences,
-    userType: ["patient"],
-    status: "completed",
-  };
+        $set: update,
+        $unset: {
+          CNPJCPFProfissional: "",
+          clinic: "",
+          professionalSpecialties: "",
+          otherProfessionalSpecialties: "",
+          professionalServicePreferences: "",
+        },
+      }
+    );
 
-  if (userAcessibilityPreferences !== undefined) {
-    update.userAcessibilityPreferences = userAcessibilityPreferences;
-  }
-
-  if (profilePhoto && typeof profilePhoto === "string") {
-    const [header, data] = profilePhoto.split(";base64,");
-    const mimeType = header.split(":")[1];
-    const buffer = Buffer.from(data, "base64");
-
-    const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
-      metadata: { userId },
-      contentType: mimeType,
-    });
-
-    const fileId = await new Promise((resolve, reject) => {
-      uploadStream.end(buffer);
-      uploadStream.on("finish", () => {
-        resolve(uploadStream.id);
-      });
-      uploadStream.on("error", (err) => {
-        console.error("Erro durante upload:", err);
-        reject(err);
-      });
-    });
-
-    update.profileImage = fileId;
-  }
-
-  const result = await User.updateOne({ _id: userId }, { $set: update });
-
-  try {
     if (result.modifiedCount > 0) {
-      const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
+      const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "12h",
       });
 
-      return res.status(201).json({ msg: "Registro bem-sucedido!", token: accessToken });
-    } else {
-      return res.status(200).json({ msg: "Nenhuma alteração realizada" });
+      return res.status(201).json({
+        msg: "Registro bem-sucedido!",
+        token: accessToken,
+      });
     }
+
+    return res.status(200).json({ msg: "Nenhuma alteração realizada" });
+
   } catch (error) {
-    console.error("Erro ao atualizar usuário:", error);
-    return res.status(500).json({ error: "Bad request" });
+    console.error("Erro ao completar cadastro do paciente:", error);
+
+    if (error instanceof ValidationError) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+
+    return res.status(500).json({ error: "Erro interno ao completar cadastro do paciente" });
   }
 };
 
@@ -348,107 +334,153 @@ export const completeSignUpProfessional = async (req, res) => {
   }
 */
 
-  const {
-    userId,
-    name,
-    birthdayDate,
-    clinic,
-    residentialAddress,
-    CNPJCPFProfissional,
-    professionalSpecialties,
-    otherProfessionalSpecialties = [],
-    professionalServicePreferences,
-    profilePhoto = undefined,
-  } = req.body;
-
   try {
+    const {
+      userId,
+      name,
+      birthdayDate,
+      CNPJCPFProfissional,
+      clinic,
+      professionalSpecialties,
+      professionalServicePreferences,
+      otherProfessionalSpecialties
+    } = req.body;
+
+    // Validação correta para PROFISSIONAL
     UserValidationService.validateProfessionalData(req.body);
-    UserValidationService.validateProfilePhoto(profilePhoto);
     UserValidationService.validateUserExists(userId);
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(error.statusCode).json({
-        error: error.message,
-      });
-    }
-  }
 
-  const update = {
-    name,
-    birthdayDate,
-    CNPJCPFProfissional,
-    address: [
-      {
-        cep: residentialAddress.cep,
-        address: residentialAddress.address,
-        neighborhood: residentialAddress.neighborhood,
-        city: residentialAddress.city,
-        state: residentialAddress.state,
-        active: true,
-      },
-    ],
-    clinic: {
-      name: clinic.name,
-      cep: clinic.cep,
-      address: clinic.address,
-      neighborhood: clinic.neighborhood,
-      number: clinic.number,
-      city: clinic.city,
-      state: clinic.state,
-      addition: clinic.addition,
-    },
-    professionalSpecialties,
-    professionalServicePreferences,
-    otherProfessionalSpecialties,
-    userType: ["professional"],
-    status: "completed",
-  };
-
-  try {
-    if (profilePhoto && typeof profilePhoto === "string") {
-      const [header, data] = profilePhoto.split(";base64,");
-      const mimeType = header.split(":")[1];
-      const buffer = Buffer.from(data, "base64");
-
-      const uploadStream = gridFSBucket.openUploadStream(`profile-${userId}`, {
-        metadata: { userId },
-        contentType: mimeType,
-      });
-
-      const fileId = await new Promise((resolve, reject) => {
-        uploadStream.end(buffer);
-        uploadStream.on("finish", () => {
-          resolve(uploadStream.id);
-        });
-        uploadStream.on("error", (err) => {
-          console.error("Erro durante upload:", err);
-          reject(err);
-        });
-      });
-
-      update.profileImage = fileId;
-    }
+    const update = {
+      name,
+      birthdayDate,
+      CNPJCPFProfissional,
+      clinic,
+      professionalSpecialties,
+      professionalServicePreferences,
+      otherProfessionalSpecialties,
+      userType: ["professional"],
+      status: "completed",
+    };
 
     const result = await User.updateOne({ _id: userId }, { $set: update });
 
     if (result.modifiedCount > 0) {
-      const updatedUser = await User.findOne({ _id: userId }, { hashedOTP: 0 });
-
-      if (!updatedUser) {
-        return res.status(404).json({ error: "Usuário não encontrado" });
-      }
-
-      const accessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
+      const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "12h",
       });
 
-      return res.status(201).json({ msg: "Registro bem-sucedido", token: accessToken });
-    } else {
-      return res.status(200).json({ error: "Nenhuma alteração realizada" });
+      return res.status(201).json({
+        msg: "Registro bem-sucedido!",
+        token: accessToken,
+      });
     }
+
+    return res.status(200).json({ msg: "Nenhuma alteração realizada" });
+
   } catch (error) {
-    console.error("Erro ao atualizar usuário:", error);
-    return res.status(500).json({ error: error.message });
+    console.error("Erro ao completar cadastro profissional:", error);
+
+    if (error instanceof ValidationError) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+
+    return res.status(500).json({ error: "Erro interno ao completar cadastro profissional" });
+  }
+};
+
+export const uploadProfilePhoto = async (req, res) => {
+  /*
+  #swagger.tags = ['Authentication']
+  #swagger.summary = 'Upload de foto de perfil'
+  #swagger.description = 'Recebe uma imagem via multipart/form-data e atualiza o campo imageUrl do usuário no banco.'
+
+  #swagger.consumes = ['multipart/form-data']
+  #swagger.security = [{}]
+  #swagger.ignore = ['body']
+
+  #swagger.parameters['userId'] = {
+    in: 'formData',
+    type: 'string',
+    required: true,
+    description: 'ID do usuário que receberá a foto'
+  }
+
+  #swagger.parameters['profilePhoto'] = {
+    in: 'formData',
+    type: 'file',
+    required: true,
+    description: 'Imagem JPG, PNG ou WEBP'
+  }
+
+  #swagger.responses[201] = {
+    description: 'Foto enviada com sucesso',
+    schema: {
+      msg: "Foto enviada com sucesso",
+      imageUrl: "https://res.cloudinary.com/dlyiydlve/image/upload/v123/conectabem/exemplo.png"
+    }
+  }
+
+  #swagger.responses[400] = {
+    description: 'Requisição inválida',
+    schema: { error: "Nenhuma imagem enviada." }
+  }
+
+  #swagger.responses[422] = {
+    description: 'Erro de validação',
+    schema: { error: "Tipo de imagem inválido. Use JPG, PNG ou WEBP." }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno ao enviar imagem',
+    schema: { error: "Erro interno ao enviar imagem." }
+  }
+  */
+
+  try {
+
+    const userId = req.body.userId?.replace(/"/g, "").trim();
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId é obrigatório." });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "Nenhuma imagem enviada." });
+    }
+
+    const mimeType = req.file.mimetype;
+    const buffer = req.file.buffer;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(mimeType)) {
+      return res.status(422).json({ error: "Tipo de imagem inválido. Use JPG, PNG ou WEBP." });
+    }
+
+    const maxSize = 2 * 1024 * 1024;
+    if (buffer.length > maxSize) {
+      return res.status(422).json({ error: "Imagem muito grande. Máximo 2MB." });
+    }
+
+    const base64Image = `data:${mimeType};base64,${buffer.toString("base64")}`;
+
+    const upload = await cloudinary.uploader.upload(base64Image, {
+      folder: "conectabem",
+      resource_type: "image",
+    });
+
+    await User.updateOne(
+      { _id: userId },
+      { $set: { imageUrl: upload.secure_url } }
+    );
+
+    return res.status(201).json({
+      msg: "Foto enviada com sucesso",
+      imageUrl: upload.secure_url,
+    });
+
+  } catch (error) {
+    console.error("Erro ao enviar foto:", error);
+    return res.status(500).json({ error: "Erro interno ao enviar imagem." });
   }
 };
 
@@ -456,13 +488,15 @@ export const userInfo = async (req, res) => {
   /*
   #swagger.tags = ['User']
   #swagger.summary = 'Retorna todas as informações do usuário logado'
-  #swagger.description = 'Endpoint protegido que retorna todos os dados do usuário autenticado, exceto campos sensíveis (hashedOTP, __v). Caso exista imagem de perfil, retorna também em formato base64.'
+  #swagger.description = 'Endpoint protegido que retorna todos os dados do usuário autenticado, exceto campos sensíveis (hashedOTP, __v). Retorna a URL da imagem de perfil armazenada no Cloudinary, quando existir.'
+  #swagger.security = [{ "bearerAuth": [] }]
 
-  #swagger.parameters['authToken'] = {
-    in: 'cookie',
-    description: 'JWT de autenticação do usuário',
+  #swagger.parameters['authorization'] = {
+    in: 'header',
     required: true,
-    type: 'string'
+    type: 'string',
+    description: 'Token JWT do paciente ou profissional (Bearer <token>)',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   }
 
   #swagger.responses[200] = { 
@@ -471,9 +505,9 @@ export const userInfo = async (req, res) => {
       _id: "64f1b2c3d4e5f6a7b8c9",
       name: "João da Silva",
       email: "usuario@teste.com",
-      status: "active",
+      status: "completed",
       userType: ["patient"],
-      profilePhoto: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...",
+      imageUrl: "https://res.cloudinary.com/seu-cloud-name/image/upload/v123/abc123.jpg",
       residentialAddress: {
         cep: "12345678",
         address: "Rua Exemplo, 123",
@@ -483,77 +517,26 @@ export const userInfo = async (req, res) => {
       }
     }
   }
-
-  #swagger.responses[401] = { 
-    description: 'Cookie de autenticação não encontrado ou inválido',
-    schema: { error: "Cookie não encontrado" }
-  }
-
-  #swagger.responses[404] = { 
-    description: 'Usuário não encontrado',
-    schema: { error: "Usuário não encontrado" }
-  }
-
-  #swagger.responses[422] = {
-    description: 'Parâmetros inválidos durante a validação',
-    schema: { error: "Mensagem de validação" }
-  }
-
-  #swagger.responses[500] = { 
-    description: 'Erro interno ao buscar informações do usuário',
-    schema: { error: "Bad request" }
-  }
 */
 
   try {
     const userId = req.userId;
 
-    const userExists = await User.findOne(
+    const user = await User.findOne(
       { _id: userId },
-      {
-        hashedOTP: 0,
-        __v: 0,
-      }
+      { hashedOTP: 0, __v: 0 }
     ).lean();
 
-    if (!userExists) {
+    if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    if (userExists.profileImage) {
-      try {
-        const downloadStream = gridFSBucket.openDownloadStream(userExists.profileImage);
+    return res.status(200).json({
+      ...user,
+      imageUrl: user.imageUrl || null
+    });
 
-        const chunks = [];
-        await new Promise((resolve, reject) => {
-          downloadStream.on("data", (chunk) => chunks.push(chunk));
-          downloadStream.on("end", () => resolve());
-          downloadStream.on("error", reject);
-        });
-
-        const buffer = Buffer.concat(chunks);
-
-        const file = await mongoose.connection.db
-          .collection("fs.files")
-          .findOne({ _id: userExists.profileImage });
-
-        const base64 = buffer.toString("base64");
-        const dataUri = `data:${file.contentType};base64,${base64}`;
-
-        userExists.profilePhoto = dataUri;
-      } catch (error) {
-        console.error("Erro ao buscar imagem:", error);
-        userExists.profilePhoto = null;
-      }
-    }
-
-    return res.status(200).json(userExists);
   } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(error.statusCode).json({
-        error: error.message,
-      });
-    }
     console.error("Erro ao trazer informações do usuário:", error);
     return res.status(500).json({ error: "Bad request" });
   }
