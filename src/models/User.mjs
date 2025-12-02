@@ -96,9 +96,9 @@ const userSchema = new mongoose.Schema({
     type: [String],
     enum: ["professional", "patient"],
   },
-  profileImage: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "fs.files",
+  imageUrl: {
+    type: String,
+    default: null,
   },
   ratingsCount: { type: Number, default: 0 },
   ratingsAvg: { type: Number, default: 0 },

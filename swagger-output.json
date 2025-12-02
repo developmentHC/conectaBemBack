@@ -44,13 +44,6 @@
   "schemes": [
     "https"
   ],
-  "securityDefinitions": {
-    "bearerAuth": {
-      "type": "http",
-      "scheme": "bearer",
-      "bearerFormat": "JWT"
-    }
-  },
   "paths": {
     "/auth/sendOTP": {
       "post": {
@@ -489,25 +482,38 @@
         }
       }
     },
-    "/user": {
-      "get": {
+    "/auth/uploadPhoto": {
+      "post": {
         "tags": [
-          "User"
+          "Authentication"
         ],
-        "summary": "Retorna todas as informações do usuário logado",
-        "description": "Endpoint protegido que retorna todos os dados do usuário autenticado, exceto campos sensíveis (hashedOTP, __v). Caso exista imagem de perfil, retorna também em formato base64.",
+        "summary": "Upload de foto de perfil",
+        "description": "Recebe uma imagem via multipart/form-data e atualiza o campo imageUrl do usuário no banco.",
+        "consumes": [
+          "multipart/form-data"
+        ],
         "parameters": [
+          {
+            "name": "userId",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "ID do usuário que receberá a foto"
+          },
+          {
+            "name": "profilePhoto",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "Imagem JPG, PNG ou WEBP"
+          },
           {
             "name": "authorization",
             "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "authToken",
-            "in": "cookie",
-            "description": "JWT de autenticação do usuário",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "responses": {
@@ -530,7 +536,7 @@
                 },
                 "status": {
                   "type": "string",
-                  "example": "active"
+                  "example": "completed"
                 },
                 "userType": {
                   "type": "array",
@@ -541,9 +547,165 @@
                     "type": "string"
                   }
                 },
-                "profilePhoto": {
+                "imageUrl": {
                   "type": "string",
-                  "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+                  "example": "https://res.cloudinary.com/seu-cloud-name/image/upload/v123/abc123.jpg"
+                },
+                "residentialAddress": {
+                  "type": "object",
+                  "properties": {
+                    "cep": {
+                      "type": "string",
+                      "example": "12345678"
+                    },
+                    "address": {
+                      "type": "string",
+                      "example": "Rua Exemplo, 123"
+                    },
+                    "neighborhood": {
+                      "type": "string",
+                      "example": "Centro"
+                    },
+                    "city": {
+                      "type": "string",
+                      "example": "São Paulo"
+                    },
+                    "state": {
+                      "type": "string",
+                      "example": "SP"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "201": {
+            "description": "Foto enviada com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Foto enviada com sucesso"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "example": "https://res.cloudinary.com/dlyiydlve/image/upload/v123/conectabem/exemplo.png"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Nenhuma imagem enviada."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Não Encontrado"
+          },
+          "422": {
+            "description": "Erro de validação",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Tipo de imagem inválido. Use JPG, PNG ou WEBP."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao enviar imagem",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno ao enviar imagem."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ]
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Retorna todas as informações do usuário logado",
+        "description": "Endpoint protegido que retorna todos os dados do usuário autenticado, exceto campos sensíveis (hashedOTP, __v). Retorna a URL da imagem de perfil armazenada no Cloudinary, quando existir.",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "description": "Token JWT do paciente ou profissional (Bearer <token>)",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário encontrado, dados retornados com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "64f1b2c3d4e5f6a7b8c9"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "João da Silva"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "usuario@teste.com"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "completed"
+                },
+                "userType": {
+                  "type": "array",
+                  "example": [
+                    "patient"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "example": "https://res.cloudinary.com/seu-cloud-name/image/upload/v123/abc123.jpg"
                 },
                 "residentialAddress": {
                   "type": "object",
@@ -577,69 +739,23 @@
             }
           },
           "401": {
-            "description": "Cookie de autenticação não encontrado ou inválido",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Cookie não encontrado"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
+            "description": "Não autorizado"
           },
           "403": {
             "description": "Acesso Negado"
           },
           "404": {
-            "description": "Usuário não encontrado",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Usuário não encontrado"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "422": {
-            "description": "Parâmetros inválidos durante a validação",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Mensagem de validação"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
+            "description": "Não Encontrado"
           },
           "500": {
-            "description": "Erro interno ao buscar informações do usuário",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Bad request"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
+            "description": "Erro Interno do Servidor"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/address": {
@@ -3328,23 +3444,6 @@
                   "example": "Opcional"
                 }
               }
-            },
-            "profilePhoto": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "example": "string"
-                },
-                "description": {
-                  "type": "string",
-                  "example": "Base64 Data URL da foto de perfil"
-                },
-                "example": {
-                  "type": "string",
-                  "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
-                }
-              }
             }
           }
         }
@@ -3737,23 +3836,6 @@
                 "description": {
                   "type": "string",
                   "example": "Opcional"
-                }
-              }
-            },
-            "profilePhoto": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "example": "string"
-                },
-                "description": {
-                  "type": "string",
-                  "example": "Base64 Data URL da foto de perfil"
-                },
-                "example": {
-                  "type": "string",
-                  "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
                 }
               }
             }

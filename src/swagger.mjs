@@ -36,13 +36,6 @@ const doc = {
   host: isProduction ? vercelUrl : "localhost:3000",
   basePath: "/",
   schemes: isProduction ? ["https"] : ["http"],
-  securityDefinitions: {
-    bearerAuth: {
-      type: "http",
-      scheme: "bearer",
-      bearerFormat: "JWT",
-    },
-  },
   tags: [
     {
       name: "Authentication",
@@ -114,11 +107,6 @@ const doc = {
           example: ["Cadeira de rodas", "Deficiência visual"],
           description: "Opcional",
         },
-        profilePhoto: {
-          type: "string",
-          description: "Base64 Data URL da foto de perfil",
-          example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...",
-        },
       },
     },
     AddUserProfessional: {
@@ -180,11 +168,6 @@ const doc = {
           example: ["Acupuntura"],
           description: "Opcional",
         },
-        profilePhoto: {
-          type: "string",
-          description: "Base64 Data URL da foto de perfil",
-          example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...",
-        },
       },
     },
     Appointment: {
@@ -221,6 +204,7 @@ const doc = {
 
 const options = {
   language: "pt-BR",
+  autoBody: false,
   ...(isProduction && { ignore: ["/cleanup"] }),
 };
 
