@@ -1,31 +1,29 @@
-import { Resend } from "resend";
 import config from "./../config/config.mjs";
+import sgMail from "@sendgrid/mail";
 
-const resend = new Resend(config.RESEND_API_KEY);
+sgMail.setApiKey(config.SENDGRID_API_KEY);
 
 export async function sendEmail(to, OTP) {
   const msg = {
-    from: "ConectaBem <onboarding@resend.dev>",
     to,
+    from: "conectabem.auth@gmail.com",  
     subject: "Seu código de verificação",
-    html: `<strong>Seu código OTP está logo abaixo: ${OTP}</strong>`,
-    text: `Seu código OTP está logo abaixo: ${OTP}`,
+    text: `Seu código de verificação é: ${OTP}`,
+    html: `<p>Seu código de verificação é:</p><h2>${OTP}</h2>`,
   };
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const response = await resend.emails.send(msg);
+      const [response] = await sgMail.send(msg);
 
-      if (!response.error) {
-        console.log(`✅ OTP enviado para ${to} usando Resend`);
-        return {
-          statusCode: 200,
-          message: "Email enviado com sucesso",
-        };
+      if (response.statusCode === 202) {
+        console.log(`✅ OTP enviado para ${to}`);
       }
 
-      throw response.error;
-
+      return {
+        statusCode: response.statusCode,
+        headers: response.headers
+      };
     } catch (err) {
       console.error(
         `❌ Erro ao enviar OTP para ${to} (tentativa ${attempt}):`,
