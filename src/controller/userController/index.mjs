@@ -248,6 +248,7 @@ export const completeSignUpPatient = async (req, res) => {
       userServicePreferences,
       userType: ["patient"],
       status: "completed",
+      profilePhoto: req.body.profilePhoto,
     };
 
     if (userAcessibilityPreferences !== undefined) {
@@ -346,7 +347,6 @@ export const completeSignUpProfessional = async (req, res) => {
       otherProfessionalSpecialties
     } = req.body;
 
-    // Validação correta para PROFISSIONAL
     UserValidationService.validateProfessionalData(req.body);
     UserValidationService.validateUserExists(userId);
 
@@ -360,6 +360,7 @@ export const completeSignUpProfessional = async (req, res) => {
       otherProfessionalSpecialties,
       userType: ["professional"],
       status: "completed",
+      profilePhoto: req.body.profilePhoto,
     };
 
     const result = await User.updateOne({ _id: userId }, { $set: update });
@@ -398,13 +399,6 @@ export const uploadProfilePhoto = async (req, res) => {
   #swagger.security = [{}]
   #swagger.ignore = ['body']
 
-  #swagger.parameters['userId'] = {
-    in: 'formData',
-    type: 'string',
-    required: true,
-    description: 'ID do usuário que receberá a foto'
-  }
-
   #swagger.parameters['profilePhoto'] = {
     in: 'formData',
     type: 'file',
@@ -438,12 +432,6 @@ export const uploadProfilePhoto = async (req, res) => {
 
   try {
 
-    const userId = req.body.userId?.replace(/"/g, "").trim();
-
-    if (!userId) {
-      return res.status(400).json({ error: "userId é obrigatório." });
-    }
-
     if (!req.file) {
       return res.status(400).json({ error: "Nenhuma imagem enviada." });
     }
@@ -468,13 +456,8 @@ export const uploadProfilePhoto = async (req, res) => {
       resource_type: "image",
     });
 
-    await User.updateOne(
-      { _id: userId },
-      { $set: { imageUrl: upload.secure_url } }
-    );
-
     return res.status(201).json({
-      msg: "Foto enviada com sucesso",
+      msg: "Upload realizado com sucesso",
       imageUrl: upload.secure_url,
     });
 

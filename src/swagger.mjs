@@ -107,6 +107,11 @@ const doc = {
           example: ["Cadeira de rodas", "Deficiência visual"],
           description: "Opcional",
         },
+        profilePhoto: {
+        type: "string",
+        example: "https://res.cloudinary.com/.../foto.png",
+        description: "URL da foto enviada anteriormente no upload"
+        } 
       },
     },
     AddUserProfessional: {
@@ -167,6 +172,11 @@ const doc = {
           items: { type: "string" },
           example: ["Acupuntura"],
           description: "Opcional",
+        },
+        profilePhoto: {
+          type: "string",
+          example: "https://res.cloudinary.com/.../foto.png",
+          description: "URL da foto enviada anteriormente no upload",
         },
       },
     },
