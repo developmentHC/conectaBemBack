@@ -4,3 +4,6 @@ compose.yaml
 emailInsert.json
 requests.rest
 .vercel
+
+# Claude Code napkin (per-user agent memory)
+.claude/napkin.md
