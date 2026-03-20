@@ -24,22 +24,25 @@ cd backend
 ```sh
 DB_USER=seu_usuario
 DB_PASSWORD=sua_senha
-SENDGRID_API_KEY=apikey
+GMAIL_USER=seu_email
+GMAIL_PASS=sua_senha
 PORT=3000
 ACCESS_TOKEN_SECRET=JWT_ACCESS_TOKEN_SECRET
 REFRESH_TOKEN_SECRET=JWT_REFRESH_TOKEN_SECRET
-CLOUDINARY_CLOUD_NAME=xxxxx             
-CLOUDINARY_API_KEY=xxxxx                 
-CLOUDINARY_API_SECRET=xxxxx              
+CLOUDINARY_CLOUD_NAME=xxxxx
+CLOUDINARY_API_KEY=xxxxx
+CLOUDINARY_API_SECRET=xxxxx
 ```
 
 3. Construa a imagem Docker:
+
 ```sh
 docker build -t conectabem .
 docker run -it --rm -p 3000:3000 conectabem npm run dev
 ```
 
 4. Acesse sua aplicação:
+
 ```sh
 http://localhost:3000/docs
 ```
