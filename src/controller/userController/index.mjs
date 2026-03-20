@@ -71,7 +71,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
 
   try {
     const OTP = generateOTP();
-    const sendgridResult = await sendEmail(email, OTP);
+    const emailResult = await sendEmail(email, OTP);
 
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedOTP = await bcrypt.hash(String(OTP), salt);
@@ -104,7 +104,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
           status: userExists.status,
         },
         message: "User OTP updated and sent",
-        sendgridStatus: sendgridResult?.statusCode || null
+        sendgridStatus: emailResult?.status
       });
     }
   } catch (error) {

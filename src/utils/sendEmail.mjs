@@ -1,33 +1,37 @@
-import config from "./../config/config.mjs";
-import sgMail from "@sendgrid/mail";
+import "dotenv/config";
+import nodemailer from "nodemailer";
 
-sgMail.setApiKey(config.SENDGRID_API_KEY);
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 export async function sendEmail(to, OTP) {
-  const msg = {
+  const mailOptions = {
+    from: `"ConectaBem" <${process.env.GMAIL_USER}>`,
     to,
-    from: "conectabem.auth@gmail.com",  
     subject: "Seu código de verificação",
-    text: `Seu código de verificação é: ${OTP}`,
-    html: `<p>Seu código de verificação é:</p><h2>${OTP}</h2>`,
+    html: `
+      <p>Seu código de verificação é:</p>
+      <h2>${OTP}</h2>
+      <p>Este código expira em 10 minutos.</p>
+    `,
   };
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const [response] = await sgMail.send(msg);
+      const info = await transporter.sendMail(mailOptions);
 
-      if (response.statusCode === 202) {
-        console.log(`✅ OTP enviado para ${to}`);
-      }
+      console.log(`✅ OTP enviado para ${to}`);
+      return { status: "sent", id: info.messageId };
 
-      return {
-        statusCode: response.statusCode,
-        headers: response.headers
-      };
     } catch (err) {
       console.error(
         `❌ Erro ao enviar OTP para ${to} (tentativa ${attempt}):`,
-        err?.message || err
+        err.message
       );
 
       if (attempt < 3) {
