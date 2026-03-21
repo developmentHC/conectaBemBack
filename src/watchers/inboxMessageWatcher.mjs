@@ -38,6 +38,4 @@ export function startInboxMessageWatcher() {
     console.error(" ChangeStream erro:", e.message);
     setTimeout(startInboxMessageWatcher, 5000);
   });
-
-  console.log(" Watcher de InboxMessage iniciado");
 }

@@ -14,7 +14,7 @@
     "test:jest": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "build": "npm run lint && node ./src/swagger.mjs && node ./src/index.mjs",
     "dev": "cross-env NODE_ENV=development node ./src/swagger.mjs && nodemon ./src/index.mjs",
-    "dev:prod": "cross-env NODE_ENV=production VERCEL=1 VERCEL_URL=conecta-bem-back.vercel.app node ./src/swagger.mjs && nodemon ./src/index.mjs",
+    "dev:prod": "cross-env-shell NODE_ENV=production VERCEL=1 VERCEL_URL=conecta-bem-back.vercel.app node ./src/swagger.mjs && nodemon ./src/index.mjs",
     "start": "cross-env NODE_ENV=production node ./src/index.mjs",
     "swagger": "cross-env NODE_ENV=development node ./src/swagger.mjs",
     "prepare": "husky"
