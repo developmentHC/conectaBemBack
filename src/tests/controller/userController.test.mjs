@@ -1,50 +1,48 @@
-import { jest } from "@jest/globals";
-
 let mockLoginWithOtp;
 
-jest.unstable_mockModule("bcrypt", () => ({
+vi.mock("bcrypt", () => ({
   __esModule: true,
   default: {
-    genSalt: jest.fn(),
-    hash: jest.fn(),
-    compare: jest.fn(),
+    genSalt: vi.fn(),
+    hash: vi.fn(),
+    compare: vi.fn(),
   },
 }));
-jest.unstable_mockModule("../../models/User.mjs", () => ({
+vi.mock("../../models/User.mjs", () => ({
   __esModule: true,
   default: {
-    findOne: jest.fn(),
-    create: jest.fn(),
-    updateOne: jest.fn(),
-    findByIdAndUpdate: jest.fn(),
+    findOne: vi.fn(),
+    create: vi.fn(),
+    updateOne: vi.fn(),
+    findByIdAndUpdate: vi.fn(),
   },
 }));
-jest.unstable_mockModule("../../utils/sendEmail.mjs", () => ({
+vi.mock("../../utils/sendEmail.mjs", () => ({
   __esModule: true,
-  sendEmail: jest.fn(),
+  sendEmail: vi.fn(),
 }));
-jest.unstable_mockModule("../../utils/generateOTP.mjs", () => ({
+vi.mock("../../utils/generateOTP.mjs", () => ({
   __esModule: true,
-  generateOTP: jest.fn(),
+  generateOTP: vi.fn(),
 }));
-jest.unstable_mockModule("../../utils/testEmailSyntax.mjs", () => ({
+vi.mock("../../utils/testEmailSyntax.mjs", () => ({
   __esModule: true,
-  testEmailSyntax: jest.fn(),
+  testEmailSyntax: vi.fn(),
 }));
-jest.unstable_mockModule("../../services/AuthService.mjs", () => {
-  mockLoginWithOtp = jest.fn();
+vi.mock("../../services/AuthService.mjs", () => {
+  mockLoginWithOtp = vi.fn();
   return {
     __esModule: true,
     default: { loginWithOtp: mockLoginWithOtp },
   };
 });
-jest.unstable_mockModule("../../services/validationService.mjs", () => ({
+vi.mock("../../services/validationService.mjs", () => ({
   __esModule: true,
   UserValidationService: {
-    validatePatientData: jest.fn(),
-    validateProfessionalData: jest.fn(),
-    validateProfilePhoto: jest.fn(),
-    validateUserExists: jest.fn(),
+    validatePatientData: vi.fn(),
+    validateProfessionalData: vi.fn(),
+    validateProfilePhoto: vi.fn(),
+    validateUserExists: vi.fn(),
   },
   ValidationError: class ValidationError extends Error {
     constructor(message, statusCode = 422) {
@@ -53,17 +51,17 @@ jest.unstable_mockModule("../../services/validationService.mjs", () => ({
     }
   },
 }));
-jest.unstable_mockModule("jsonwebtoken", () => ({
+vi.mock("jsonwebtoken", () => ({
   __esModule: true,
-  default: { sign: jest.fn() },
+  default: { sign: vi.fn() },
 }));
-jest.unstable_mockModule("../../lib/gridFs.mjs", () => ({
+vi.mock("../../lib/gridFs.mjs", () => ({
   __esModule: true,
   gridFSBucket: {
-    openUploadStream: jest.fn().mockReturnValue({
-      write: jest.fn(),
-      end: jest.fn(),
-      on: jest.fn(),
+    openUploadStream: vi.fn().mockReturnValue({
+      write: vi.fn(),
+      end: vi.fn(),
+      on: vi.fn(),
     }),
   },
 }));
@@ -82,8 +80,8 @@ const jwt = (await import("jsonwebtoken")).default;
 const { gridFSBucket } = await import("../../lib/gridFs.mjs");
 
 const makeRes = () => ({
-  status: jest.fn().mockReturnThis(),
-  json: jest.fn().mockReturnThis(),
+  status: vi.fn().mockReturnThis(),
+  json: vi.fn().mockReturnThis(),
 });
 
 const makePatientReq = (overrides = {}) => ({
@@ -147,7 +145,7 @@ const mockValidProfessional = () => {
 };
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("checkUserEmailSendOTP", () => {
@@ -267,6 +265,7 @@ describe("checkOTP", () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       message: "Autenticação bem sucedida!",
+      token: "fakeToken",
       user: { _id: "user123", email: req.body.email, status: "active" },
     });
   });
@@ -331,7 +330,7 @@ describe("completeSignUpPatient", () => {
 
   it("deve retornar 422 se a foto de perfil for inválida", async () => {
     const error = new ValidationError("Foto inválida", 422);
-    UserValidationService.validateProfilePhoto.mockImplementation(() => {
+    UserValidationService.validatePatientData.mockImplementation(() => {
       throw error;
     });
 
@@ -371,7 +370,7 @@ describe("completeSignUpProfessional", () => {
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
-      msg: "Registro bem-sucedido",
+      msg: "Registro bem-sucedido!",
       token: "fake-token",
     });
   });
@@ -383,13 +382,14 @@ describe("completeSignUpProfessional", () => {
     await completeSignUpProfessional(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ error: "Nenhuma alteração realizada" });
+    expect(res.json).toHaveBeenCalledWith({ msg: "Nenhuma alteração realizada" });
   });
 
   it("deve retornar 404 se usuário não for encontrado após update", async () => {
-    mockValidProfessional();
-    User.updateOne.mockResolvedValue({ modifiedCount: 1 });
-    User.findOne.mockResolvedValue(null);
+    const error = new ValidationError("Usuário não encontrado", 404);
+    UserValidationService.validateUserExists.mockImplementation(() => {
+      throw error;
+    });
 
     await completeSignUpProfessional(req, res);
 

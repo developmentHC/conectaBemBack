@@ -1,14 +1,13 @@
 import { EventEmitter } from "node:events";
-import { jest } from "@jest/globals";
 
-jest.unstable_mockModule("../../models/InboxMessage.mjs", () => ({
+vi.mock("../../models/InboxMessage.mjs", () => ({
   __esModule: true,
-  default: { watch: jest.fn() },
+  default: { watch: vi.fn() },
 }));
 
-jest.unstable_mockModule("../../lib/webhook.mjs", () => ({
+vi.mock("../../lib/webhook.mjs", () => ({
   __esModule: true,
-  sendWebhook: jest.fn(),
+  sendWebhook: vi.fn(),
 }));
 
 const InboxMessage = (await import("../../models/InboxMessage.mjs")).default;
@@ -32,7 +31,7 @@ describe("startInboxMessageWatcher", () => {
   let stream;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     stream = makeStream();
     InboxMessage.watch.mockReturnValue(stream);
   });
@@ -78,7 +77,7 @@ describe("startInboxMessageWatcher", () => {
   });
 
   it("deve logar erro se sendWebhook falhar", async () => {
-    const spyError = jest.spyOn(console, "error").mockImplementation(() => {});
+    const spyError = vi.spyOn(console, "error").mockImplementation(() => {});
     sendWebhook.mockRejectedValueOnce(new Error("Falha de rede"));
 
     startInboxMessageWatcher();
@@ -103,8 +102,8 @@ describe("startInboxMessageWatcher", () => {
   });
 
   it("deve reiniciar watcher em caso de erro no stream", () => {
-    const spyError = jest.spyOn(console, "error").mockImplementation(() => {});
-    const spySetTimeout = jest.spyOn(global, "setTimeout").mockImplementation(() => {});
+    const spyError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const spySetTimeout = vi.spyOn(global, "setTimeout").mockImplementation(() => {});
 
     startInboxMessageWatcher();
 

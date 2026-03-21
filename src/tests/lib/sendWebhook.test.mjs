@@ -1,11 +1,10 @@
 import crypto from "node:crypto";
-import { jest } from "@jest/globals";
 import { sendWebhook } from "../../lib/webhook.mjs";
 
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("sendWebhook", () => {
