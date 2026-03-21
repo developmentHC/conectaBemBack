@@ -7,7 +7,7 @@ vi.mock("jsonwebtoken", () => ({
 }));
 
 const jwt = (await import("jsonwebtoken")).default;
-const { authenticateToken } = await import("../../middleware/authmiddleware.mjs");
+const { authenticateToken } = await import("../../middleware/authMiddleware.mjs");
 
 const makeRes = () => {
   const res = {};
