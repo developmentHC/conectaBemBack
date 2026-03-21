@@ -1,7 +1,3 @@
-const { mockLoginWithOtp } = vi.hoisted(() => ({
-  mockLoginWithOtp: vi.fn(),
-}));
-
 vi.mock("bcrypt", () => ({
   __esModule: true,
   default: {
@@ -33,7 +29,7 @@ vi.mock("../../utils/testEmailSyntax.mjs", () => ({
 }));
 vi.mock("../../services/AuthService.mjs", () => ({
   __esModule: true,
-  default: { loginWithOtp: mockLoginWithOtp },
+  default: { loginWithOtp: vi.fn() },
 }));
 vi.mock("../../services/validationService.mjs", () => ({
   __esModule: true,
@@ -231,7 +227,7 @@ describe("checkOTP", () => {
 
     const otpError = new Error("Código OTP está incorreto!");
     otpError.statusCode = 401;
-    mockLoginWithOtp.mockRejectedValue(otpError);
+    _AuthService.loginWithOtp.mockRejectedValue(otpError);
 
     await checkOTP(req, res);
 
@@ -253,7 +249,7 @@ describe("checkOTP", () => {
       status: "active",
     });
 
-    mockLoginWithOtp.mockResolvedValue({
+    _AuthService.loginWithOtp.mockResolvedValue({
       message: "Autenticação bem sucedida!",
       token: "fakeToken",
       user: { _id: "user123", email: req.body.email, status: "active" },
@@ -271,7 +267,7 @@ describe("checkOTP", () => {
 
   it("deve retornar 500 se ocorrer erro inesperado", async () => {
     testEmailSyntax.mockReturnValue(true);
-    mockLoginWithOtp.mockRejectedValue(new Error("Falha interna"));
+    _AuthService.loginWithOtp.mockRejectedValue(new Error("Falha interna"));
 
     await checkOTP(req, res);
 
