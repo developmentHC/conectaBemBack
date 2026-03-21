@@ -19,16 +19,17 @@ git clone https://github.com/ConectaBemApp/backend.git
 cd backend
 ```
 
-2. Crie um arquivo .env com as suas respectivas variáveis de ambiente
+2. Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis de ambiente:
 
 ```sh
-DB_USER=seu_usuario
-DB_PASSWORD=sua_senha
-GMAIL_USER=seu_email
-GMAIL_PASS=sua_senha
+MONGODB_URI=seu_mongodb_uri
 PORT=3000
-ACCESS_TOKEN_SECRET=JWT_ACCESS_TOKEN_SECRET
-REFRESH_TOKEN_SECRET=JWT_REFRESH_TOKEN_SECRET
+GMAIL_USER=seu_email@gmail.com
+GMAIL_PASS=sua_senha
+ACCESS_TOKEN_SECRET=sua_jwt_access_secret
+REFRESH_TOKEN_SECRET=sua_jwt_refresh_secret
+FRONT_WEBHOOK_URL=url_para_webhook_do_frontend
+WEBHOOK_SECRET=segredo_webhook
 CLOUDINARY_CLOUD_NAME=xxxxx
 CLOUDINARY_API_KEY=xxxxx
 CLOUDINARY_API_SECRET=xxxxx

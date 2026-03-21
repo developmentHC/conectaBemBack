@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
 import cors from "cors";
 import { corsOptions } from "./routes/index.mjs";
@@ -65,9 +62,19 @@ app.use("/", router);
 
 connectDB()
   .then(() => {
+    const env = process.env.NODE_ENV || "development";
+    const port = process.env.PORT || 3000;
+    console.log(`[ENV] Ambiente: ${env}`);
+    console.log(`[SERVER] Inicializando aplicação...`);
+    console.log(`[DB] MongoDB conectado com sucesso`);
+
+
     startInboxMessageWatcher();
-    app.listen(3000);
-    console.log("Conectou ao banco com sucesso");
+    console.log(`[WATCHER] InboxMessage watcher iniciado`);
+
+    app.listen(port, () => {
+      console.log(`[DOCS] Swagger disponível em: http://localhost:${port}/docs`);
+      console.log(`[SERVER] Servidor rodando em http://localhost:${port}`);
+    });
   })
   .catch((error) => console.log(error));
-
