@@ -1,5 +1,5 @@
+import crypto from "node:crypto";
 import express from "express";
-import crypto from "crypto";
 
 const router = express.Router();
 

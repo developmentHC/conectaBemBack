@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.mjs";
 import config from "../config/config.mjs";
+import User from "../models/User.mjs";
 
 export class UserValidationService {
   static async validateUserExists(userId) {
@@ -29,8 +29,8 @@ export class UserValidationService {
       throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
     }
 
-    this.validateAddressData(data.residentialAddress);
-    this.validateBirthDate(data.birthdayDate);
+    UserValidationService.validateAddressData(data.residentialAddress);
+    UserValidationService.validateBirthDate(data.birthdayDate);
   }
 
   static validateProfessionalData(data) {
@@ -51,9 +51,9 @@ export class UserValidationService {
       throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
     }
 
-    this.validateAddressData(data.residentialAddress);
-    this.validateClinicData(data.clinic);
-    this.validateBirthDate(data.birthdayDate);
+    UserValidationService.validateAddressData(data.residentialAddress);
+    UserValidationService.validateClinicData(data.clinic);
+    UserValidationService.validateBirthDate(data.birthdayDate);
   }
 
   static validateBirthDate(birthdayDate) {
@@ -62,8 +62,8 @@ export class UserValidationService {
     }
 
     if (
-      isNaN(birthdayDate) ||
-      !isFinite(birthdayDate) ||
+      Number.isNaN(birthdayDate) ||
+      !Number.isFinite(birthdayDate) ||
       birthdayDate <= 0 ||
       birthdayDate > Date.now()
     ) {
@@ -79,7 +79,7 @@ export class UserValidationService {
     if (missingFields.length > 0) {
       throw new ValidationError(
         `Dados do endereço residencial imcompletos: ${missingFields.join(", ")}`,
-        422
+        422,
       );
     }
   }

@@ -45,9 +45,9 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
 */
 
   try {
-    let page = parseInt(req.params.page) || 1;
+    let page = parseInt(req.params.page, 10) || 1;
 
-    if (isNaN(page)) {
+    if (Number.isNaN(page)) {
       return res.status(400).json({ error: "Página inválida" });
     }
 
@@ -74,7 +74,7 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
         userAcessibilityPreferences: 0,
         __v: 0,
         userType: 0,
-      }
+      },
     )
       .skip((page - 1) * limit)
       .limit(limit);
@@ -151,13 +151,13 @@ export const searchProfessionalBySpeciality = async (req, res) => {
   }
 
   try {
-    let page = parseInt(req.params.page) || 1;
+    let page = parseInt(req.params.page, 10) || 1;
 
-    if (isNaN(page)) {
+    if (Number.isNaN(page)) {
       return res.status(400).json({ error: "Página inválida" });
     }
 
-    let limit = 10;
+    const limit = 10;
 
     const totalProfessionals = await User.countDocuments({
       professionalSpecialties: { $in: [speciality] },
@@ -180,7 +180,7 @@ export const searchProfessionalBySpeciality = async (req, res) => {
         userAcessibilityPreferences: 0,
         __v: 0,
         userType: 0,
-      }
+      },
     )
       .skip((page - 1) * limit)
       .limit(limit);
@@ -254,13 +254,13 @@ export const searchBar = async (req, res) => {
   const limit = 10;
 
   try {
-    let page = parseInt(req.params.page) || 1;
+    let page = parseInt(req.params.page, 10) || 1;
 
     if (!terms) {
       return res.status(400).json({ error: "Parâmetros são obrigatórios para realizar a busca" });
     }
 
-    if (isNaN(page)) {
+    if (Number.isNaN(page)) {
       return res.status(400).json({ error: "Página inválida" });
     }
 
@@ -293,7 +293,7 @@ export const searchBar = async (req, res) => {
         userAcessibilityPreferences: 0,
         __v: 0,
         userType: 0,
-      }
+      },
     )
       .skip((page - 1) * limit)
       .limit(limit);

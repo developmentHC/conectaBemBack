@@ -15,7 +15,7 @@ const ConversationSchema = new mongoose.Schema(
   {
     collection: "conversations",
     timestamps: { createdAt: true, updatedAt: true },
-  }
+  },
 );
 
 export default mongoose.model("Conversation", ConversationSchema);

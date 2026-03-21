@@ -1,17 +1,15 @@
-import { jest } from "@jest/globals";
-
-jest.unstable_mockModule("../../models/User.mjs", () => ({
+vi.mock("../../models/User.mjs", () => ({
   __esModule: true,
   default: {
-    findOne: jest.fn(),
-    updateOne: jest.fn(),
+    findOne: vi.fn(),
+    updateOne: vi.fn(),
   },
 }));
 
-jest.unstable_mockModule("../../services/validationService.mjs", () => ({
+vi.mock("../../services/validationService.mjs", () => ({
   __esModule: true,
   UserValidationService: {
-    validateToken: jest.fn(),
+    validateToken: vi.fn(),
   },
   ValidationError: class ValidationError extends Error {
     constructor(message, statusCode = 422) {
@@ -25,8 +23,8 @@ const User = (await import("../../models/User.mjs")).default;
 const { UserValidationService } = await import("../../services/validationService.mjs");
 
 const makeRes = () => ({
-  status: jest.fn().mockReturnThis(),
-  json: jest.fn(),
+  status: vi.fn().mockReturnThis(),
+  json: vi.fn(),
 });
 
 const makeReq = (overrides = {}) => ({
@@ -46,8 +44,8 @@ const expectMsg = (res, status, msg) => {
 };
 
 afterEach(() => {
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
+  vi.clearAllMocks();
+  vi.restoreAllMocks();
 });
 
 let changeActiveAddress;

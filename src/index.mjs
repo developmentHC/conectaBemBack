@@ -1,12 +1,11 @@
-import express from "express";
-import cors from "cors";
-import { corsOptions } from "./routes/index.mjs";
-import router from "./routes/index.mjs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import express from "express";
 import { connectDB } from "./lib/db.mjs";
+import router, { corsOptions } from "./routes/index.mjs";
 import { startInboxMessageWatcher } from "./watchers/inboxMessageWatcher.mjs";
-import path from "path";
-import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,15 +19,15 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "..")));
 
-app.get("/swagger-output.json", (req, res) => {
+app.get("/swagger-output.json", (_req, res) => {
   res.sendFile(path.join(__dirname, "..", "swagger-output.json"));
 });
 
-app.get("/favicon.ico", (req, res) => {
+app.get("/favicon.ico", (_req, res) => {
   res.redirect("https://unpkg.com/swagger-ui-dist/favicon-32x32.png");
 });
 
-app.get("/docs", (req, res) => {
+app.get("/docs", (_req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -56,7 +55,7 @@ app.get("/docs", (req, res) => {
   `);
 });
 
-app.get("/", (req, res) => res.redirect("/docs"));
+app.get("/", (_req, res) => res.redirect("/docs"));
 
 app.use("/", router);
 
@@ -67,7 +66,6 @@ connectDB()
     console.log(`[ENV] Ambiente: ${env}`);
     console.log(`[SERVER] Inicializando aplicação...`);
     console.log(`[DB] MongoDB conectado com sucesso`);
-
 
     startInboxMessageWatcher();
     console.log(`[WATCHER] InboxMessage watcher iniciado`);

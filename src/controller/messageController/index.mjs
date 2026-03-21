@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
 import { randomUUID } from "node:crypto";
-import InboxMessage from "../../models/InboxMessage.mjs";
+import mongoose from "mongoose";
 import Conversation from "../../models/Conversation.mjs";
 import ConversationMember from "../../models/ConversationMember.mjs";
+import InboxMessage from "../../models/InboxMessage.mjs";
 import User from "../../models/User.mjs";
 
 export async function createMessage(req, res) {
@@ -108,7 +108,7 @@ export async function createMessage(req, res) {
           participants: participantsObjIds,
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     const msg = await InboxMessage.create({
@@ -119,7 +119,7 @@ export async function createMessage(req, res) {
 
     await Conversation.updateOne(
       { conversation },
-      { $set: { lastMessage: { content, sender: userObjId, createdAt: msg.createdAt } } }
+      { $set: { lastMessage: { content, sender: userObjId, createdAt: msg.createdAt } } },
     );
 
     for (const memberId of participants) {
@@ -129,20 +129,20 @@ export async function createMessage(req, res) {
         await ConversationMember.updateOne(
           { conversation, user: new mongoose.Types.ObjectId(memberId) },
           { $setOnInsert: { unreadCount: 0 } },
-          { upsert: true }
+          { upsert: true },
         );
       } else {
         const res = await ConversationMember.updateOne(
           { conversation, user: new mongoose.Types.ObjectId(memberId) },
           { $inc: { unreadCount: 1 } },
-          { upsert: false }
+          { upsert: false },
         );
 
         if (res.matchedCount === 0) {
           await ConversationMember.updateOne(
             { conversation, user: new mongoose.Types.ObjectId(memberId) },
             { $setOnInsert: { unreadCount: 1 } },
-            { upsert: true }
+            { upsert: true },
           );
         }
       }
@@ -337,7 +337,7 @@ export async function markConversationAsRead(req, res) {
     await ConversationMember.updateOne(
       { conversation: conversationId, user: new mongoose.Types.ObjectId(userId) },
       { $set: { unreadCount: 0 } },
-      { upsert: true }
+      { upsert: true },
     );
 
     return res.status(204).send();

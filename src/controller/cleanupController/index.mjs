@@ -1,6 +1,6 @@
 import { clearDatabase } from "../../services/cleanup.service.mjs";
 
-export async function cleanupController(req, res) {
+export async function cleanupController(_req, res) {
   /*
     #swagger.tags = ['Cleanup']
     #swagger.summary = 'Limpar dados de teste'
@@ -32,7 +32,7 @@ export async function cleanupController(req, res) {
   } catch (error) {
     return res.status(500).json({
       error: "Erro ao limpar banco de dados",
-      details: error.message
+      details: error.message,
     });
   }
 }

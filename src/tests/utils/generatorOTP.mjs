@@ -1,4 +1,3 @@
-import { jest } from "@jest/globals";
 import generatorOTP from "../../utils/generatorOTP.mjs";
 
 describe("generatorOTP", () => {

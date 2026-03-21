@@ -1,7 +1,7 @@
-import swaggerAutogen from "swagger-autogen";
-import path from "path";
-import { fileURLToPath } from "url";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import glob from "glob";
+import swaggerAutogen from "swagger-autogen";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,8 +9,8 @@ const __dirname = path.dirname(__filename);
 const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 const vercelUrl = process.env.VERCEL_URL;
 
-const host = isProduction ? vercelUrl : `localhost:${process.env.PORT || 3000}`;
-const schemes = isProduction ? ["https"] : ["http"];
+const _host = isProduction ? vercelUrl : `localhost:${process.env.PORT || 3000}`;
+const _schemes = isProduction ? ["https"] : ["http"];
 
 export const sharedProperties = {
   userId: {
@@ -63,9 +63,9 @@ const doc = {
       description: "Endpoints de teste",
     },
     { name: "Webhooks", description: "Eventos enviados pelo servidor (documentação)" },
-  ...(isProduction ? [] : [
-    { name: "Cleanup", description: "Endpoints para limpar dados de teste" }
-  ])
+    ...(isProduction
+      ? []
+      : [{ name: "Cleanup", description: "Endpoints para limpar dados de teste" }]),
   ],
   definitions: {
     AddUserPatient: {
@@ -108,10 +108,10 @@ const doc = {
           description: "Opcional",
         },
         profilePhoto: {
-        type: "string",
-        example: "https://res.cloudinary.com/.../foto.png",
-        description: "URL da foto enviada anteriormente no upload"
-        } 
+          type: "string",
+          example: "https://res.cloudinary.com/.../foto.png",
+          description: "URL da foto enviada anteriormente no upload",
+        },
       },
     },
     AddUserProfessional: {
@@ -220,23 +220,22 @@ const options = {
 
 const outputFile = "../swagger-output.json";
 let routes = [
-  ...glob.sync(path.resolve(__dirname, "./routes/*.mjs")),        
-  ...glob.sync(path.resolve(__dirname, "../routes/*.mjs"), {     
-    ignore: isProduction ? [path.resolve(__dirname, "../routes/cleanup.mjs")] : []
+  ...glob.sync(path.resolve(__dirname, "./routes/*.mjs")),
+  ...glob.sync(path.resolve(__dirname, "../routes/*.mjs"), {
+    ignore: isProduction ? [path.resolve(__dirname, "../routes/cleanup.mjs")] : [],
   }),
-  path.resolve(__dirname, "./controllers/**/*.mjs"),              
-  path.resolve(__dirname, "../controllers/**/*.mjs")              
+  path.resolve(__dirname, "./controllers/**/*.mjs"),
+  path.resolve(__dirname, "../controllers/**/*.mjs"),
 ];
-  
+
 if (isProduction) {
-  routes = routes.filter(route => !route.includes("cleanup.mjs"));
+  routes = routes.filter((route) => !route.includes("cleanup.mjs"));
 }
 
-routes.forEach(routeGlob => {
+routes.forEach((routeGlob) => {
   try {
-    const fullPath = path.resolve(__dirname, routeGlob);
-  } catch (err) {
-  }
+    const _fullPath = path.resolve(__dirname, routeGlob);
+  } catch (_err) {}
 });
 
 swaggerAutogen(options)(outputFile, routes, doc);

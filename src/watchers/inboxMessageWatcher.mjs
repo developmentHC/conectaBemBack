@@ -1,6 +1,6 @@
-import { randomUUID } from "crypto";
-import InboxMessage from "../models/InboxMessage.mjs";
+import { randomUUID } from "node:crypto";
 import { sendWebhook } from "../lib/webhook.mjs";
+import InboxMessage from "../models/InboxMessage.mjs";
 
 export function startInboxMessageWatcher() {
   const stream = InboxMessage.watch([{ $match: { operationType: "insert" } }]);

@@ -1,27 +1,25 @@
-import { jest } from "@jest/globals";
-
-jest.unstable_mockModule("jsonwebtoken", () => ({
+vi.mock("jsonwebtoken", () => ({
   __esModule: true,
   default: {
-    verify: jest.fn(),
+    verify: vi.fn(),
   },
-  verify: jest.fn(),
+  verify: vi.fn(),
 }));
 
 const jwt = (await import("jsonwebtoken")).default;
-const { authenticateToken } = await import("../../middleware/authmiddleware.mjs");
+const { authenticateToken } = await import("../../middleware/authMiddleware.mjs");
 
 const makeRes = () => {
   const res = {};
-  res.status = jest.fn().mockReturnValue(res);
-  res.json = jest.fn().mockReturnValue(res);
+  res.status = vi.fn().mockReturnValue(res);
+  res.json = vi.fn().mockReturnValue(res);
   return res;
 };
 const makeReq = (headers = {}) => ({ headers });
-const makeNext = () => jest.fn();
+const makeNext = () => vi.fn();
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("authenticateToken middleware", () => {

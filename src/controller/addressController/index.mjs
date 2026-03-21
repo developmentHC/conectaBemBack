@@ -106,7 +106,7 @@ export const changeAddress = async (req, res) => {
   try {
     const result = await User.updateOne(
       { _id: decoded.userId, "address._id": addressId },
-      { $set: { "address.$": update } }
+      { $set: { "address.$": update } },
     );
 
     if (result.modifiedCount > 0) {
@@ -242,7 +242,7 @@ export const changeActiveAddress = async (req, res) => {
 
     const result = await User.updateOne(
       { "address._id": addressId },
-      { $set: { "address.$.active": true } }
+      { $set: { "address.$.active": true } },
     );
 
     if (result.modifiedCount > 0) {

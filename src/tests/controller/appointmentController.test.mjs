@@ -1,19 +1,18 @@
-import { jest } from "@jest/globals";
 import mongoose from "mongoose";
 
-jest.unstable_mockModule("../../models/Appointment.mjs", () => ({
+vi.mock("../../models/Appointment.mjs", () => ({
   __esModule: true,
   default: {
-    exists: jest.fn(),
-    create: jest.fn(),
-    findById: jest.fn(),
+    exists: vi.fn(),
+    create: vi.fn(),
+    findById: vi.fn(),
   },
 }));
 const Appointment = (await import("../../models/Appointment.mjs")).default;
 const makeRes = () => ({
-  status: jest.fn().mockReturnThis(),
-  json: jest.fn(),
-  setHeader: jest.fn(),
+  status: vi.fn().mockReturnThis(),
+  json: vi.fn(),
+  setHeader: vi.fn(),
 });
 const makeReq = (overrides = {}) => ({
   userId: "user123",
@@ -22,7 +21,7 @@ const makeReq = (overrides = {}) => ({
   ...overrides,
 });
 const mockValidObjectId = (valid = true) =>
-  jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(valid);
+  vi.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(valid);
 
 const expectError = (res, status, errorObj) => {
   expect(res.status).toHaveBeenCalledWith(status);
@@ -30,8 +29,8 @@ const expectError = (res, status, errorObj) => {
 };
 
 afterEach(() => {
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
+  vi.clearAllMocks();
+  vi.restoreAllMocks();
 });
 let createAppointment;
 let actOnAppointment;
@@ -177,7 +176,7 @@ describe("createAppointment", () => {
           id: "appt123",
           status: "pending",
         }),
-      })
+      }),
     );
   });
 
@@ -395,7 +394,7 @@ describe("actOnAppointment", () => {
       professional: "pro123",
       status: "pending",
       dateTime: new Date(),
-      save: jest.fn(),
+      save: vi.fn(),
     };
     Appointment.findById.mockResolvedValue(fakeAppt);
     Appointment.exists.mockResolvedValue(false);
@@ -415,7 +414,7 @@ describe("actOnAppointment", () => {
       expect.objectContaining({
         message: "Agendamento confirmado.",
         data: expect.objectContaining({ status: "confirmed" }),
-      })
+      }),
     );
   });
 
@@ -426,7 +425,7 @@ describe("actOnAppointment", () => {
       professional: "pro123",
       patient: "pac123",
       status: "pending",
-      save: jest.fn(),
+      save: vi.fn(),
     };
     Appointment.findById.mockResolvedValue(fakeAppt);
 
@@ -451,7 +450,7 @@ describe("actOnAppointment", () => {
           status: "canceled",
           reason: "Indisponibilidade",
         }),
-      })
+      }),
     );
   });
 });

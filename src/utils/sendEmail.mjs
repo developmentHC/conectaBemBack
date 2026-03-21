@@ -27,12 +27,8 @@ export async function sendEmail(to, OTP) {
 
       console.log(`✅ OTP enviado para ${to}`);
       return { status: "sent", id: info.messageId };
-
     } catch (err) {
-      console.error(
-        `❌ Erro ao enviar OTP para ${to} (tentativa ${attempt}):`,
-        err.message
-      );
+      console.error(`❌ Erro ao enviar OTP para ${to} (tentativa ${attempt}):`, err.message);
 
       if (attempt < 3) {
         await new Promise((res) => setTimeout(res, 1000));

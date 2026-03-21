@@ -1,15 +1,14 @@
-import { jest } from "@jest/globals";
-
-jest.unstable_mockModule("nodemailer", () => ({
+vi.mock("nodemailer", () => ({
   __esModule: true,
   default: {
-    createTransport: jest.fn(() => ({
-      sendMail: jest.fn().mockResolvedValue({ messageId: "123" }),
+    createTransport: vi.fn(() => ({
+      sendMail: vi.fn().mockResolvedValue({ messageId: "123" }),
     })),
   },
 }));
 
 const { default: sendEmail } = await import("../../utils/sendEmail.mjs");
+
 import nodemailer from "nodemailer";
 
 describe("sendEmail", () => {
@@ -26,11 +25,11 @@ describe("sendEmail", () => {
 
   it("lança erro se envio falhar", async () => {
     nodemailer.createTransport.mockReturnValueOnce({
-      sendMail: jest.fn().mockRejectedValue(new Error("SMTP error")),
+      sendMail: vi.fn().mockRejectedValue(new Error("SMTP error")),
     });
 
     await expect(
-      sendEmail({ to: "fail@example.com", subject: "Fail", text: "Erro" })
+      sendEmail({ to: "fail@example.com", subject: "Fail", text: "Erro" }),
     ).rejects.toThrow("SMTP error");
   });
 });

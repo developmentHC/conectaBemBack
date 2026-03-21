@@ -1,43 +1,43 @@
 import express from "express";
-import { authenticateToken } from "../middleware/authMiddleware.mjs";
-import {
-  checkUserEmailSendOTP,
-  checkOTP,
-  completeSignUpPatient,
-  completeSignUpProfessional,
-  userInfo,
-  uploadProfilePhoto,
-} from "../controller/userController/index.mjs";
 import {
   changeActiveAddress,
   changeAddress,
   getAddresses,
 } from "../controller/addressController/index.mjs";
 import {
-  createAppointment,
   actOnAppointment,
+  createAppointment,
   getAppointmentById,
   getMyAppointments,
 } from "../controller/appointmentController/index.mjs";
 import {
-  searchProfessionalsHighlightsWeek,
-  searchProfessionalBySpeciality,
-  searchBar,
-} from "../controller/searchController/index.mjs";
-import {
   createMessage,
   listMyContacts,
-  markConversationAsRead,
   listUnreadConversations,
+  markConversationAsRead,
 } from "../controller/messageController/index.mjs";
-import { validatePhotoUpload } from "../middleware/validatePhotoUpload.js";
+import {
+  searchBar,
+  searchProfessionalBySpeciality,
+  searchProfessionalsHighlightsWeek,
+} from "../controller/searchController/index.mjs";
+import {
+  checkOTP,
+  checkUserEmailSendOTP,
+  completeSignUpPatient,
+  completeSignUpProfessional,
+  uploadProfilePhoto,
+  userInfo,
+} from "../controller/userController/index.mjs";
+import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import { uploadPhoto } from "../middleware/uploadPhoto.mjs";
+import { validatePhotoUpload } from "../middleware/validatePhotoUpload.js";
 
 export const allowedOrigins = [
   "http://localhost:3000",
   "https://conecta-bem-front.vercel.app",
   "https://conecta-bem-back.vercel.app",
-  /^https:\/\/.*\.vercel\.app$/, 
+  /^https:\/\/.*\.vercel\.app$/,
 ];
 
 export const corsOptions = {
@@ -65,7 +65,6 @@ export const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-
 const router = express.Router();
 
 router.use(express.json());
@@ -75,12 +74,7 @@ router.post("/auth/checkOTP", checkOTP);
 router.post("/auth/createPatient", uploadPhoto, completeSignUpPatient);
 router.post("/auth/createProfessional", uploadPhoto, completeSignUpProfessional);
 
-router.post(
-  "/auth/uploadPhoto",
-  uploadPhoto,          
-  validatePhotoUpload,  
-  uploadProfilePhoto
-);
+router.post("/auth/uploadPhoto", uploadPhoto, validatePhotoUpload, uploadProfilePhoto);
 
 router.get("/user", authenticateToken, userInfo);
 
@@ -102,7 +96,7 @@ router.get("/messages/contacts", authenticateToken, listMyContacts);
 router.patch("/conversations/:conversationId/read", authenticateToken, markConversationAsRead);
 router.get("/messages/unread", authenticateToken, listUnreadConversations);
 
-router.get("/teste", (req, res) => {
+router.get("/teste", (_req, res) => {
   /*
     #swagger.tags = ['Test']
     #swagger.summary = 'Teste para verificar se API está funcionando'
@@ -110,7 +104,7 @@ router.get("/teste", (req, res) => {
   return res.status(200).json({ message: "API is working" });
 });
 
-router.post("/webhooks/message-created", (req, res) => {
+router.post("/webhooks/message-created", (_req, res) => {
   /*
     #swagger.tags = ['Webhooks']
     #swagger.summary = 'Evento enviado quando uma nova mensagem é criada'

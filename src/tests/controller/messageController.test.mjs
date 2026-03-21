@@ -1,19 +1,18 @@
-import { jest } from "@jest/globals";
 import mongoose from "mongoose";
 
-jest.unstable_mockModule("../../models/Conversation.mjs", () => ({
+vi.mock("../../models/Conversation.mjs", () => ({
   __esModule: true,
-  default: { updateOne: jest.fn() },
+  default: { updateOne: vi.fn() },
 }));
 
-jest.unstable_mockModule("../../models/InboxMessage.mjs", () => ({
+vi.mock("../../models/InboxMessage.mjs", () => ({
   __esModule: true,
-  default: { create: jest.fn() },
+  default: { create: vi.fn() },
 }));
 
-jest.unstable_mockModule("../../models/ConversationMember.mjs", () => ({
+vi.mock("../../models/ConversationMember.mjs", () => ({
   __esModule: true,
-  default: { updateOne: jest.fn() },
+  default: { updateOne: vi.fn() },
 }));
 
 const Conversation = (await import("../../models/Conversation.mjs")).default;
@@ -21,8 +20,8 @@ const InboxMessage = (await import("../../models/InboxMessage.mjs")).default;
 const ConversationMember = (await import("../../models/ConversationMember.mjs")).default;
 
 const makeRes = () => ({
-  status: jest.fn().mockReturnThis(),
-  json: jest.fn(),
+  status: vi.fn().mockReturnThis(),
+  json: vi.fn(),
 });
 
 const makeReq = (overrides = {}) => ({
@@ -37,8 +36,8 @@ const expectError = (res, status, error) => {
 };
 
 afterEach(() => {
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
+  vi.clearAllMocks();
+  vi.restoreAllMocks();
 });
 
 describe("createMessage", () => {
@@ -53,7 +52,7 @@ describe("createMessage", () => {
     InboxMessage.create.mockResolvedValue({ _id: "msg123", createdAt: new Date() });
     ConversationMember.updateOne.mockResolvedValue({ matchedCount: 1 });
 
-    jest.spyOn(mongoose.Types, "ObjectId").mockImplementation((id) => ({
+    vi.spyOn(mongoose.Types, "ObjectId").mockImplementation((id) => ({
       toString: () => id,
     }));
   });
@@ -147,7 +146,7 @@ describe("createMessage", () => {
           ]),
         }),
       }),
-      { upsert: true }
+      { upsert: true },
     );
 
     expect(res.status).toHaveBeenCalledWith(201);
