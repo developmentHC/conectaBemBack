@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 export async function sendWebhook({ url, secret, payload }) {
   const body = JSON.stringify(payload);

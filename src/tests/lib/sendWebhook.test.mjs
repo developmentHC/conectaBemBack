@@ -1,5 +1,5 @@
+import crypto from "node:crypto";
 import { jest } from "@jest/globals";
-import crypto from "crypto";
 import { sendWebhook } from "../../lib/webhook.mjs";
 
 global.fetch = jest.fn();

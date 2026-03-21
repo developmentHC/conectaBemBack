@@ -66,7 +66,7 @@ const acceptedPaymentsSchema = new mongoose.Schema(
     mastercard: { type: Boolean, default: false },
     visa: { type: Boolean, default: false },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const userSchema = new mongoose.Schema({

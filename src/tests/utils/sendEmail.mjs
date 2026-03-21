@@ -10,6 +10,7 @@ jest.unstable_mockModule("nodemailer", () => ({
 }));
 
 const { default: sendEmail } = await import("../../utils/sendEmail.mjs");
+
 import nodemailer from "nodemailer";
 
 describe("sendEmail", () => {
@@ -30,7 +31,7 @@ describe("sendEmail", () => {
     });
 
     await expect(
-      sendEmail({ to: "fail@example.com", subject: "Fail", text: "Erro" })
+      sendEmail({ to: "fail@example.com", subject: "Fail", text: "Erro" }),
     ).rejects.toThrow("SMTP error");
   });
 });

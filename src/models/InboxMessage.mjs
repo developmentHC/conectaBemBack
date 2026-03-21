@@ -12,7 +12,7 @@ const InboxMessageSchema = new mongoose.Schema(
 
     createdAt: { type: Date, default: Date.now },
   },
-  { collection: "messages" }
+  { collection: "messages" },
 );
 
 export default mongoose.model("InboxMessage", InboxMessageSchema);

@@ -1,12 +1,12 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import AuthService from "../../services/authService.mjs";
+import cloudinary from "../../config/cloudinary.mjs";
 import { User } from "../../models/index.mjs";
+import AuthService from "../../services/authService.mjs";
+import { UserValidationService, ValidationError } from "../../services/validationService.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
-import { UserValidationService, ValidationError } from "../../services/validationService.mjs";
-import cloudinary from "../../config/cloudinary.mjs";
 
 const saltRounds = 10;
 
@@ -104,7 +104,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
           status: userExists.status,
         },
         message: "User OTP updated and sent",
-        sendgridStatus: emailResult?.status
+        sendgridStatus: emailResult?.status,
       });
     }
   } catch (error) {
@@ -266,7 +266,7 @@ export const completeSignUpPatient = async (req, res) => {
           otherProfessionalSpecialties: "",
           professionalServicePreferences: "",
         },
-      }
+      },
     );
 
     if (result.modifiedCount > 0) {
@@ -281,7 +281,6 @@ export const completeSignUpPatient = async (req, res) => {
     }
 
     return res.status(200).json({ msg: "Nenhuma alteração realizada" });
-
   } catch (error) {
     console.error("Erro ao completar cadastro do paciente:", error);
 
@@ -344,7 +343,7 @@ export const completeSignUpProfessional = async (req, res) => {
       clinic,
       professionalSpecialties,
       professionalServicePreferences,
-      otherProfessionalSpecialties
+      otherProfessionalSpecialties,
     } = req.body;
 
     UserValidationService.validateProfessionalData(req.body);
@@ -377,7 +376,6 @@ export const completeSignUpProfessional = async (req, res) => {
     }
 
     return res.status(200).json({ msg: "Nenhuma alteração realizada" });
-
   } catch (error) {
     console.error("Erro ao completar cadastro profissional:", error);
 
@@ -431,7 +429,6 @@ export const uploadProfilePhoto = async (req, res) => {
   */
 
   try {
-
     if (!req.file) {
       return res.status(400).json({ error: "Nenhuma imagem enviada." });
     }
@@ -460,7 +457,6 @@ export const uploadProfilePhoto = async (req, res) => {
       msg: "Upload realizado com sucesso",
       imageUrl: upload.secure_url,
     });
-
   } catch (error) {
     console.error("Erro ao enviar foto:", error);
     return res.status(500).json({ error: "Erro interno ao enviar imagem." });
@@ -505,10 +501,7 @@ export const userInfo = async (req, res) => {
   try {
     const userId = req.userId;
 
-    const user = await User.findOne(
-      { _id: userId },
-      { hashedOTP: 0, __v: 0 }
-    ).lean();
+    const user = await User.findOne({ _id: userId }, { hashedOTP: 0, __v: 0 }).lean();
 
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
@@ -516,9 +509,8 @@ export const userInfo = async (req, res) => {
 
     return res.status(200).json({
       ...user,
-      imageUrl: user.imageUrl || null
+      imageUrl: user.imageUrl || null,
     });
-
   } catch (error) {
     console.error("Erro ao trazer informações do usuário:", error);
     return res.status(500).json({ error: "Bad request" });

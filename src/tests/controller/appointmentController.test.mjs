@@ -177,7 +177,7 @@ describe("createAppointment", () => {
           id: "appt123",
           status: "pending",
         }),
-      })
+      }),
     );
   });
 
@@ -415,7 +415,7 @@ describe("actOnAppointment", () => {
       expect.objectContaining({
         message: "Agendamento confirmado.",
         data: expect.objectContaining({ status: "confirmed" }),
-      })
+      }),
     );
   });
 
@@ -451,7 +451,7 @@ describe("actOnAppointment", () => {
           status: "canceled",
           reason: "Indisponibilidade",
         }),
-      })
+      }),
     );
   });
 });

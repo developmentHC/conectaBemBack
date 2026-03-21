@@ -22,7 +22,7 @@ class AuthService {
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       { $unset: { hashedOTP: "" } },
-      { new: true, select: "-hashedOTP -__v" }
+      { new: true, select: "-hashedOTP -__v" },
     );
 
     return {
@@ -49,7 +49,7 @@ class AuthService {
 
     await User.updateOne(
       { _id: user._id },
-      { $set: { status: "verified" }, $unset: { hashedOTP: "" } }
+      { $set: { status: "verified" }, $unset: { hashedOTP: "" } },
     );
 
     return;

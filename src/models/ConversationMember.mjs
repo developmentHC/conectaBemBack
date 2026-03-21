@@ -10,7 +10,7 @@ const ConversationMemberSchema = new mongoose.Schema(
   {
     collection: "conversation_members",
     timestamps: true,
-  }
+  },
 );
 
 ConversationMemberSchema.index({ conversation: 1, user: 1 }, { unique: true });

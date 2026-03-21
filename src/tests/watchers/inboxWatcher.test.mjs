@@ -1,5 +1,5 @@
+import { EventEmitter } from "node:events";
 import { jest } from "@jest/globals";
-import { EventEmitter } from "events";
 
 jest.unstable_mockModule("../../models/InboxMessage.mjs", () => ({
   __esModule: true,
@@ -73,7 +73,7 @@ describe("startInboxMessageWatcher", () => {
             content: "Olá",
           }),
         }),
-      })
+      }),
     );
   });
 
@@ -97,7 +97,7 @@ describe("startInboxMessageWatcher", () => {
 
     expect(spyError).toHaveBeenCalledWith(
       expect.stringContaining("Webhook erro:"),
-      "Falha de rede"
+      "Falha de rede",
     );
     spyError.mockRestore();
   });
@@ -112,7 +112,7 @@ describe("startInboxMessageWatcher", () => {
 
     expect(spyError).toHaveBeenCalledWith(
       expect.stringContaining("ChangeStream erro:"),
-      "ChangeStream caiu"
+      "ChangeStream caiu",
     );
     expect(spySetTimeout).toHaveBeenCalled();
 

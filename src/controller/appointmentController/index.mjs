@@ -1,5 +1,5 @@
-import Appointment from "../../models/Appointment.mjs";
 import mongoose from "mongoose";
+import Appointment from "../../models/Appointment.mjs";
 
 export const createAppointment = async (req, res) => {
   /*
@@ -152,7 +152,7 @@ export const createAppointment = async (req, res) => {
       message: "Solicitação enviada.",
       data: { id: appt._id, status: appt.status, dateTime: appt.dateTime },
     });
-  } catch (error) {
+  } catch (_error) {
     return res.status(500).json({ error: "Internal server error." });
   }
 };
@@ -409,7 +409,7 @@ export const actOnAppointment = async (req, res) => {
       default:
         return res.status(400).json({ code: "UNKNOWN_ACTION", error: "Ação desconhecida." });
     }
-  } catch (error) {
+  } catch (_error) {
     return res.status(500).json({ code: "INTERNAL_ERROR", error: "Internal server error." });
   }
 };
@@ -495,7 +495,7 @@ export const getAppointmentById = async (req, res) => {
 
     const appt = await Appointment.findOne(
       { _id: id, status: { $ne: "canceled" } },
-      { status: 1, dateTime: 1, notes: 1, patient: 1, professional: 1 }
+      { status: 1, dateTime: 1, notes: 1, patient: 1, professional: 1 },
     )
       .populate("patient", "_id")
       .populate("professional", "_id name profileImage professionalSpecialties clinic")

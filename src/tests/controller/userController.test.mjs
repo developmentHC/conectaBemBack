@@ -72,7 +72,7 @@ const { testEmailSyntax } = await import("../../utils/testEmailSyntax.mjs");
 const { generateOTP } = await import("../../utils/generateOTP.mjs");
 const User = (await import("../../models/User.mjs")).default;
 const bcrypt = (await import("bcrypt")).default;
-const AuthService = (await import("../../services/AuthService.mjs")).default;
+const _AuthService = (await import("../../services/AuthService.mjs")).default;
 const { checkUserEmailSendOTP, checkOTP, completeSignUpPatient, completeSignUpProfessional } =
   await import("../../controller/userController/index.mjs");
 const { UserValidationService, ValidationError } = await import(
@@ -281,7 +281,7 @@ describe("checkOTP", () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.any(String),
-      })
+      }),
     );
   });
 });

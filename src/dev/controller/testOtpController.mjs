@@ -1,11 +1,11 @@
 import { generateOTP } from "../../modules/auth/service/otpService.mjs";
 
-export const generateTestOTP = async (req, res) => {
+export const generateTestOTP = async (_req, res) => {
   try {
     const otp = await generateOTP();
 
     console.log("🔐 OTP de teste gerado:", otp);
-    
+
     return res.status(200).json({
       message: "OTP gerado com sucesso para teste",
     });

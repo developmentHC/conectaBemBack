@@ -147,7 +147,7 @@ describe("createMessage", () => {
           ]),
         }),
       }),
-      { upsert: true }
+      { upsert: true },
     );
 
     expect(res.status).toHaveBeenCalledWith(201);
