@@ -1,4 +1,6 @@
-let mockLoginWithOtp;
+const { mockLoginWithOtp } = vi.hoisted(() => ({
+  mockLoginWithOtp: vi.fn(),
+}));
 
 vi.mock("bcrypt", () => ({
   __esModule: true,
@@ -29,13 +31,10 @@ vi.mock("../../utils/testEmailSyntax.mjs", () => ({
   __esModule: true,
   testEmailSyntax: vi.fn(),
 }));
-vi.mock("../../services/AuthService.mjs", () => {
-  mockLoginWithOtp = vi.fn();
-  return {
-    __esModule: true,
-    default: { loginWithOtp: mockLoginWithOtp },
-  };
-});
+vi.mock("../../services/AuthService.mjs", () => ({
+  __esModule: true,
+  default: { loginWithOtp: mockLoginWithOtp },
+}));
 vi.mock("../../services/validationService.mjs", () => ({
   __esModule: true,
   UserValidationService: {
