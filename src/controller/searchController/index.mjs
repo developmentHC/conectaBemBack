@@ -353,7 +353,7 @@ export const getProfessionalById = async(req, res) => {
 
   #swagger.responses[500] = {
     description: 'Erro interno',
-    schema: { error: "Erro interno" }
+    schema: { error: "Erro interno no Servidor" }
   }
   */
 
@@ -363,6 +363,8 @@ export const getProfessionalById = async(req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "ID inválido" });
     }
+
+    const activeAddress = professional.address?.find(addr => addr.active);
 
     const professional = await User.findOne(
       {
@@ -399,12 +401,10 @@ export const getProfessionalById = async(req, res) => {
           }
         : null,
 
-      location: professional.residentialAddress
-        ? {
-            city: professional.residentialAddress.city,
-            state: professional.residentialAddress.state,
-          }
-        : null,
+        location: activeAddress ? {
+          city: activeAddress.city,
+          state: activeAddress.state,
+        } : null
     };
 
     return res.status(200).json(response);
