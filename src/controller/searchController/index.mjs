@@ -1,5 +1,5 @@
-import { User } from "../../models/index.mjs";
 import mongoose from "mongoose";
+import { User } from "../../models/index.mjs";
 
 export const searchProfessionalsHighlightsWeek = async (req, res) => {
   /*
@@ -311,7 +311,7 @@ export const searchBar = async (req, res) => {
   }
 };
 
-export const getProfessionalById = async(req, res) => {
+export const getProfessionalById = async (req, res) => {
   /*
   #swagger.tags = ['Search']
   #swagger.summary = 'Busca detalhes de um profissional por ID'
@@ -364,26 +364,26 @@ export const getProfessionalById = async(req, res) => {
       return res.status(400).json({ error: "ID inválido" });
     }
 
-    const activeAddress = professional.address?.find(addr => addr.active);
-
     const professional = await User.findOne(
       {
         _id: id,
         userType: "professional",
       },
-      
+
       {
         hashedOTP: 0,
         email: 0,
         status: 0,
         CNPJCPFProfissional: 0,
         __v: 0,
-      }
+      },
     );
 
-    if(!professional) {
+    const activeAddress = professional.address?.find((addr) => addr.active);
+
+    if (!professional) {
       return res.status(404).json({ error: "Professional não encontrado." });
-    };
+    }
 
     const response = {
       _id: professional._id,
@@ -401,15 +401,17 @@ export const getProfessionalById = async(req, res) => {
           }
         : null,
 
-        location: activeAddress ? {
-          city: activeAddress.city,
-          state: activeAddress.state,
-        } : null
+      location: activeAddress
+        ? {
+            city: activeAddress.city,
+            state: activeAddress.state,
+          }
+        : null,
     };
 
     return res.status(200).json(response);
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Erro interno no servidor." });
   }
-}
+};
