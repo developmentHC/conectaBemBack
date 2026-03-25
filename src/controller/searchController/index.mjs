@@ -397,7 +397,7 @@ export const getProfessionals = async (req, res) => {
       total: totalProfessionals,
       hasMore: currentPage < pageCount,
     });
-  } catch (error) {
+  } catch (_error) {
     return res.status(500).json({ error: "Erro ao buscar profissionais" });
   }
 };

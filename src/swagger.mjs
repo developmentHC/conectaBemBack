@@ -226,7 +226,7 @@ let routes = [
   }),
   path.resolve(__dirname, "./controllers/**/*.mjs"),
   path.resolve(__dirname, "../controllers/**/*.mjs"),
-  
+
   path.resolve(__dirname, "../controller/**/*.mjs"),
 ];
 
