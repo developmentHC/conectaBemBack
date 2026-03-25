@@ -1,4 +1,5 @@
 import { User } from "../../models/index.mjs";
+import mongoose from "mongoose";
 
 export const searchProfessionalsHighlightsWeek = async (req, res) => {
   /*
@@ -358,6 +359,10 @@ export const getProfessionalById = async(req, res) => {
 
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "ID inválido" });
+    }
 
     const professional = await User.findOne(
       {
