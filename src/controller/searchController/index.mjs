@@ -356,7 +356,7 @@ export const getProfessionals = async (req, res) => {
     description: 'Erro interno no servidor'
   }
   */
- 
+
   try {
     let { specialty, accessibility, service, page = 1 } = req.query;
     page = Math.max(1, parseInt(page, 10) || 1);
@@ -365,7 +365,6 @@ export const getProfessionals = async (req, res) => {
     const filters = { userType: "professional" };
 
     if (specialty) filters.professionalSpecialties = { $regex: specialty, $options: "i" };
-    if (accessibility) filters.userAcessibilityPreferences = { $regex: accessibility, $options: "i" };
     if (service) filters.professionalServicePreferences = { $regex: service, $options: "i" };
 
     const totalProfessionals = await User.countDocuments(filters);
@@ -374,7 +373,9 @@ export const getProfessionals = async (req, res) => {
     const currentPage = page > pageCount ? pageCount : page;
 
     const professionals = await User.find(filters)
-      .select("-hashedOTP -email -status -userSpecialties -userServicePreferences -userAcessibilityPreferences -__v -userType")
+      .select(
+        "-hashedOTP -email -status -userSpecialties -userServicePreferences -userAcessibilityPreferences -__v -userType",
+      )
       .sort({ name: 1 })
       .skip((currentPage - 1) * limit)
       .limit(limit);
@@ -384,9 +385,8 @@ export const getProfessionals = async (req, res) => {
       page: currentPage,
       pageCount,
       total: totalProfessionals,
-      hasMore: currentPage < pageCount
+      hasMore: currentPage < pageCount,
     });
-
   } catch (error) {
     return res.status(500).json({ error: "Erro ao buscar profissionais" });
   }
