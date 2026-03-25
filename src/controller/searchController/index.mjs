@@ -356,67 +356,38 @@ export const getProfessionals = async (req, res) => {
     description: 'Erro interno no servidor'
   }
   */
+ 
   try {
     let { specialty, accessibility, service, page = 1 } = req.query;
-
-    page = parseInt(page, 10);
-
-    if (Number.isNaN(page)) {
-      return res.status(400).json({ error: "Página inválida" });
-    }
-
+    page = Math.max(1, parseInt(page, 10) || 1);
     const limit = 10;
 
-    const filters = {
-      userType: "professional",
-    };
+    const filters = { userType: "professional" };
 
-    if (specialty) {
-      filters.professionalSpecialties = {
-        $regex: specialty,
-        $options: "i",
-      };
-    }
-
-    if (accessibility) {
-      filters.userAcessibilityPreferences = accessibility;
-    }
-
-    if (service) {
-      filters.professionalServicePreferences = service;
-    }
+    if (specialty) filters.professionalSpecialties = { $regex: specialty, $options: "i" };
+    if (accessibility) filters.userAcessibilityPreferences = { $regex: accessibility, $options: "i" };
+    if (service) filters.professionalServicePreferences = { $regex: service, $options: "i" };
 
     const totalProfessionals = await User.countDocuments(filters);
+    const pageCount = Math.ceil(totalProfessionals / limit) || 1;
 
-    const pageCount = Math.ceil(totalProfessionals / limit);
+    const currentPage = page > pageCount ? pageCount : page;
 
-    if (page > pageCount && pageCount > 0) {
-      page = pageCount;
-    }
-
-    const professionals = await User.find(filters, {
-      hashedOTP: 0,
-      email: 0,
-      status: 0,
-      userSpecialties: 0,
-      userServicePreferences: 0,
-      userAcessibilityPreferences: 0,
-      __v: 0,
-      userType: 0,
-    })
-      .skip((page - 1) * limit)
+    const professionals = await User.find(filters)
+      .select("-hashedOTP -email -status -userSpecialties -userServicePreferences -userAcessibilityPreferences -__v -userType")
+      .sort({ name: 1 })
+      .skip((currentPage - 1) * limit)
       .limit(limit);
 
     return res.status(200).json({
       professionals,
-      page,
+      page: currentPage,
       pageCount,
       total: totalProfessionals,
+      hasMore: currentPage < pageCount
     });
 
   } catch (error) {
-    return res.status(500).json({
-      error: error.message,
-    });
+    return res.status(500).json({ error: "Erro ao buscar profissionais" });
   }
 };
