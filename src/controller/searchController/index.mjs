@@ -386,7 +386,7 @@ export const getProfessionalById = async(req, res) => {
     const response = {
       _id: professional._id,
       name: professional.name,
-      profilePhoto: professional.profilePhoto,
+      imageUrl: professional.imageUrl,
       professionalSpecialties: professional.professionalSpecialties,
       professionalServicePreferences: professional.professionalServicePreferences,
       userAcessibilityPreferences: professional.userAcessibilityPreferences,
@@ -409,6 +409,7 @@ export const getProfessionalById = async(req, res) => {
 
     return res.status(200).json(response);
   } catch(error) {
-    return res.status(500).json({ error: error.message });
+    console.log(error);
+    return res.status(500).json({ error: "Erro interno no servidor." });
   }
 }
