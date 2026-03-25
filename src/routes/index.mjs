@@ -17,6 +17,7 @@ import {
   markConversationAsRead,
 } from "../controller/messageController/index.mjs";
 import {
+  getProfessionalById,
   searchBar,
   searchProfessionalBySpeciality,
   searchProfessionalsHighlightsWeek,
@@ -85,6 +86,7 @@ router.put("/active-address", changeActiveAddress);
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
 router.get("/search/searchBar/:terms", searchBar);
+router.get("/search/professional/:id", getProfessionalById);
 
 router.post("/appointments", authenticateToken, createAppointment);
 router.post("/appointments/:id/actions", authenticateToken, actOnAppointment);
