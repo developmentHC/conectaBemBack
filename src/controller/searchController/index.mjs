@@ -1,4 +1,5 @@
 import { User } from "../../models/index.mjs";
+import { escapeRegex } from "../../utils/escapeRegex";
 
 export const searchProfessionalsHighlightsWeek = async (req, res) => {
   /*
@@ -364,8 +365,17 @@ export const getProfessionals = async (req, res) => {
 
     const filters = { userType: "professional" };
 
-    if (specialty) filters.professionalSpecialties = { $regex: specialty, $options: "i" };
-    if (service) filters.professionalServicePreferences = { $regex: service, $options: "i" };
+    if (specialty) {
+      filters.professionalSpecialties = {
+        $elemMatch: { $regex: `^${escapeRegex(specialty)}$`, $options: "i" },
+      };
+    }
+
+    if (service) {
+      filters.professionalServicePreferences = {
+        $elemMatch: { $regex: `^${escapeRegex(service)}$`, $options: "i" },
+      };
+    }
 
     const totalProfessionals = await User.countDocuments(filters);
     const pageCount = Math.ceil(totalProfessionals / limit) || 1;
