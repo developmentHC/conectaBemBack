@@ -309,3 +309,101 @@ export const searchBar = async (req, res) => {
     });
   }
 };
+
+export const getProfessionalById = async(req, res) => {
+  /*
+  #swagger.tags = ['Search']
+  #swagger.summary = 'Busca detalhes de um profissional por ID'
+  #swagger.description = 'Retorna os dados públicos de um profissional específico.'
+
+  #swagger.parameters['id'] = {
+    in: 'path',
+    description: 'ID do profissional',
+    required: true,
+    type: 'string',
+    example: '66d98e1f7c19f5f7a0f4c1d3'
+  }
+
+  #swagger.responses[200] = {
+    description: 'Profissional encontrado',
+    schema: {
+      _id: "66d98e1f7c19f5f7a0f4c1d3",
+      name: "João Silva",
+      profilePhoto: "https://...",
+      professionalSpecialties: ["Cardiologia"],
+      professionalServicePreferences: ["Consulta"],
+      userAcessibilityPreferences: ["Cadeirante"],
+      clinic: {
+        name: "Clínica Saúde",
+        city: "São Paulo",
+        state: "SP"
+      },
+      location: {
+        city: "São Paulo",
+        state: "SP"
+      }
+    }
+  }
+
+  #swagger.responses[404] = {
+    description: 'Profissional não encontrado',
+    schema: { error: "Profissional não encontrado" }
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno',
+    schema: { error: "Erro interno" }
+  }
+  */
+
+  try {
+    const { id } = req.params;
+
+    const professional = await User.findOne(
+      {
+        _id: id,
+        userType: "professional",
+      },
+      
+      {
+        hashedOTP: 0,
+        email: 0,
+        status: 0,
+        CNPJCPFProfissional: 0,
+        __v: 0,
+      }
+    );
+
+    if(!professional) {
+      return res.status(404).json({ error: "Professional não encontrado." });
+    };
+
+    const response = {
+      _id: professional._id,
+      name: professional.name,
+      profilePhoto: professional.profilePhoto,
+      professionalSpecialties: professional.professionalSpecialties,
+      professionalServicePreferences: professional.professionalServicePreferences,
+      userAcessibilityPreferences: professional.userAcessibilityPreferences,
+
+      clinic: professional.clinic
+        ? {
+            name: professional.clinic.name,
+            city: professional.clinic.city,
+            state: professional.clinic.state,
+          }
+        : null,
+
+      location: professional.residentialAddress
+        ? {
+            city: professional.residentialAddress.city,
+            state: professional.residentialAddress.state,
+          }
+        : null,
+    };
+
+    return res.status(200).json(response);
+  } catch(e) {
+    return res.status(500).json({ error: error.message });
+  }
+}
