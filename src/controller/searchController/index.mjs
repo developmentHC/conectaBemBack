@@ -309,3 +309,114 @@ export const searchBar = async (req, res) => {
     });
   }
 };
+
+export const getProfessionals = async (req, res) => {
+  /*
+  #swagger.tags = ['Search']
+  #swagger.summary = 'Lista profissionais com filtros combinados'
+  #swagger.description = 'Retorna profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).'
+
+  #swagger.parameters['specialty'] = {
+    in: 'query',
+    description: 'Especialidade do profissional',
+    required: false,
+    type: 'string',
+    example: 'Reiki'
+  }
+
+  #swagger.parameters['accessibility'] = {
+    in: 'query',
+    description: 'Preferência de acessibilidade',
+    required: false,
+    type: 'string',
+    example: 'Libras'
+  }
+
+  #swagger.parameters['service'] = {
+    in: 'query',
+    description: 'Tipo de serviço oferecido',
+    required: false,
+    type: 'string',
+    example: 'Pet Friendly'
+  }
+
+  #swagger.parameters['page'] = {
+    in: 'query',
+    description: 'Número da página',
+    required: false,
+    type: 'integer',
+    example: 1
+  }
+
+  #swagger.responses[200] = {
+    description: 'Profissionais encontrados com sucesso'
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor'
+  }
+  */
+  try {
+    let { specialty, accessibility, service, page = 1 } = req.query;
+
+    page = parseInt(page, 10);
+
+    if (Number.isNaN(page)) {
+      return res.status(400).json({ error: "Página inválida" });
+    }
+
+    const limit = 10;
+
+    const filters = {
+      userType: "professional",
+    };
+
+    if (specialty) {
+      filters.professionalSpecialties = {
+        $regex: specialty,
+        $options: "i",
+      };
+    }
+
+    if (accessibility) {
+      filters.userAcessibilityPreferences = accessibility;
+    }
+
+    if (service) {
+      filters.professionalServicePreferences = service;
+    }
+
+    const totalProfessionals = await User.countDocuments(filters);
+
+    const pageCount = Math.ceil(totalProfessionals / limit);
+
+    if (page > pageCount && pageCount > 0) {
+      page = pageCount;
+    }
+
+    const professionals = await User.find(filters, {
+      hashedOTP: 0,
+      email: 0,
+      status: 0,
+      userSpecialties: 0,
+      userServicePreferences: 0,
+      userAcessibilityPreferences: 0,
+      __v: 0,
+      userType: 0,
+    })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return res.status(200).json({
+      professionals,
+      page,
+      pageCount,
+      total: totalProfessionals,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+};
