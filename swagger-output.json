@@ -1522,6 +1522,47 @@
         }
       }
     },
+    "/search/professionals": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Lista profissionais com filtros combinados",
+        "description": "Retorna profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).",
+        "parameters": [
+          {
+            "name": "specialty",
+            "in": "query",
+            "description": "Especialidade do profissional",
+            "required": false,
+            "type": "string",
+            "example": "Reiki"
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "Tipo de serviço oferecido",
+            "required": false,
+            "type": "string",
+            "example": "Pet Friendly"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Número da página",
+            "required": false,
+            "type": "integer",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissionais encontrados com sucesso"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
     "/appointments": {
       "post": {
         "tags": ["Agendamentos"],
