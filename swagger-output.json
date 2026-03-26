@@ -1563,6 +1563,125 @@
         }
       }
     },
+    "/search/professional/{id}": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Busca detalhes de um profissional por ID",
+        "description": "Retorna os dados públicos de um profissional específico.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do profissional",
+            "example": "66d98e1f7c19f5f7a0f4c1d3"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissional encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "66d98e1f7c19f5f7a0f4c1d3"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "João Silva"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "example": "https://..."
+                },
+                "professionalSpecialties": {
+                  "type": "array",
+                  "example": ["Cardiologia"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "professionalServicePreferences": {
+                  "type": "array",
+                  "example": ["Consulta"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "clinic": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Clínica Saúde"
+                    },
+                    "city": {
+                      "type": "string",
+                      "example": "São Paulo"
+                    },
+                    "state": {
+                      "type": "string",
+                      "example": "SP"
+                    }
+                  }
+                },
+                "location": {
+                  "type": "object",
+                  "properties": {
+                    "city": {
+                      "type": "string",
+                      "example": "São Paulo"
+                    },
+                    "state": {
+                      "type": "string",
+                      "example": "SP"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "404": {
+            "description": "Profissional não encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Profissional não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno no Servidor"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/appointments": {
       "post": {
         "tags": ["Agendamentos"],
