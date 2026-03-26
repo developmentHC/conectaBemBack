@@ -330,10 +330,9 @@ export const getProfessionalById = async (req, res) => {
     schema: {
       _id: "66d98e1f7c19f5f7a0f4c1d3",
       name: "João Silva",
-      profilePhoto: "https://...",
+      imageUrl: "https://...",
       professionalSpecialties: ["Cardiologia"],
       professionalServicePreferences: ["Consulta"],
-      userAcessibilityPreferences: ["Cadeirante"],
       clinic: {
         name: "Clínica Saúde",
         city: "São Paulo",
@@ -379,11 +378,11 @@ export const getProfessionalById = async (req, res) => {
       },
     );
 
-    const activeAddress = professional.address?.find((addr) => addr.active);
-
     if (!professional) {
-      return res.status(404).json({ error: "Professional não encontrado." });
+      return res.status(404).json({ error: "Profissional não encontrado." });
     }
+
+    const activeAddress = professional.address?.find((addr) => addr.active);
 
     const response = {
       _id: professional._id,
@@ -391,7 +390,6 @@ export const getProfessionalById = async (req, res) => {
       imageUrl: professional.imageUrl,
       professionalSpecialties: professional.professionalSpecialties,
       professionalServicePreferences: professional.professionalServicePreferences,
-      userAcessibilityPreferences: professional.userAcessibilityPreferences,
 
       clinic: professional.clinic
         ? {
@@ -410,8 +408,7 @@ export const getProfessionalById = async (req, res) => {
     };
 
     return res.status(200).json(response);
-  } catch (error) {
-    console.log(error);
+  } catch (_error) {
     return res.status(500).json({ error: "Erro interno no servidor." });
   }
 };
