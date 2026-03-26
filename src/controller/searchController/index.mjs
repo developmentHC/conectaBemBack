@@ -1,5 +1,5 @@
 import { User } from "../../models/index.mjs";
-import { escapeRegex } from "../../utils/escapeRegex";
+import { escapeRegex } from "../../utils/escapeRegex.mjs";
 
 export const searchProfessionalsHighlightsWeek = async (req, res) => {
   /*
@@ -325,14 +325,6 @@ export const getProfessionals = async (req, res) => {
     example: 'Reiki'
   }
 
-  #swagger.parameters['accessibility'] = {
-    in: 'query',
-    description: 'Preferência de acessibilidade',
-    required: false,
-    type: 'string',
-    example: 'Libras'
-  }
-
   #swagger.parameters['service'] = {
     in: 'query',
     description: 'Tipo de serviço oferecido',
@@ -359,7 +351,7 @@ export const getProfessionals = async (req, res) => {
   */
 
   try {
-    let { specialty, accessibility, service, page = 1 } = req.query;
+    let { specialty, service, page = 1 } = req.query;
     page = Math.max(1, parseInt(page, 10) || 1);
     const limit = 10;
 
@@ -383,9 +375,7 @@ export const getProfessionals = async (req, res) => {
     const currentPage = page > pageCount ? pageCount : page;
 
     const professionals = await User.find(filters)
-      .select(
-        "-hashedOTP -email -status -userSpecialties -userServicePreferences -userAcessibilityPreferences -__v -userType",
-      )
+      .select("-hashedOTP -email -status -CNPJCPFProfissional -__v -userType")
       .sort({ name: 1 })
       .skip((currentPage - 1) * limit)
       .limit(limit);
