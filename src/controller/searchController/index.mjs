@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { User } from "../../models/index.mjs";
+import { escapeRegex } from "../../utils/escapeRegex.mjs";
 
 export const searchProfessionalsHighlightsWeek = async (req, res) => {
   /*
@@ -308,6 +309,87 @@ export const searchBar = async (req, res) => {
     return res.status(500).json({
       error: error.message,
     });
+  }
+};
+
+export const getProfessionals = async (req, res) => {
+  /*
+  #swagger.tags = ['Search']
+  #swagger.summary = 'Lista profissionais com filtros combinados'
+  #swagger.description = 'Retorna profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).'
+
+  #swagger.parameters['specialty'] = {
+    in: 'query',
+    description: 'Especialidade do profissional',
+    required: false,
+    type: 'string',
+    example: 'Reiki'
+  }
+
+  #swagger.parameters['service'] = {
+    in: 'query',
+    description: 'Tipo de serviço oferecido',
+    required: false,
+    type: 'string',
+    example: 'Pet Friendly'
+  }
+
+  #swagger.parameters['page'] = {
+    in: 'query',
+    description: 'Número da página',
+    required: false,
+    type: 'integer',
+    example: 1
+  }
+
+  #swagger.responses[200] = {
+    description: 'Profissionais encontrados com sucesso'
+  }
+
+  #swagger.responses[500] = {
+    description: 'Erro interno no servidor'
+  }
+  */
+
+  try {
+    let { specialty, service, page = 1 } = req.query;
+    page = Math.max(1, parseInt(page, 10) || 1);
+    const limit = 10;
+
+    const filters = { userType: "professional" };
+
+    if (specialty) {
+      filters.professionalSpecialties = {
+        $elemMatch: { $regex: `^${escapeRegex(specialty)}$`, $options: "i" },
+      };
+    }
+
+    if (service) {
+      filters.professionalServicePreferences = {
+        $elemMatch: { $regex: `^${escapeRegex(service)}$`, $options: "i" },
+      };
+    }
+
+    const totalProfessionals = await User.countDocuments(filters);
+    const pageCount = Math.ceil(totalProfessionals / limit) || 1;
+
+    const currentPage = page > pageCount ? pageCount : page;
+
+    const professionals = await User.find(filters)
+      .select("-hashedOTP -email -status -CNPJCPFProfissional -__v -userType")
+      .sort({ name: 1 })
+      .skip((currentPage - 1) * limit)
+      .limit(limit);
+
+    return res.status(200).json({
+      professionals,
+      page: currentPage,
+      pageCount,
+      total: totalProfessionals,
+      hasMore: currentPage < pageCount,
+    });
+  } catch (_error) {
+    return res.status(500).json({ error: "Erro ao buscar profissionais" });
   }
 };
 

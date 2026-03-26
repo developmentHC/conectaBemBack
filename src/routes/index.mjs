@@ -1,27 +1,33 @@
 import express from "express";
+
 import {
   changeActiveAddress,
   changeAddress,
   getAddresses,
 } from "../controller/addressController/index.mjs";
+
 import {
   actOnAppointment,
   createAppointment,
   getAppointmentById,
   getMyAppointments,
 } from "../controller/appointmentController/index.mjs";
+
 import {
   createMessage,
   listMyContacts,
   listUnreadConversations,
   markConversationAsRead,
 } from "../controller/messageController/index.mjs";
+
 import {
   getProfessionalById,
+  getProfessionals,
   searchBar,
   searchProfessionalBySpeciality,
   searchProfessionalsHighlightsWeek,
 } from "../controller/searchController/index.mjs";
+
 import {
   checkOTP,
   checkUserEmailSendOTP,
@@ -30,6 +36,7 @@ import {
   uploadProfilePhoto,
   userInfo,
 } from "../controller/userController/index.mjs";
+
 import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import { uploadPhoto } from "../middleware/uploadPhoto.mjs";
 import { validatePhotoUpload } from "../middleware/validatePhotoUpload.js";
@@ -86,6 +93,7 @@ router.put("/active-address", changeActiveAddress);
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
 router.get("/search/searchBar/:terms", searchBar);
+router.get("/search/professionals", getProfessionals);
 router.get("/search/professional/:id", getProfessionalById);
 
 router.post("/appointments", authenticateToken, createAppointment);
