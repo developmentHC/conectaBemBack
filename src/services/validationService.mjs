@@ -72,6 +72,10 @@ export class UserValidationService {
   }
 
   static validateAddressData(residentialAddress) {
+    if (!residentialAddress || typeof residentialAddress !== "object") {
+      throw new ValidationError("Dados do endereço residencial inválidos", 422);
+    }
+
     const requiredFields = ["cep", "address", "neighborhood", "city", "state"];
 
     const missingFields = requiredFields.filter((field) => !residentialAddress[field]);
@@ -81,6 +85,14 @@ export class UserValidationService {
         `Dados do endereço residencial imcompletos: ${missingFields.join(", ")}`,
         422,
       );
+    }
+
+    if (
+      residentialAddress.number !== undefined &&
+      residentialAddress.number !== null &&
+      typeof residentialAddress.number !== "string"
+    ) {
+      throw new ValidationError("O campo 'number' do endereço residencial deve ser uma string", 422);
     }
   }
 

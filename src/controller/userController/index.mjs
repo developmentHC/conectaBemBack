@@ -234,16 +234,17 @@ export const completeSignUpPatient = async (req, res) => {
     const update = {
       name,
       birthdayDate,
-      address: [
-        {
-          cep: residentialAddress.cep,
-          address: residentialAddress.address,
-          neighborhood: residentialAddress.neighborhood,
-          city: residentialAddress.city,
-          state: residentialAddress.state,
-          active: true,
-        },
-      ],
+        address: [
+          {
+            cep: residentialAddress.cep,
+            address: residentialAddress.address,
+            neighborhood: residentialAddress.neighborhood,
+            number: residentialAddress.number,
+            city: residentialAddress.city,
+            state: residentialAddress.state,
+            active: true,
+          },
+        ],
       userSpecialties,
       userServicePreferences,
       userType: ["patient"],
@@ -353,6 +354,17 @@ export const completeSignUpProfessional = async (req, res) => {
       name,
       birthdayDate,
       CNPJCPFProfissional,
+      address: [
+        {
+          cep: req.body.residentialAddress?.cep,
+          address: req.body.residentialAddress?.address,
+          neighborhood: req.body.residentialAddress?.neighborhood,
+          number: req.body.residentialAddress?.number,
+          city: req.body.residentialAddress?.city,
+          state: req.body.residentialAddress?.state,
+          active: true,
+        },
+      ],
       clinic,
       professionalSpecialties,
       professionalServicePreferences,
