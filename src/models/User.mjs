@@ -92,6 +92,9 @@ const userSchema = new mongoose.Schema({
   professionalSpecialties: [String],
   otherProfessionalSpecialties: [String],
   professionalServicePreferences: [String],
+  userSpecialties: [String],
+  userServicePreferences: [String],
+  userAccessibilityPreferences: [String],
   userType: {
     type: [String],
     enum: ["professional", "patient"],

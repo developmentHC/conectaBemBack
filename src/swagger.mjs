@@ -101,7 +101,7 @@ const doc = {
           items: { type: "string" },
           example: ["Consulta", "Exame"],
         },
-        userAcessibilityPreferences: {
+        userAccessibilityPreferences: {
           type: "array",
           items: { type: "string" },
           example: ["Cadeira de rodas", "Deficiência visual"],
