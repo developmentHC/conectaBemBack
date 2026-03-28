@@ -8,9 +8,7 @@ vi.mock("../../models/User.mjs", () => ({
 
 vi.mock("../../services/validationService.mjs", () => ({
   __esModule: true,
-  UserValidationService: {
-    validateToken: vi.fn(),
-  },
+  validateToken: vi.fn(),
   ValidationError: class ValidationError extends Error {
     constructor(message, statusCode = 422) {
       super(message);

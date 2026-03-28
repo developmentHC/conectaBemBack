@@ -45,15 +45,11 @@
       "description": "Endpoints para limpar dados de teste"
     }
   ],
-  "schemes": [
-    "http"
-  ],
+  "schemes": ["http"],
   "paths": {
     "/cleanup": {
       "delete": {
-        "tags": [
-          "Cleanup"
-        ],
+        "tags": ["Cleanup"],
         "summary": "Limpar dados de teste",
         "description": "Remove todos os documentos das coleções. **Disponível apenas em dev/teste.**",
         "responses": {
@@ -111,9 +107,7 @@
     },
     "/auth/sendOTP": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Envia código OTP para o e-mail informado",
         "description": "Fluxo de registro/login: envia um código OTP para o e-mail passado no body da requisição.",
         "parameters": [
@@ -242,9 +236,7 @@
     },
     "/auth/checkOTP": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Checa se OTP coincide e realiza login/registro",
         "description": "Verifica se o OTP enviado no body corresponde ao OTP encriptado no backend. Se coincidir: se o usuário já existir, é logado; caso contrário, fica liberado para registro.",
         "parameters": [
@@ -346,9 +338,7 @@
     },
     "/auth/createPatient": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Completa o cadastro do usuário paciente",
         "description": "Este endpoint finaliza o cadastro do paciente após o fluxo de sendOTP e checkOTP. É necessário já existir um usuário pendente antes da chamada.",
         "parameters": [
@@ -447,9 +437,7 @@
     },
     "/auth/createProfessional": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Completa o cadastro do usuário profissional",
         "description": "Finaliza o cadastro do profissional após os passos de sendOTP e checkOTP. É necessário que o usuário já exista como pendente antes de chamar este endpoint.",
         "parameters": [
@@ -548,14 +536,10 @@
     },
     "/auth/uploadPhoto": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Upload de foto de perfil",
         "description": "Recebe uma imagem via multipart/form-data e atualiza o campo imageUrl do usuário no banco.",
-        "consumes": [
-          "multipart/form-data"
-        ],
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
             "name": "profilePhoto",
@@ -631,16 +615,12 @@
             }
           }
         },
-        "security": [
-          {}
-        ]
+        "security": [{}]
       }
     },
     "/user": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Retorna todas as informações do usuário logado",
         "description": "Endpoint protegido que retorna todos os dados do usuário autenticado, exceto campos sensíveis (hashedOTP, __v). Retorna a URL da imagem de perfil armazenada no Cloudinary, quando existir.",
         "parameters": [
@@ -677,9 +657,7 @@
                 },
                 "userType": {
                   "type": "array",
-                  "example": [
-                    "patient"
-                  ],
+                  "example": ["patient"],
                   "items": {
                     "type": "string"
                   }
@@ -741,9 +719,7 @@
     },
     "/address": {
       "put": {
-        "tags": [
-          "Address"
-        ],
+        "tags": ["Address"],
         "summary": "Atualiza um endereço do usuário",
         "description": "Endpoint protegido que atualiza um endereço existente de um usuário logado. É necessário fornecer o ID do endereço e os novos dados no corpo da requisição.",
         "parameters": [
@@ -761,14 +737,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": [
-                    "addressId",
-                    "cep",
-                    "endereco",
-                    "bairro",
-                    "estado",
-                    "complemento"
-                  ],
+                  "example": ["addressId", "cep", "endereco", "bairro", "estado", "complemento"],
                   "items": {
                     "type": "string"
                   }
@@ -982,9 +951,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Address"
-        ],
+        "tags": ["Address"],
         "summary": "Retorna todos os endereços do usuário",
         "description": "Endpoint protegido que retorna todos os endereços cadastrados do usuário logado.",
         "responses": {
@@ -1085,9 +1052,7 @@
     },
     "/active-address": {
       "put": {
-        "tags": [
-          "Address"
-        ],
+        "tags": ["Address"],
         "summary": "Alterar endereço principal do usuário",
         "description": "Endpoint protegido que define um endereço como principal (ativo) para o usuário logado. O campo `addressId` é obrigatório.",
         "parameters": [
@@ -1105,9 +1070,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": [
-                    "addressId"
-                  ],
+                  "example": ["addressId"],
                   "items": {
                     "type": "string"
                   }
@@ -1219,9 +1182,7 @@
     },
     "/search/highlightsWeek": {
       "get": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Pesquisa os profissionais destaques da semana",
         "description": "Retorna uma lista paginada de até 10 profissionais que são destaques da semana. A paginação é controlada pelo parâmetro `page` na rota.",
         "parameters": [
@@ -1325,9 +1286,7 @@
     },
     "/search/professionalBySpeciality/{speciality}": {
       "get": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Pesquisa profissionais por especialidade",
         "description": "Retorna uma lista paginada de até 10 profissionais de uma especialidade específica. A especialidade deve ser informada como parâmetro de rota.",
         "parameters": [
@@ -1385,9 +1344,7 @@
                       },
                       "professionalSpecialties": {
                         "type": "array",
-                        "example": [
-                          "Cardiologia"
-                        ],
+                        "example": ["Cardiologia"],
                         "items": {
                           "type": "string"
                         }
@@ -1448,9 +1405,7 @@
     },
     "/search/searchBar/{terms}": {
       "get": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Busca de profissionais pela barra de pesquisa",
         "description": "Retorna até 10 profissionais por página, pesquisando pelo nome ou pela especialidade. A busca é case-insensitive e suporta paginação.",
         "parameters": [
@@ -1508,9 +1463,7 @@
                       },
                       "professionalSpecialties": {
                         "type": "array",
-                        "example": [
-                          "Nutrição"
-                        ],
+                        "example": ["Nutrição"],
                         "items": {
                           "type": "string"
                         }
@@ -1571,9 +1524,7 @@
     },
     "/search/professionals": {
       "get": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Lista profissionais com filtros combinados",
         "description": "Retorna profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).",
         "parameters": [
@@ -1614,9 +1565,7 @@
     },
     "/search/professional/{id}": {
       "get": {
-        "tags": [
-          "Search"
-        ],
+        "tags": ["Search"],
         "summary": "Busca detalhes de um profissional por ID",
         "description": "Retorna os dados públicos de um profissional específico.",
         "parameters": [
@@ -1649,18 +1598,14 @@
                 },
                 "professionalSpecialties": {
                   "type": "array",
-                  "example": [
-                    "Cardiologia"
-                  ],
+                  "example": ["Cardiologia"],
                   "items": {
                     "type": "string"
                   }
                 },
                 "professionalServicePreferences": {
                   "type": "array",
-                  "example": [
-                    "Consulta"
-                  ],
+                  "example": ["Consulta"],
                   "items": {
                     "type": "string"
                   }
@@ -1739,9 +1684,7 @@
     },
     "/appointments": {
       "post": {
-        "tags": [
-          "Agendamentos"
-        ],
+        "tags": ["Agendamentos"],
         "summary": "Criar solicitação de agendamento (paciente)",
         "description": "Paciente cria uma solicitação para um profissional em data/hora escolhidas.",
         "parameters": [
@@ -1767,11 +1710,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": [
-                    "professionalId",
-                    "dateTime",
-                    "address"
-                  ],
+                  "example": ["professionalId", "dateTime", "address"],
                   "items": {
                     "type": "string"
                   }
@@ -1843,9 +1782,7 @@
                         },
                         "required": {
                           "type": "array",
-                          "example": [
-                            "clinicId"
-                          ],
+                          "example": ["clinicId"],
                           "items": {
                             "type": "string"
                           }
@@ -2009,9 +1946,7 @@
     },
     "/appointments/{id}/actions": {
       "post": {
-        "tags": [
-          "Agendamentos"
-        ],
+        "tags": ["Agendamentos"],
         "summary": "Criar solicitação de agendamento (paciente)",
         "description": "Paciente cria uma solicitação para um profissional em data/hora escolhidas.",
         "parameters": [
@@ -2043,11 +1978,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": [
-                    "professionalId",
-                    "dateTime",
-                    "address"
-                  ],
+                  "example": ["professionalId", "dateTime", "address"],
                   "items": {
                     "type": "string"
                   }
@@ -2119,9 +2050,7 @@
                         },
                         "required": {
                           "type": "array",
-                          "example": [
-                            "clinicId"
-                          ],
+                          "example": ["clinicId"],
                           "items": {
                             "type": "string"
                           }
@@ -2283,9 +2212,7 @@
     },
     "/appointments/{id}": {
       "get": {
-        "tags": [
-          "Agendamentos"
-        ],
+        "tags": ["Agendamentos"],
         "summary": "Buscar detalhes de um agendamento",
         "description": "Retorna informações detalhadas de um agendamento específico. O agendamento não pode estar cancelado.",
         "parameters": [
@@ -2345,10 +2272,7 @@
                         "distanceKm": {},
                         "specialties": {
                           "type": "array",
-                          "example": [
-                            "Cardiologia",
-                            "Clínica Geral"
-                          ],
+                          "example": ["Cardiologia", "Clínica Geral"],
                           "items": {
                             "type": "string"
                           }
@@ -2476,9 +2400,7 @@
     },
     "/appointments/me": {
       "get": {
-        "tags": [
-          "Agendamentos"
-        ],
+        "tags": ["Agendamentos"],
         "summary": "Meus agendamentos (Paciente ou Profissional)",
         "description": "Lista agendamentos do usuário autenticado (paciente ou profissional). Suporta paginação, filtros de status e intervalo de datas.",
         "parameters": [
@@ -2537,10 +2459,7 @@
             "in": "query",
             "required": false,
             "type": "string",
-            "enum": [
-              "asc",
-              "desc"
-            ],
+            "enum": ["asc", "desc"],
             "description": "Ordenação por data do agendamento",
             "example": "asc"
           },
@@ -2708,9 +2627,7 @@
     },
     "/messages": {
       "post": {
-        "tags": [
-          "Messages"
-        ],
+        "tags": ["Messages"],
         "summary": "Enviar mensagem em uma conversa",
         "description": "Cria uma nova mensagem em uma conversa existente ou inicia uma nova conversa caso não seja informado um ID. Atualiza o lastMessage e incrementa o unreadCount dos participantes.",
         "parameters": [
@@ -2736,9 +2653,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": [
-                    "content"
-                  ],
+                  "example": ["content"],
                   "items": {
                     "type": "string"
                   }
@@ -2798,10 +2713,7 @@
                         },
                         "example": {
                           "type": "array",
-                          "example": [
-                            "66b9f4e2f4a5a7d6f4b9c123",
-                            "66b9f4e2f4a5a7d6f4b9c456"
-                          ],
+                          "example": ["66b9f4e2f4a5a7d6f4b9c123", "66b9f4e2f4a5a7d6f4b9c456"],
                           "items": {
                             "type": "string"
                           }
@@ -2900,9 +2812,7 @@
     },
     "/messages/contacts": {
       "get": {
-        "tags": [
-          "Messages"
-        ],
+        "tags": ["Messages"],
         "summary": "Listar contatos do usuário",
         "description": "Lista todos os contatos (pacientes ou profissionais) do usuário autenticado, incluindo último envio e quantidade de mensagens não lidas.",
         "parameters": [
@@ -3019,9 +2929,7 @@
     },
     "/conversations/{conversationId}/read": {
       "patch": {
-        "tags": [
-          "Messages"
-        ],
+        "tags": ["Messages"],
         "summary": "Marcar conversa como lida",
         "description": "Zera o campo unreadCount do usuário autenticado nessa conversa.",
         "parameters": [
@@ -3116,9 +3024,7 @@
     },
     "/messages/unread": {
       "get": {
-        "tags": [
-          "Messages"
-        ],
+        "tags": ["Messages"],
         "summary": "Listar conversas com mensagens não lidas",
         "description": "Retorna apenas as conversas onde o usuário logado possui mensagens não lidas (unreadCount > 0).",
         "parameters": [
@@ -3231,9 +3137,7 @@
     },
     "/teste": {
       "get": {
-        "tags": [
-          "Test"
-        ],
+        "tags": ["Test"],
         "summary": "Teste para verificar se API está funcionando",
         "description": "",
         "responses": {
@@ -3245,17 +3149,11 @@
     },
     "/webhooks/message-created": {
       "post": {
-        "tags": [
-          "Webhooks"
-        ],
+        "tags": ["Webhooks"],
         "summary": "Evento enviado quando uma nova mensagem é criada",
         "description": "",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
         "parameters": [
           {
             "name": "X-Event-Type",
@@ -3423,14 +3321,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": [
-                    "cep",
-                    "address",
-                    "neighborhood",
-                    "number",
-                    "city",
-                    "state"
-                  ],
+                  "example": ["cep", "address", "neighborhood", "number", "city", "state"],
                   "items": {
                     "type": "string"
                   }
@@ -3538,10 +3429,7 @@
                 },
                 "example": {
                   "type": "array",
-                  "example": [
-                    "Cardiologia",
-                    "Clínica Geral"
-                  ],
+                  "example": ["Cardiologia", "Clínica Geral"],
                   "items": {
                     "type": "string"
                   }
@@ -3566,10 +3454,7 @@
                 },
                 "example": {
                   "type": "array",
-                  "example": [
-                    "Consulta",
-                    "Exame"
-                  ],
+                  "example": ["Consulta", "Exame"],
                   "items": {
                     "type": "string"
                   }
@@ -3594,10 +3479,7 @@
                 },
                 "example": {
                   "type": "array",
-                  "example": [
-                    "Cadeira de rodas",
-                    "Deficiência visual"
-                  ],
+                  "example": ["Cadeira de rodas", "Deficiência visual"],
                   "items": {
                     "type": "string"
                   }
@@ -3716,14 +3598,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": [
-                    "cep",
-                    "address",
-                    "neighborhood",
-                    "number",
-                    "city",
-                    "state"
-                  ],
+                  "example": ["cep", "address", "neighborhood", "number", "city", "state"],
                   "items": {
                     "type": "string"
                   }
@@ -3826,15 +3701,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": [
-                    "name",
-                    "cep",
-                    "address",
-                    "neighborhood",
-                    "number",
-                    "city",
-                    "state"
-                  ],
+                  "example": ["name", "cep", "address", "neighborhood", "number", "city", "state"],
                   "items": {
                     "type": "string"
                   }
@@ -3968,10 +3835,7 @@
                 },
                 "example": {
                   "type": "array",
-                  "example": [
-                    "Cardiologia",
-                    "Clínica Geral"
-                  ],
+                  "example": ["Cardiologia", "Clínica Geral"],
                   "items": {
                     "type": "string"
                   }
@@ -3996,10 +3860,7 @@
                 },
                 "example": {
                   "type": "array",
-                  "example": [
-                    "Consulta",
-                    "Exame"
-                  ],
+                  "example": ["Consulta", "Exame"],
                   "items": {
                     "type": "string"
                   }
@@ -4024,9 +3885,7 @@
                 },
                 "example": {
                   "type": "array",
-                  "example": [
-                    "Acupuntura"
-                  ],
+                  "example": ["Acupuntura"],
                   "items": {
                     "type": "string"
                   }

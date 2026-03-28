@@ -27,18 +27,16 @@ vi.mock("../../utils/testEmailSyntax.mjs", () => ({
   __esModule: true,
   testEmailSyntax: vi.fn(),
 }));
-vi.mock("../../services/AuthService.mjs", () => ({
+vi.mock("../../services/authService.mjs", () => ({
   __esModule: true,
-  default: { loginWithOtp: vi.fn() },
+  loginWithOtp: vi.fn(),
 }));
 vi.mock("../../services/validationService.mjs", () => ({
   __esModule: true,
-  UserValidationService: {
-    validatePatientData: vi.fn(),
-    validateProfessionalData: vi.fn(),
-    validateProfilePhoto: vi.fn(),
-    validateUserExists: vi.fn(),
-  },
+  validatePatientData: vi.fn(),
+  validateProfessionalData: vi.fn(),
+  validateProfilePhoto: vi.fn(),
+  validateUserExists: vi.fn(),
   ValidationError: class ValidationError extends Error {
     constructor(message, statusCode = 422) {
       super(message);
@@ -72,7 +70,6 @@ const { UserValidationService, ValidationError } = await import(
   "../../services/validationService.mjs"
 );
 const jwt = (await import("jsonwebtoken")).default;
-const { gridFSBucket } = await import("../../lib/gridFs.mjs");
 
 const makeRes = () => ({
   status: vi.fn().mockReturnThis(),

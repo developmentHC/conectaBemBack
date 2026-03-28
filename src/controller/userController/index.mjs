@@ -2,8 +2,13 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import cloudinary from "../../config/cloudinary.mjs";
 import { User } from "../../models/index.mjs";
-import AuthService from "../../services/authService.mjs";
-import { UserValidationService, ValidationError } from "../../services/validationService.mjs";
+import { loginWithOtp } from "../../services/authService.mjs";
+import {
+  ValidationError,
+  validatePatientData,
+  validateProfessionalData,
+  validateUserExists,
+} from "../../services/validationService.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
@@ -162,7 +167,7 @@ export const checkOTP = async (req, res) => {
   }
 
   try {
-    const result = await AuthService.loginWithOtp(email, OTP);
+    const result = await loginWithOtp(email, OTP);
 
     return res.status(200).json(result);
   } catch (error) {
@@ -228,23 +233,23 @@ export const completeSignUpPatient = async (req, res) => {
       userAcessibilityPreferences,
     } = req.body;
 
-    UserValidationService.validatePatientData(req.body);
-    UserValidationService.validateUserExists(userId);
+    validatePatientData(req.body);
+    await validateUserExists(userId);
 
     const update = {
       name,
       birthdayDate,
-        address: [
-          {
-            cep: residentialAddress.cep,
-            address: residentialAddress.address,
-            neighborhood: residentialAddress.neighborhood,
-            number: residentialAddress.number,
-            city: residentialAddress.city,
-            state: residentialAddress.state,
-            active: true,
-          },
-        ],
+      address: [
+        {
+          cep: residentialAddress.cep,
+          address: residentialAddress.address,
+          neighborhood: residentialAddress.neighborhood,
+          number: residentialAddress.number,
+          city: residentialAddress.city,
+          state: residentialAddress.state,
+          active: true,
+        },
+      ],
       userSpecialties,
       userServicePreferences,
       userType: ["patient"],
@@ -347,8 +352,8 @@ export const completeSignUpProfessional = async (req, res) => {
       otherProfessionalSpecialties,
     } = req.body;
 
-    UserValidationService.validateProfessionalData(req.body);
-    UserValidationService.validateUserExists(userId);
+    validateProfessionalData(req.body);
+    await validateUserExists(userId);
 
     const update = {
       name,
