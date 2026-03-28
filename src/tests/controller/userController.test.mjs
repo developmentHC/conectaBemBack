@@ -27,18 +27,16 @@ vi.mock("../../utils/testEmailSyntax.mjs", () => ({
   __esModule: true,
   testEmailSyntax: vi.fn(),
 }));
-vi.mock("../../services/AuthService.mjs", () => ({
+vi.mock("../../services/authService.mjs", () => ({
   __esModule: true,
-  default: { loginWithOtp: vi.fn() },
+  loginWithOtp: vi.fn(),
 }));
 vi.mock("../../services/validationService.mjs", () => ({
   __esModule: true,
-  UserValidationService: {
-    validatePatientData: vi.fn(),
-    validateProfessionalData: vi.fn(),
-    validateProfilePhoto: vi.fn(),
-    validateUserExists: vi.fn(),
-  },
+  validatePatientData: vi.fn(),
+  validateProfessionalData: vi.fn(),
+  validateProfilePhoto: vi.fn(),
+  validateUserExists: vi.fn(),
   ValidationError: class ValidationError extends Error {
     constructor(message, statusCode = 422) {
       super(message);
@@ -65,14 +63,17 @@ const { testEmailSyntax } = await import("../../utils/testEmailSyntax.mjs");
 const { generateOTP } = await import("../../utils/generateOTP.mjs");
 const User = (await import("../../models/User.mjs")).default;
 const bcrypt = (await import("bcrypt")).default;
-const _AuthService = (await import("../../services/AuthService.mjs")).default;
+const { loginWithOtp } = await import("../../services/authService.mjs");
 const { checkUserEmailSendOTP, checkOTP, completeSignUpPatient, completeSignUpProfessional } =
   await import("../../controller/userController/index.mjs");
-const { UserValidationService, ValidationError } = await import(
-  "../../services/validationService.mjs"
-);
+const {
+  validatePatientData,
+  validateProfessionalData,
+  validateProfilePhoto,
+  validateUserExists,
+  ValidationError,
+} = await import("../../services/validationService.mjs");
 const jwt = (await import("jsonwebtoken")).default;
-const { gridFSBucket } = await import("../../lib/gridFs.mjs");
 
 const makeRes = () => ({
   status: vi.fn().mockReturnThis(),
@@ -128,15 +129,15 @@ const makeProfessionalReq = (overrides = {}) => ({
 });
 
 const mockValidPatient = () => {
-  UserValidationService.validatePatientData.mockReturnValue(true);
-  UserValidationService.validateProfilePhoto.mockReturnValue(true);
-  UserValidationService.validateUserExists.mockReturnValue(true);
+  validatePatientData.mockReturnValue(true);
+  validateProfilePhoto.mockReturnValue(true);
+  validateUserExists.mockReturnValue(true);
 };
 
 const mockValidProfessional = () => {
-  UserValidationService.validateProfessionalData.mockReturnValue(true);
-  UserValidationService.validateProfilePhoto.mockReturnValue(true);
-  UserValidationService.validateUserExists.mockReturnValue(true);
+  validateProfessionalData.mockReturnValue(true);
+  validateProfilePhoto.mockReturnValue(true);
+  validateUserExists.mockReturnValue(true);
 };
 
 beforeEach(() => {
@@ -227,7 +228,7 @@ describe("checkOTP", () => {
 
     const otpError = new Error("Código OTP está incorreto!");
     otpError.statusCode = 401;
-    _AuthService.loginWithOtp.mockRejectedValue(otpError);
+    loginWithOtp.mockRejectedValue(otpError);
 
     await checkOTP(req, res);
 
@@ -269,7 +270,7 @@ describe("checkOTP", () => {
 
   it("deve retornar 500 se ocorrer erro inesperado", async () => {
     testEmailSyntax.mockReturnValue(true);
-    _AuthService.loginWithOtp.mockRejectedValue(new Error("Falha interna"));
+    loginWithOtp.mockRejectedValue(new Error("Falha interna"));
 
     await checkOTP(req, res);
 
@@ -291,7 +292,7 @@ describe("completeSignUpPatient", () => {
   });
 
   it("deve retornar 422 se a validação falhar", async () => {
-    UserValidationService.validatePatientData.mockImplementation(() => {
+    validatePatientData.mockImplementation(() => {
       throw new ValidationError("Dados inválidos", 422);
     });
 
@@ -327,7 +328,7 @@ describe("completeSignUpPatient", () => {
 
   it("deve retornar 422 se a foto de perfil for inválida", async () => {
     const error = new ValidationError("Foto inválida", 422);
-    UserValidationService.validatePatientData.mockImplementation(() => {
+    validatePatientData.mockImplementation(() => {
       throw error;
     });
 
@@ -347,7 +348,7 @@ describe("completeSignUpProfessional", () => {
   });
 
   it("deve retornar 422 se a validação falhar", async () => {
-    UserValidationService.validateProfessionalData.mockImplementation(() => {
+    validateProfessionalData.mockImplementation(() => {
       throw new ValidationError("Dados inválidos", 422);
     });
 
@@ -384,7 +385,7 @@ describe("completeSignUpProfessional", () => {
 
   it("deve retornar 404 se usuário não for encontrado após update", async () => {
     const error = new ValidationError("Usuário não encontrado", 404);
-    UserValidationService.validateUserExists.mockImplementation(() => {
+    validateUserExists.mockImplementation(() => {
       throw error;
     });
 

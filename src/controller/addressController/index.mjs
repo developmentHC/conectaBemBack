@@ -1,5 +1,4 @@
 import User from "../../models/User.mjs";
-import { UserValidationService } from "../../services/validationService.mjs";
 
 export const changeAddress = async (req, res) => {
   /*
