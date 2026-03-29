@@ -90,7 +90,6 @@ const userSchema = new mongoose.Schema({
   address: [addressSchema],
   clinic: clinicSchema,
   professionalSpecialties: [String],
-  acessibilityPreferences: [String],
   otherProfessionalSpecialties: [String],
   professionalServicePreferences: [String],
   userType: {
