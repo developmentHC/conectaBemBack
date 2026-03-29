@@ -315,7 +315,7 @@ export const getProfessionals = async (req, res) => {
   /*
   #swagger.tags = ['Search']
   #swagger.summary = 'Lista profissionais com filtros combinados'
-  #swagger.description = 'Retorna profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).'
+  #swagger.description = 'Retorna até 10 profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).'
 
   #swagger.parameters['specialty'] = {
     in: 'query',
@@ -379,7 +379,7 @@ export const getProfessionals = async (req, res) => {
 
     if (accessibility) {
       filters.acessibilityPreferences = {
-        $elemMatch: { $regex: `^${escapeRegex(service)}$`, $options: "i" },
+        $elemMatch: { $regex: `^${escapeRegex(accessibility)}$`, $options: "i" },
       };
     }
 
