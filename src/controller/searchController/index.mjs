@@ -1,5 +1,5 @@
 import { User } from "../../models/index.mjs";
-import { escapeRegex } from "../../utils/escapeRegex";
+import { escapeRegex } from "../../utils/escapeRegex.mjs";
 
 export const searchProfessionalsHighlightsWeek = async (req, res) => {
   /*
@@ -373,6 +373,12 @@ export const getProfessionals = async (req, res) => {
 
     if (service) {
       filters.professionalServicePreferences = {
+        $elemMatch: { $regex: `^${escapeRegex(service)}$`, $options: "i" },
+      };
+    }
+
+    if (accessibility) {
+      filters.acessibilityPreferences = {
         $elemMatch: { $regex: `^${escapeRegex(service)}$`, $options: "i" },
       };
     }
