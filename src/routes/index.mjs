@@ -170,11 +170,6 @@ router.post("/webhooks/message-created", (_req, res) => {
 });
 
 if (process.env.NODE_ENV !== "production") {
-  const testOtpRoutes = await import("../dev/routes/testOtpRoutes.mjs");
-  router.use("/", testOtpRoutes.default);
-}
-
-if (process.env.NODE_ENV !== "production") {
   const cleanupRoutes = await import("./cleanup.mjs");
   router.use("/", cleanupRoutes.default);
 }
