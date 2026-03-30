@@ -11,15 +11,15 @@ vi.mock("bcrypt", () => ({
     hash: vi.fn().mockResolvedValue("hashed-000000"),
   },
 }));
-vi.mock("../../../models/User.mjs", () => ({
+vi.mock("../../models/User.mjs", () => ({
   __esModule: true,
   default: {
     updateOne: vi.fn().mockResolvedValue({ upsertedCount: 1 }),
   },
 }));
 
-const { main } = await import("../../../../scripts/seedTestUsers.mjs");
-const User = (await import("../../../models/User.mjs")).default;
+const { main } = await import("../../../scripts/seedTestUsers.mjs");
+const User = (await import("../../models/User.mjs")).default;
 const bcrypt = (await import("bcrypt")).default;
 const mongoose = (await import("mongoose")).default;
 
