@@ -70,11 +70,21 @@ export const checkUserEmailSendOTP = async (req, res) => {
   }
 
   try {
-    const OTP = generateOTP();
-    const emailResult = await sendEmail(email, OTP);
+    const isTestBypassActive =
+      process.env.NODE_ENV !== "production" &&
+      process.env.TEST_OTP_ENABLED === "true" &&
+      email.endsWith("@test.conectabem.com");
 
     const salt = await bcrypt.genSalt(saltRounds);
-    const hashedOTP = await bcrypt.hash(String(OTP), salt);
+    let hashedOTP;
+
+    if (isTestBypassActive) {
+      hashedOTP = await bcrypt.hash("000000", salt);
+    } else {
+      const OTP = generateOTP();
+      await sendEmail(email, OTP);
+      hashedOTP = await bcrypt.hash(String(OTP), salt);
+    }
 
     const userExists = await User.findOne({ email: email });
     if (!userExists) {
@@ -104,7 +114,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
           status: userExists.status,
         },
         message: "User OTP updated and sent",
-        sendgridStatus: emailResult?.status,
       });
     }
   } catch (error) {

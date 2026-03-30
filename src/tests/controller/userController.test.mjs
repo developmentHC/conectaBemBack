@@ -394,3 +394,124 @@ describe("completeSignUpProfessional", () => {
     expect(res.json).toHaveBeenCalledWith({ error: "Usuário não encontrado" });
   });
 });
+
+describe("checkUserEmailSendOTP — bypass de domínio de teste", () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env = {
+      ...originalEnv,
+      NODE_ENV: "test",
+      TEST_OTP_ENABLED: "true",
+    };
+    testEmailSyntax.mockReturnValue(true);
+    bcrypt.genSalt.mockResolvedValue("salt");
+    bcrypt.hash.mockResolvedValue("hashed-000000");
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it("não deve chamar sendEmail para email @test.conectabem.com com bypass ativo", async () => {
+    const { sendEmail } = await import("../../utils/sendEmail.mjs");
+    User.findOne.mockResolvedValue(null);
+    User.create.mockResolvedValue({ _id: "newId", email: "patient@test.conectabem.com" });
+
+    const req = { body: { email: "patient@test.conectabem.com" } };
+    const res = makeRes();
+
+    await checkUserEmailSendOTP(req, res);
+
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("deve chamar bcrypt.hash com '000000' (não com OTP gerado) para email de teste", async () => {
+    User.findOne.mockResolvedValue(null);
+    User.create.mockResolvedValue({ _id: "newId", email: "patient@test.conectabem.com" });
+
+    const req = { body: { email: "patient@test.conectabem.com" } };
+    const res = makeRes();
+
+    await checkUserEmailSendOTP(req, res);
+
+    expect(bcrypt.hash).toHaveBeenCalledWith("000000", "salt");
+  });
+
+  it("deve retornar 201 para novo usuário de teste (resposta idêntica ao fluxo normal)", async () => {
+    User.findOne.mockResolvedValue(null);
+    User.create.mockResolvedValue({ _id: "newId", email: "patient@test.conectabem.com" });
+
+    const req = { body: { email: "patient@test.conectabem.com" } };
+    const res = makeRes();
+
+    await checkUserEmailSendOTP(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: expect.objectContaining({ exists: false }),
+        message: "User created and OTP sent through email",
+      }),
+    );
+  });
+
+  it("deve retornar 200 para usuário de teste existente (resposta idêntica ao fluxo normal)", async () => {
+    User.findOne.mockResolvedValue({
+      _id: "existingId",
+      email: "patient@test.conectabem.com",
+      status: "pending",
+    });
+    User.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+    const req = { body: { email: "patient@test.conectabem.com" } };
+    const res = makeRes();
+
+    await checkUserEmailSendOTP(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: expect.objectContaining({ exists: true }),
+        message: "User OTP updated and sent",
+      }),
+    );
+    // Garantir que sendgridStatus não está na resposta quando bypass ativo
+    const jsonCall = res.json.mock.calls[0][0];
+    expect(jsonCall).not.toHaveProperty("sendgridStatus");
+  });
+
+  it("deve chamar sendEmail normalmente para @test.conectabem.com quando NODE_ENV=production", async () => {
+    process.env = { ...originalEnv, NODE_ENV: "production", TEST_OTP_ENABLED: "true" };
+    const { sendEmail } = await import("../../utils/sendEmail.mjs");
+    generateOTP.mockReturnValue(1234);
+    sendEmail.mockResolvedValue({ status: 200 });
+    User.findOne.mockResolvedValue(null);
+    User.create.mockResolvedValue({ _id: "id", email: "patient@test.conectabem.com" });
+
+    const req = { body: { email: "patient@test.conectabem.com" } };
+    const res = makeRes();
+
+    await checkUserEmailSendOTP(req, res);
+
+    expect(sendEmail).toHaveBeenCalled();
+  });
+
+  it("deve chamar sendEmail normalmente quando TEST_OTP_ENABLED não está definido", async () => {
+    process.env = { ...originalEnv, NODE_ENV: "test" };
+    delete process.env.TEST_OTP_ENABLED;
+    const { sendEmail } = await import("../../utils/sendEmail.mjs");
+    generateOTP.mockReturnValue(1234);
+    sendEmail.mockResolvedValue({ status: 200 });
+    User.findOne.mockResolvedValue(null);
+    User.create.mockResolvedValue({ _id: "id", email: "patient@test.conectabem.com" });
+
+    const req = { body: { email: "patient@test.conectabem.com" } };
+    const res = makeRes();
+
+    await checkUserEmailSendOTP(req, res);
+
+    expect(sendEmail).toHaveBeenCalled();
+  });
+});

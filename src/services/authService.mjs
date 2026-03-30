@@ -10,9 +10,17 @@ class AuthService {
       throw createApiError("Usuário não encontrado.", 404);
     }
 
-    const isOtpValid = await bcrypt.compare(otp, user.hashedOTP);
-    if (!isOtpValid) {
-      throw createApiError("Código OTP está incorreto!", 401);
+    const isTestBypassActive =
+      process.env.NODE_ENV !== "production" &&
+      process.env.TEST_OTP_ENABLED === "true" &&
+      email.endsWith("@test.conectabem.com") &&
+      otp === "000000";
+
+    if (!isTestBypassActive) {
+      const isOtpValid = await bcrypt.compare(otp, user.hashedOTP);
+      if (!isOtpValid) {
+        throw createApiError("Código OTP está incorreto!", 401);
+      }
     }
 
     const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, {
