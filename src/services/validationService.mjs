@@ -15,7 +15,6 @@ export class UserValidationService {
 
   static validatePatientData(data) {
     const requiredFields = [
-      "userId",
       "name",
       "birthdayDate",
       "residentialAddress",
@@ -35,7 +34,6 @@ export class UserValidationService {
 
   static validateProfessionalData(data) {
     const requiredFields = [
-      "userId",
       "name",
       "birthdayDate",
       "CNPJCPFProfissional",
