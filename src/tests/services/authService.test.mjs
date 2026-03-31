@@ -4,7 +4,7 @@ vi.mock("bcrypt", () => ({
 }));
 vi.mock("../../models/User.mjs", () => ({
   __esModule: true,
-  default: { findOne: vi.fn(), findByIdAndUpdate: vi.fn() },
+  default: { findOne: vi.fn(), findByIdAndUpdate: vi.fn(), updateOne: vi.fn() },
 }));
 vi.mock("jsonwebtoken", () => ({
   __esModule: true,
@@ -45,23 +45,23 @@ describe("bypass ativo (NODE_ENV=test, TEST_OTP_ENABLED=true)", () => {
     process.env = originalEnv;
   });
 
-  it("deve autenticar patient@test.conectabem.com com OTP 000000 sem chamar bcrypt.compare", async () => {
+  it("deve autenticar patient@test.conectabem.com com OTP 0000 sem chamar bcrypt.compare", async () => {
     const user = mockUser();
     User.findOne.mockResolvedValue(user);
     User.findByIdAndUpdate.mockResolvedValue(user);
 
-    const result = await AuthService.loginWithOtp("patient@test.conectabem.com", "000000");
+    const result = await AuthService.loginWithOtp("patient@test.conectabem.com", "0000");
 
     expect(result).toMatchObject({ message: expect.any(String), token: expect.any(String) });
     expect(bcrypt.compare).not.toHaveBeenCalled();
   });
 
-  it("deve autenticar professional@test.conectabem.com com OTP 000000", async () => {
+  it("deve autenticar professional@test.conectabem.com com OTP 0000", async () => {
     const user = mockUser({ email: "professional@test.conectabem.com" });
     User.findOne.mockResolvedValue(user);
     User.findByIdAndUpdate.mockResolvedValue(user);
 
-    const result = await AuthService.loginWithOtp("professional@test.conectabem.com", "000000");
+    const result = await AuthService.loginWithOtp("professional@test.conectabem.com", "0000");
 
     expect(result).toMatchObject({ message: expect.any(String), token: expect.any(String) });
     expect(bcrypt.compare).not.toHaveBeenCalled();
@@ -77,12 +77,12 @@ describe("bypass ativo (NODE_ENV=test, TEST_OTP_ENABLED=true)", () => {
     ).rejects.toMatchObject({ statusCode: 401 });
   });
 
-  it("deve rejeitar OTP 000000 para domínio não-teste", async () => {
+  it("deve rejeitar OTP 0000 para domínio não-teste", async () => {
     const user = mockUser({ email: "user@normal.com" });
     User.findOne.mockResolvedValue(user);
     bcrypt.compare.mockResolvedValue(false);
 
-    await expect(AuthService.loginWithOtp("user@normal.com", "000000")).rejects.toMatchObject({
+    await expect(AuthService.loginWithOtp("user@normal.com", "0000")).rejects.toMatchObject({
       statusCode: 401,
     });
   });
@@ -99,13 +99,13 @@ describe("bypass desabilitado — NODE_ENV=production", () => {
     process.env = originalEnv;
   });
 
-  it("deve rejeitar OTP 000000 para @test.conectabem.com em produção", async () => {
+  it("deve rejeitar OTP 0000 para @test.conectabem.com em produção", async () => {
     const user = mockUser();
     User.findOne.mockResolvedValue(user);
     bcrypt.compare.mockResolvedValue(false);
 
     await expect(
-      AuthService.loginWithOtp("patient@test.conectabem.com", "000000"),
+      AuthService.loginWithOtp("patient@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({ statusCode: 401 });
   });
 });
@@ -117,7 +117,7 @@ describe("bypass desabilitado — TEST_OTP_ENABLED não definido ou inválido", 
     process.env = originalEnv;
   });
 
-  it("deve rejeitar OTP 000000 quando TEST_OTP_ENABLED não está definido", async () => {
+  it("deve rejeitar OTP 0000 quando TEST_OTP_ENABLED não está definido", async () => {
     process.env = { ...originalEnv, NODE_ENV: "test" };
     delete process.env.TEST_OTP_ENABLED;
 
@@ -126,11 +126,11 @@ describe("bypass desabilitado — TEST_OTP_ENABLED não definido ou inválido", 
     bcrypt.compare.mockResolvedValue(false);
 
     await expect(
-      AuthService.loginWithOtp("patient@test.conectabem.com", "000000"),
+      AuthService.loginWithOtp("patient@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({ statusCode: 401 });
   });
 
-  it("deve rejeitar OTP 000000 quando TEST_OTP_ENABLED=false", async () => {
+  it("deve rejeitar OTP 0000 quando TEST_OTP_ENABLED=false", async () => {
     process.env = { ...originalEnv, NODE_ENV: "test", TEST_OTP_ENABLED: "false" };
 
     const user = mockUser();
@@ -138,7 +138,7 @@ describe("bypass desabilitado — TEST_OTP_ENABLED não definido ou inválido", 
     bcrypt.compare.mockResolvedValue(false);
 
     await expect(
-      AuthService.loginWithOtp("patient@test.conectabem.com", "000000"),
+      AuthService.loginWithOtp("patient@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({ statusCode: 401 });
   });
 });
@@ -182,5 +182,86 @@ describe("fluxo normal inalterado (emails fora do domínio de teste)", () => {
     await expect(AuthService.loginWithOtp("email@inexistente.com", "1234")).rejects.toMatchObject({
       statusCode: 404,
     });
+  });
+});
+
+describe("verifyRegistrationOtp — bypass ativo", () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    process.env = { ...originalEnv, NODE_ENV: "test", TEST_OTP_ENABLED: "true" };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it("deve verificar @test.conectabem.com com OTP '0000' sem chamar bcrypt.compare", async () => {
+    const user = mockUser({ status: "pending" });
+    User.findOne.mockResolvedValue(user);
+    User.updateOne.mockResolvedValue({});
+
+    await AuthService.verifyRegistrationOtp("patient@test.conectabem.com", "0000");
+
+    expect(bcrypt.compare).not.toHaveBeenCalled();
+    expect(User.updateOne).toHaveBeenCalledWith(
+      { _id: user._id },
+      { $set: { status: "verified" }, $unset: { hashedOTP: "" } },
+    );
+  });
+
+  it("deve rejeitar bypass em NODE_ENV=production", async () => {
+    process.env = { ...originalEnv, NODE_ENV: "production", TEST_OTP_ENABLED: "true" };
+    const user = mockUser({ status: "pending" });
+    User.findOne.mockResolvedValue(user);
+    bcrypt.compare.mockResolvedValue(false);
+
+    await expect(
+      AuthService.verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
+    ).rejects.toMatchObject({ statusCode: 401 });
+
+    expect(bcrypt.compare).toHaveBeenCalled();
+  });
+
+  it("deve rejeitar bypass sem TEST_OTP_ENABLED=true", async () => {
+    process.env = { ...originalEnv, NODE_ENV: "test" };
+    delete process.env.TEST_OTP_ENABLED;
+    const user = mockUser({ status: "pending" });
+    User.findOne.mockResolvedValue(user);
+    bcrypt.compare.mockResolvedValue(false);
+
+    await expect(
+      AuthService.verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
+    ).rejects.toMatchObject({ statusCode: 401 });
+
+    expect(bcrypt.compare).toHaveBeenCalled();
+  });
+
+  it("deve usar bcrypt.compare para domínio normal", async () => {
+    const user = mockUser({ email: "user@conectabem.com", status: "pending" });
+    User.findOne.mockResolvedValue(user);
+    bcrypt.compare.mockResolvedValue(true);
+    User.updateOne.mockResolvedValue({});
+
+    await AuthService.verifyRegistrationOtp("user@conectabem.com", "0000");
+
+    expect(bcrypt.compare).toHaveBeenCalled();
+  });
+
+  it("deve rejeitar usuário não encontrado", async () => {
+    User.findOne.mockResolvedValue(null);
+
+    await expect(
+      AuthService.verifyRegistrationOtp("naoexiste@test.conectabem.com", "0000"),
+    ).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("deve rejeitar usuário com status diferente de pending", async () => {
+    const user = mockUser({ status: "verified" });
+    User.findOne.mockResolvedValue(user);
+
+    await expect(
+      AuthService.verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 });

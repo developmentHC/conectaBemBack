@@ -14,7 +14,7 @@ class AuthService {
       process.env.NODE_ENV !== "production" &&
       process.env.TEST_OTP_ENABLED === "true" &&
       email.endsWith("@test.conectabem.com") &&
-      otp === "000000";
+      otp === "0000";
 
     if (!isTestBypassActive) {
       const isOtpValid = await bcrypt.compare(otp, user.hashedOTP);
@@ -50,9 +50,17 @@ class AuthService {
       throw createApiError("Esta conta não está mais pendente de verificação.", 400);
     }
 
-    const isOtpValid = await bcrypt.compare(otp, user.hashedOTP);
-    if (!isOtpValid) {
-      throw createApiError("Código OTP está incorreto!", 401);
+    const isTestBypassActive =
+      process.env.NODE_ENV !== "production" &&
+      process.env.TEST_OTP_ENABLED === "true" &&
+      email.endsWith("@test.conectabem.com") &&
+      otp === "0000";
+
+    if (!isTestBypassActive) {
+      const isOtpValid = await bcrypt.compare(otp, user.hashedOTP);
+      if (!isOtpValid) {
+        throw createApiError("Código OTP está incorreto!", 401);
+      }
     }
 
     await User.updateOne(
