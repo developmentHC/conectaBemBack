@@ -79,7 +79,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
     let hashedOTP;
 
     if (isTestBypassActive) {
-      hashedOTP = await bcrypt.hash("000000", salt);
+      hashedOTP = await bcrypt.hash("0000", salt);
     } else {
       const OTP = generateOTP();
       await sendEmail(email, OTP);

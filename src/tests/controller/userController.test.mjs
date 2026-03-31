@@ -427,7 +427,7 @@ describe("checkUserEmailSendOTP — bypass de domínio de teste", () => {
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it("deve chamar bcrypt.hash com '000000' (não com OTP gerado) para email de teste", async () => {
+  it("deve chamar bcrypt.hash com '0000' (não com OTP gerado) para email de teste", async () => {
     User.findOne.mockResolvedValue(null);
     User.create.mockResolvedValue({ _id: "newId", email: "patient@test.conectabem.com" });
 
@@ -436,7 +436,7 @@ describe("checkUserEmailSendOTP — bypass de domínio de teste", () => {
 
     await checkUserEmailSendOTP(req, res);
 
-    expect(bcrypt.hash).toHaveBeenCalledWith("000000", "salt");
+    expect(bcrypt.hash).toHaveBeenCalledWith("0000", "salt");
   });
 
   it("deve retornar 201 para novo usuário de teste (resposta idêntica ao fluxo normal)", async () => {
