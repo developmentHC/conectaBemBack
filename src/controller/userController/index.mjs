@@ -234,7 +234,7 @@ export const completeSignUpPatient = async (req, res) => {
       residentialAddress,
       userSpecialties,
       userServicePreferences,
-      userAcessibilityPreferences,
+      userAccessibilityPreferences,
     } = req.body;
 
     UserValidationService.validatePatientData(req.body);
@@ -260,8 +260,8 @@ export const completeSignUpPatient = async (req, res) => {
       profilePhoto: req.body.profilePhoto,
     };
 
-    if (userAcessibilityPreferences !== undefined) {
-      update.userAcessibilityPreferences = userAcessibilityPreferences;
+    if (userAccessibilityPreferences !== undefined) {
+      update.userAccessibilityPreferences = userAccessibilityPreferences;
     }
 
     const result = await User.updateOne(
