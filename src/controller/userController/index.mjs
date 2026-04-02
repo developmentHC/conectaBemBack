@@ -227,8 +227,8 @@ export const completeSignUpPatient = async (req, res) => {
 */
 
   try {
+    const userId = req.userId;
     const {
-      userId,
       name,
       birthdayDate,
       residentialAddress,
@@ -238,7 +238,7 @@ export const completeSignUpPatient = async (req, res) => {
     } = req.body;
 
     UserValidationService.validatePatientData(req.body);
-    UserValidationService.validateUserExists(userId);
+    await UserValidationService.validateUserExists(userId);
 
     const update = {
       name,
@@ -344,8 +344,8 @@ export const completeSignUpProfessional = async (req, res) => {
 */
 
   try {
+    const userId = req.userId;
     const {
-      userId,
       name,
       birthdayDate,
       CNPJCPFProfissional,
@@ -356,7 +356,7 @@ export const completeSignUpProfessional = async (req, res) => {
     } = req.body;
 
     UserValidationService.validateProfessionalData(req.body);
-    UserValidationService.validateUserExists(userId);
+    await UserValidationService.validateUserExists(userId);
 
     const update = {
       name,
