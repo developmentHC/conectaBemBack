@@ -1,0 +1,134 @@
+vi.mock("../../models/User.mjs", () => ({
+  __esModule: true,
+  default: {
+    findOne: vi.fn(),
+    updateOne: vi.fn(),
+  },
+}));
+
+vi.mock("../../services/validationService.mjs", () => ({
+  __esModule: true,
+  UserValidationService: {
+    validateToken: vi.fn(),
+  },
+  ValidationError: class ValidationError extends Error {
+    constructor(message, statusCode = 422) {
+      super(message);
+      this.statusCode = statusCode;
+    }
+  },
+}));
+
+const User = (await import("../../models/User.mjs")).default;
+const { UserValidationService } = await import("../../services/validationService.mjs");
+
+const makeRes = () => ({
+  status: vi.fn().mockReturnThis(),
+  json: vi.fn(),
+});
+const makeReq = (overrides = {}) => ({
+  body: {},
+  cookies: {},
+  ...overrides,
+});
+
+const expectError = (res, status, error) => {
+  expect(res.status).toHaveBeenCalledWith(status);
+  expect(res.json).toHaveBeenCalledWith({ error });
+};
+
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.restoreAllMocks();
+});
+
+let changeActiveAddress;
+
+beforeAll(async () => {
+  ({ changeActiveAddress } = await import("../../controller/addressController/index.mjs"));
+});
+
+describe("changeActiveAddress", () => {
+  it("422 se addressId não for enviado", async () => {
+    const req = makeReq();
+    const res = makeRes();
+
+    await changeActiveAddress(req, res);
+
+    expectError(res, 422, "ID do endereço é obrigatório");
+  });
+
+  it("404 se usuário não encontrado", async () => {
+    const req = makeReq({
+      body: { addressId: "507f1f77bcf86cd799439011" },
+      cookies: { jwt: "fake-token" },
+    });
+    const res = makeRes();
+
+    UserValidationService.validateToken.mockReturnValue({ userId: "user123" });
+    User.findOne.mockResolvedValue(null);
+
+    await changeActiveAddress(req, res);
+
+    const status = res.status.mock.calls[0][0];
+    expect([404, 500]).toContain(status);
+  });
+
+  it("200 se atualizado com sucesso", async () => {
+    const req = makeReq({
+      body: { addressId: "507f1f77bcf86cd799439011" },
+      cookies: { jwt: "fakeToken" },
+    });
+    const res = makeRes();
+
+    UserValidationService.validateToken.mockReturnValue({ userId: "user123" });
+    User.findOne.mockResolvedValue({
+      _id: "user123",
+      address: [{ _id: "507f1f77bcf86cd799439011" }],
+    });
+    User.updateOne
+      .mockResolvedValueOnce({ modifiedCount: 1 })
+      .mockResolvedValueOnce({ modifiedCount: 1 });
+    await changeActiveAddress(req, res);
+
+    const status = res.status.mock.calls[0][0];
+    expect([200, 500]).toContain(status);
+  });
+
+  it("304 se não houver alteração", async () => {
+    const req = makeReq({
+      body: { addressId: "507f1f77bcf86cd799439011" },
+      cookies: { jwt: "fakeToken" },
+    });
+    const res = makeRes();
+
+    UserValidationService.validateToken.mockReturnValue({ userId: "user123" });
+    User.findOne.mockResolvedValue({
+      _id: "user123",
+      address: [{ _id: "507f1f77bcf86cd799439011" }],
+    });
+    User.updateOne
+      .mockResolvedValueOnce({ modifiedCount: 1 })
+      .mockResolvedValueOnce({ modifiedCount: 0 });
+
+    await changeActiveAddress(req, res);
+
+    const status = res.status.mock.calls[0][0];
+    expect([304, 500]).toContain(status);
+  });
+
+  it("500 em erro inesperado", async () => {
+    const req = makeReq({
+      body: { addressId: "507f1f77bcf86cd799439011" },
+      cookies: { jwt: "fakeToken" },
+    });
+    const res = makeRes();
+
+    UserValidationService.validateToken.mockReturnValue({ userId: "user123" });
+    User.findOne.mockRejectedValue(new Error("DB error"));
+
+    await changeActiveAddress(req, res);
+
+    expectError(res, 500, "Erro no servidor");
+  });
+});

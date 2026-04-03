@@ -242,8 +242,8 @@ export const completeSignUpPatient = async (req, res) => {
       userAccessibilityPreferences,
     } = req.body;
 
-    UserValidationService.validatePatientData(req.body);
-    await UserValidationService.validateUserExists(userId);
+    validatePatientData(req.body);
+    await validateUserExists(userId);
 
     const update = {
       name,
@@ -253,7 +253,6 @@ export const completeSignUpPatient = async (req, res) => {
           cep: residentialAddress.cep,
           address: residentialAddress.address,
           neighborhood: residentialAddress.neighborhood,
-          number: residentialAddress.number,
           city: residentialAddress.city,
           state: residentialAddress.state,
           active: true,
@@ -356,30 +355,33 @@ export const completeSignUpProfessional = async (req, res) => {
       birthdayDate,
       CNPJCPFProfissional,
       clinic,
+      residentialAddress,
       professionalSpecialties,
       professionalServicePreferences,
       otherProfessionalSpecialties,
+      userAccessibilityPreferences,
     } = req.body;
 
-    UserValidationService.validateProfessionalData(req.body);
-    await UserValidationService.validateUserExists(userId);
+    validateProfessionalData(req.body);
+    await validateUserExists(userId);
 
     const update = {
       name,
       birthdayDate,
       CNPJCPFProfissional,
-      address: [
-        {
-          cep: req.body.residentialAddress?.cep,
-          address: req.body.residentialAddress?.address,
-          neighborhood: req.body.residentialAddress?.neighborhood,
-          number: req.body.residentialAddress?.number,
-          city: req.body.residentialAddress?.city,
-          state: req.body.residentialAddress?.state,
-          active: true,
-        },
-      ],
       clinic,
+      address: residentialAddress
+        ? [
+            {
+              cep: residentialAddress.cep,
+              address: residentialAddress.address,
+              neighborhood: residentialAddress.neighborhood,
+              city: residentialAddress.city,
+              state: residentialAddress.state,
+              active: true,
+            },
+          ]
+        : undefined,
       professionalSpecialties,
       professionalServicePreferences,
       otherProfessionalSpecialties,
@@ -387,6 +389,10 @@ export const completeSignUpProfessional = async (req, res) => {
       status: "completed",
       profilePhoto: req.body.profilePhoto,
     };
+
+    if (userAccessibilityPreferences !== undefined) {
+      update.userAccessibilityPreferences = userAccessibilityPreferences;
+    }
 
     const result = await User.updateOne({ _id: userId }, { $set: update });
 

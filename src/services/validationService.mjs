@@ -10,48 +10,35 @@ export async function validateUserExists(userId) {
   return user;
 }
 
-  static validatePatientData(data) {
-    const requiredFields = [
-      "name",
-      "birthdayDate",
-      "residentialAddress",
-      "userSpecialties",
-      "userServicePreferences",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !data[field]);
-
-    if (missingFields.length > 0) {
-      throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
-    }
-
-    UserValidationService.validateAddressData(data.residentialAddress);
-    UserValidationService.validateBirthDate(data.birthdayDate);
+export function validatePatientData(data) {
+  const requiredFields = [
+    "name",
+    "birthdayDate",
+    "residentialAddress",
+    "userSpecialties",
+    "userServicePreferences",
+  ];
+  const missingFields = requiredFields.filter((field) => !data[field]);
+  if (missingFields.length > 0) {
+    throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
   }
   validateAddressData(data.residentialAddress);
   validateBirthDate(data.birthdayDate);
 }
 
-  static validateProfessionalData(data) {
-    const requiredFields = [
-      "name",
-      "birthdayDate",
-      "CNPJCPFProfissional",
-      "residentialAddress",
-      "clinic",
-      "professionalSpecialties",
-      "professionalServicePreferences",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !data[field]);
-
-    if (missingFields.length > 0) {
-      throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
-    }
-
-    UserValidationService.validateAddressData(data.residentialAddress);
-    UserValidationService.validateClinicData(data.clinic);
-    UserValidationService.validateBirthDate(data.birthdayDate);
+export function validateProfessionalData(data) {
+  const requiredFields = [
+    "name",
+    "birthdayDate",
+    "CNPJCPFProfissional",
+    "residentialAddress",
+    "clinic",
+    "professionalSpecialties",
+    "professionalServicePreferences",
+  ];
+  const missingFields = requiredFields.filter((field) => !data[field]);
+  if (missingFields.length > 0) {
+    throw new ValidationError(`Campos obrigatórios ausentes: ${missingFields.join(", ")}`, 422);
   }
   validateAddressData(data.residentialAddress);
   validateClinicData(data.clinic);
@@ -73,23 +60,13 @@ export function validateBirthDate(birthdayDate) {
 }
 
 export function validateAddressData(residentialAddress) {
-  if (!residentialAddress || typeof residentialAddress !== "object") {
-    throw new ValidationError("Dados do endereço residencial inválidos", 422);
-  }
   const requiredFields = ["cep", "address", "neighborhood", "city", "state"];
   const missingFields = requiredFields.filter((field) => !residentialAddress[field]);
   if (missingFields.length > 0) {
     throw new ValidationError(
-      `Dados do endereço residencial incompletos: ${missingFields.join(", ")}`,
+      `Dados do endereço residencial imcompletos: ${missingFields.join(", ")}`,
       422,
     );
-  }
-  if (
-    residentialAddress.number !== undefined &&
-    residentialAddress.number !== null &&
-    typeof residentialAddress.number !== "string"
-  ) {
-    throw new ValidationError("O campo 'number' do endereço residencial deve ser uma string", 422);
   }
 }
 

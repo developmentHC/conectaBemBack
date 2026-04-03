@@ -11,9 +11,11 @@ vi.mock("../../config/config.mjs", () => ({
   default: { ACCESS_TOKEN_SECRET: "test-secret" },
 }));
 
-const { UserValidationService, ValidationError } = await import(
-  "../../services/validationService.mjs"
-);
+import {
+  ValidationError,
+  validatePatientData,
+  validateProfessionalData,
+} from "../../services/validationService.mjs";
 
 const makeValidPatientData = (overrides = {}) => ({
   name: "Paciente Teste",
@@ -58,19 +60,19 @@ const makeValidProfessionalData = (overrides = {}) => ({
 describe("validatePatientData", () => {
   it("não deve lançar erro quando dados válidos são enviados sem userId", () => {
     const data = makeValidPatientData();
-    expect(() => UserValidationService.validatePatientData(data)).not.toThrow();
+    expect(() => validatePatientData(data)).not.toThrow();
   });
 
   it("não deve lançar erro quando userId é enviado (userId é ignorado na validação)", () => {
     const data = makeValidPatientData({ userId: "user123" });
-    expect(() => UserValidationService.validatePatientData(data)).not.toThrow();
+    expect(() => validatePatientData(data)).not.toThrow();
   });
 
   it("deve lançar ValidationError 422 quando name está ausente", () => {
     const data = makeValidPatientData({ name: undefined });
-    expect(() => UserValidationService.validatePatientData(data)).toThrow(ValidationError);
+    expect(() => validatePatientData(data)).toThrow(ValidationError);
     try {
-      UserValidationService.validatePatientData(data);
+      validatePatientData(data);
     } catch (e) {
       expect(e.statusCode).toBe(422);
       expect(e.message).toContain("name");
@@ -79,31 +81,31 @@ describe("validatePatientData", () => {
 
   it("deve lançar ValidationError 422 quando birthdayDate está ausente", () => {
     const data = makeValidPatientData({ birthdayDate: undefined });
-    expect(() => UserValidationService.validatePatientData(data)).toThrow(ValidationError);
+    expect(() => validatePatientData(data)).toThrow(ValidationError);
   });
 
   it("deve lançar ValidationError 422 quando userSpecialties está ausente", () => {
     const data = makeValidPatientData({ userSpecialties: undefined });
-    expect(() => UserValidationService.validatePatientData(data)).toThrow(ValidationError);
+    expect(() => validatePatientData(data)).toThrow(ValidationError);
   });
 });
 
 describe("validateProfessionalData", () => {
   it("não deve lançar erro quando dados válidos são enviados sem userId", () => {
     const data = makeValidProfessionalData();
-    expect(() => UserValidationService.validateProfessionalData(data)).not.toThrow();
+    expect(() => validateProfessionalData(data)).not.toThrow();
   });
 
   it("não deve lançar erro quando userId é enviado (userId é ignorado na validação)", () => {
     const data = makeValidProfessionalData({ userId: "user123" });
-    expect(() => UserValidationService.validateProfessionalData(data)).not.toThrow();
+    expect(() => validateProfessionalData(data)).not.toThrow();
   });
 
   it("deve lançar ValidationError 422 quando name está ausente", () => {
     const data = makeValidProfessionalData({ name: undefined });
-    expect(() => UserValidationService.validateProfessionalData(data)).toThrow(ValidationError);
+    expect(() => validateProfessionalData(data)).toThrow(ValidationError);
     try {
-      UserValidationService.validateProfessionalData(data);
+      validateProfessionalData(data);
     } catch (e) {
       expect(e.statusCode).toBe(422);
     }
@@ -111,11 +113,11 @@ describe("validateProfessionalData", () => {
 
   it("deve lançar ValidationError 422 quando CNPJCPFProfissional está ausente", () => {
     const data = makeValidProfessionalData({ CNPJCPFProfissional: undefined });
-    expect(() => UserValidationService.validateProfessionalData(data)).toThrow(ValidationError);
+    expect(() => validateProfessionalData(data)).toThrow(ValidationError);
   });
 
   it("deve lançar ValidationError 422 quando professionalSpecialties está ausente", () => {
     const data = makeValidProfessionalData({ professionalSpecialties: undefined });
-    expect(() => UserValidationService.validateProfessionalData(data)).toThrow(ValidationError);
+    expect(() => validateProfessionalData(data)).toThrow(ValidationError);
   });
 });
