@@ -1,5 +1,5 @@
 import User from "../../models/User.mjs";
-import { UserValidationService } from "../../services/validationService.mjs";
+import { validateToken } from "../../services/validationService.mjs";
 
 export const changeAddress = async (req, res) => {
   /*
@@ -82,7 +82,7 @@ export const changeAddress = async (req, res) => {
 
   const { addressId, name, cep, endereco, bairro, estado, complemento, active } = req.body;
 
-  const decoded = UserValidationService.validateToken(req.cookies.jwt);
+  const decoded = validateToken(req.cookies.jwt);
 
   if (!addressId || !cep || !endereco || !bairro || !estado || !complemento) {
     return res.status(422).json({
@@ -158,7 +158,7 @@ export const getAddresses = async (req, res) => {
   }
 */
 
-  const decoded = UserValidationService.validateToken(req.cookies.jwt);
+  const decoded = validateToken(req.cookies.jwt);
   try {
     const user = await User.findOne({ _id: decoded.userId }, { address: 1, _id: 0 }).lean();
 
@@ -230,7 +230,7 @@ export const changeActiveAddress = async (req, res) => {
   }
 
   try {
-    const decoded = UserValidationService.validateToken(req.cookies.jwt);
+    const decoded = validateToken(req.cookies.jwt);
 
     const user = await User.findOne({ _id: decoded.userId });
 

@@ -19,7 +19,8 @@ vi.mock("../../utils/ApiError.mjs", () => ({
   }),
 }));
 
-const AuthService = (await import("../../services/authService.mjs")).default;
+import { loginWithOtp, verifyRegistrationOtp } from "../../services/authService.mjs";
+
 const bcrypt = (await import("bcrypt")).default;
 const User = (await import("../../models/User.mjs")).default;
 
@@ -50,7 +51,7 @@ describe("bypass ativo (NODE_ENV=test, TEST_OTP_ENABLED=true)", () => {
     User.findOne.mockResolvedValue(user);
     User.findByIdAndUpdate.mockResolvedValue(user);
 
-    const result = await AuthService.loginWithOtp("patient@test.conectabem.com", "0000");
+    const result = await loginWithOtp("patient@test.conectabem.com", "0000");
 
     expect(result).toMatchObject({ message: expect.any(String), token: expect.any(String) });
     expect(bcrypt.compare).not.toHaveBeenCalled();
@@ -61,7 +62,7 @@ describe("bypass ativo (NODE_ENV=test, TEST_OTP_ENABLED=true)", () => {
     User.findOne.mockResolvedValue(user);
     User.findByIdAndUpdate.mockResolvedValue(user);
 
-    const result = await AuthService.loginWithOtp("professional@test.conectabem.com", "0000");
+    const result = await loginWithOtp("professional@test.conectabem.com", "0000");
 
     expect(result).toMatchObject({ message: expect.any(String), token: expect.any(String) });
     expect(bcrypt.compare).not.toHaveBeenCalled();
@@ -72,9 +73,9 @@ describe("bypass ativo (NODE_ENV=test, TEST_OTP_ENABLED=true)", () => {
     User.findOne.mockResolvedValue(user);
     bcrypt.compare.mockResolvedValue(false);
 
-    await expect(
-      AuthService.loginWithOtp("patient@test.conectabem.com", "1234"),
-    ).rejects.toMatchObject({ statusCode: 401 });
+    await expect(loginWithOtp("patient@test.conectabem.com", "1234")).rejects.toMatchObject({
+      statusCode: 401,
+    });
   });
 
   it("deve rejeitar OTP 0000 para domínio não-teste", async () => {
@@ -82,7 +83,7 @@ describe("bypass ativo (NODE_ENV=test, TEST_OTP_ENABLED=true)", () => {
     User.findOne.mockResolvedValue(user);
     bcrypt.compare.mockResolvedValue(false);
 
-    await expect(AuthService.loginWithOtp("user@normal.com", "0000")).rejects.toMatchObject({
+    await expect(loginWithOtp("user@normal.com", "0000")).rejects.toMatchObject({
       statusCode: 401,
     });
   });
@@ -104,9 +105,9 @@ describe("bypass desabilitado — NODE_ENV=production", () => {
     User.findOne.mockResolvedValue(user);
     bcrypt.compare.mockResolvedValue(false);
 
-    await expect(
-      AuthService.loginWithOtp("patient@test.conectabem.com", "0000"),
-    ).rejects.toMatchObject({ statusCode: 401 });
+    await expect(loginWithOtp("patient@test.conectabem.com", "0000")).rejects.toMatchObject({
+      statusCode: 401,
+    });
   });
 });
 
@@ -125,9 +126,9 @@ describe("bypass desabilitado — TEST_OTP_ENABLED não definido ou inválido", 
     User.findOne.mockResolvedValue(user);
     bcrypt.compare.mockResolvedValue(false);
 
-    await expect(
-      AuthService.loginWithOtp("patient@test.conectabem.com", "0000"),
-    ).rejects.toMatchObject({ statusCode: 401 });
+    await expect(loginWithOtp("patient@test.conectabem.com", "0000")).rejects.toMatchObject({
+      statusCode: 401,
+    });
   });
 
   it("deve rejeitar OTP 0000 quando TEST_OTP_ENABLED=false", async () => {
@@ -137,9 +138,9 @@ describe("bypass desabilitado — TEST_OTP_ENABLED não definido ou inválido", 
     User.findOne.mockResolvedValue(user);
     bcrypt.compare.mockResolvedValue(false);
 
-    await expect(
-      AuthService.loginWithOtp("patient@test.conectabem.com", "0000"),
-    ).rejects.toMatchObject({ statusCode: 401 });
+    await expect(loginWithOtp("patient@test.conectabem.com", "0000")).rejects.toMatchObject({
+      statusCode: 401,
+    });
   });
 });
 
@@ -160,7 +161,7 @@ describe("fluxo normal inalterado (emails fora do domínio de teste)", () => {
     bcrypt.compare.mockResolvedValue(true);
     User.findByIdAndUpdate.mockResolvedValue(user);
 
-    const result = await AuthService.loginWithOtp("user@conectabem.com", "1234");
+    const result = await loginWithOtp("user@conectabem.com", "1234");
 
     expect(result).toMatchObject({ message: expect.any(String), token: expect.any(String) });
     expect(bcrypt.compare).toHaveBeenCalled();
@@ -171,7 +172,7 @@ describe("fluxo normal inalterado (emails fora do domínio de teste)", () => {
     User.findOne.mockResolvedValue(user);
     bcrypt.compare.mockResolvedValue(false);
 
-    await expect(AuthService.loginWithOtp("user@conectabem.com", "wrong")).rejects.toMatchObject({
+    await expect(loginWithOtp("user@conectabem.com", "wrong")).rejects.toMatchObject({
       statusCode: 401,
     });
   });
@@ -179,7 +180,7 @@ describe("fluxo normal inalterado (emails fora do domínio de teste)", () => {
   it("deve rejeitar usuário não encontrado", async () => {
     User.findOne.mockResolvedValue(null);
 
-    await expect(AuthService.loginWithOtp("email@inexistente.com", "1234")).rejects.toMatchObject({
+    await expect(loginWithOtp("email@inexistente.com", "1234")).rejects.toMatchObject({
       statusCode: 404,
     });
   });
@@ -201,7 +202,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     User.findOne.mockResolvedValue(user);
     User.updateOne.mockResolvedValue({});
 
-    await AuthService.verifyRegistrationOtp("patient@test.conectabem.com", "0000");
+    await verifyRegistrationOtp("patient@test.conectabem.com", "0000");
 
     expect(bcrypt.compare).not.toHaveBeenCalled();
     expect(User.updateOne).toHaveBeenCalledWith(
@@ -217,7 +218,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     bcrypt.compare.mockResolvedValue(false);
 
     await expect(
-      AuthService.verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
+      verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({ statusCode: 401 });
 
     expect(bcrypt.compare).toHaveBeenCalled();
@@ -231,7 +232,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     bcrypt.compare.mockResolvedValue(false);
 
     await expect(
-      AuthService.verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
+      verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({ statusCode: 401 });
 
     expect(bcrypt.compare).toHaveBeenCalled();
@@ -243,7 +244,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     bcrypt.compare.mockResolvedValue(true);
     User.updateOne.mockResolvedValue({});
 
-    await AuthService.verifyRegistrationOtp("user@conectabem.com", "0000");
+    await verifyRegistrationOtp("user@conectabem.com", "0000");
 
     expect(bcrypt.compare).toHaveBeenCalled();
   });
@@ -252,7 +253,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     User.findOne.mockResolvedValue(null);
 
     await expect(
-      AuthService.verifyRegistrationOtp("naoexiste@test.conectabem.com", "0000"),
+      verifyRegistrationOtp("naoexiste@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({ statusCode: 404 });
   });
 
@@ -261,7 +262,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     User.findOne.mockResolvedValue(user);
 
     await expect(
-      AuthService.verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
+      verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({ statusCode: 400 });
   });
 });

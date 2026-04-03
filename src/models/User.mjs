@@ -13,6 +13,10 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  number: {
+    type: String,
+    required: false,
+  },
   city: {
     type: String,
     required: true,
@@ -92,6 +96,10 @@ const userSchema = new mongoose.Schema({
   professionalSpecialties: [String],
   otherProfessionalSpecialties: [String],
   professionalServicePreferences: [String],
+  userAccessibilityPreferences: {
+    type: [String],
+    required: false,
+  },
   userType: {
     type: [String],
     enum: ["professional", "patient"],

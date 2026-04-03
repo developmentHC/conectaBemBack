@@ -8,9 +8,7 @@ vi.mock("../../models/User.mjs", () => ({
 
 vi.mock("../../services/validationService.mjs", () => ({
   __esModule: true,
-  UserValidationService: {
-    validateToken: vi.fn(),
-  },
+  validateToken: vi.fn(),
   ValidationError: class ValidationError extends Error {
     constructor(message, statusCode = 422) {
       super(message);
@@ -20,13 +18,12 @@ vi.mock("../../services/validationService.mjs", () => ({
 }));
 
 const User = (await import("../../models/User.mjs")).default;
-const { UserValidationService } = await import("../../services/validationService.mjs");
+const { validateToken } = await import("../../services/validationService.mjs");
 
 const makeRes = () => ({
   status: vi.fn().mockReturnThis(),
   json: vi.fn(),
 });
-
 const makeReq = (overrides = {}) => ({
   body: {},
   cookies: {},
@@ -36,11 +33,6 @@ const makeReq = (overrides = {}) => ({
 const expectError = (res, status, error) => {
   expect(res.status).toHaveBeenCalledWith(status);
   expect(res.json).toHaveBeenCalledWith({ error });
-};
-
-const expectMsg = (res, status, msg) => {
-  expect(res.status).toHaveBeenCalledWith(status);
-  expect(res.json).toHaveBeenCalledWith({ msg });
 };
 
 afterEach(() => {
@@ -71,7 +63,7 @@ describe("changeActiveAddress", () => {
     });
     const res = makeRes();
 
-    UserValidationService.validateToken.mockReturnValue({ userId: "user123" });
+    validateToken.mockReturnValue({ userId: "user123" });
     User.findOne.mockResolvedValue(null);
 
     await changeActiveAddress(req, res);
@@ -86,7 +78,7 @@ describe("changeActiveAddress", () => {
     });
     const res = makeRes();
 
-    UserValidationService.validateToken.mockReturnValue({ userId: "user123" });
+    validateToken.mockReturnValue({ userId: "user123" });
     User.findOne.mockResolvedValue({
       _id: "user123",
       address: [{ _id: "507f1f77bcf86cd799439011" }],
@@ -96,7 +88,8 @@ describe("changeActiveAddress", () => {
       .mockResolvedValueOnce({ modifiedCount: 1 });
     await changeActiveAddress(req, res);
 
-    expectMsg(res, 200, "Endereço principal atualizado com sucesso!");
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ msg: "Endereço principal atualizado com sucesso!" });
   });
 
   it("304 se não houver alteração", async () => {
@@ -106,7 +99,7 @@ describe("changeActiveAddress", () => {
     });
     const res = makeRes();
 
-    UserValidationService.validateToken.mockReturnValue({ userId: "user123" });
+    validateToken.mockReturnValue({ userId: "user123" });
     User.findOne.mockResolvedValue({
       _id: "user123",
       address: [{ _id: "507f1f77bcf86cd799439011" }],
@@ -117,7 +110,8 @@ describe("changeActiveAddress", () => {
 
     await changeActiveAddress(req, res);
 
-    expectMsg(res, 304, "Não houve alteração no endereço principal");
+    expect(res.status).toHaveBeenCalledWith(304);
+    expect(res.json).toHaveBeenCalledWith({ msg: "Não houve alteração no endereço principal" });
   });
 
   it("500 em erro inesperado", async () => {
@@ -127,7 +121,7 @@ describe("changeActiveAddress", () => {
     });
     const res = makeRes();
 
-    UserValidationService.validateToken.mockReturnValue({ userId: "user123" });
+    validateToken.mockReturnValue({ userId: "user123" });
     User.findOne.mockRejectedValue(new Error("DB error"));
 
     await changeActiveAddress(req, res);
