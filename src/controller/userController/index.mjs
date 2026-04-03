@@ -376,6 +376,7 @@ export const completeSignUpProfessional = async (req, res) => {
               cep: residentialAddress.cep,
               address: residentialAddress.address,
               neighborhood: residentialAddress.neighborhood,
+              number: residentialAddress.number,
               city: residentialAddress.city,
               state: residentialAddress.state,
               active: true,
