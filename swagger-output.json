@@ -343,6 +343,11 @@
         "description": "Este endpoint finaliza o cadastro do paciente após o fluxo de sendOTP e checkOTP. É necessário já existir um usuário pendente antes da chamada.",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Dados obrigatórios para completar o cadastro do paciente. Necessário ter passado antes por sendOTP e checkOTP.",
@@ -386,6 +391,12 @@
                 "name": "main"
               }
             }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "404": {
             "description": "Usuário não encontrado",
@@ -442,6 +453,11 @@
         "description": "Finaliza o cadastro do profissional após os passos de sendOTP e checkOTP. É necessário que o usuário já exista como pendente antes de chamar este endpoint.",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Dados obrigatórios para completar o cadastro do profissional. Necessário ter passado antes por sendOTP e checkOTP.",
@@ -485,6 +501,12 @@
                 "name": "main"
               }
             }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "404": {
             "description": "Usuário não encontrado",
@@ -3461,7 +3483,7 @@
                 }
               }
             },
-            "userAcessibilityPreferences": {
+            "userAccessibilityPreferences": {
               "type": "object",
               "properties": {
                 "type": {

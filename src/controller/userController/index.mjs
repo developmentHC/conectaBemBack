@@ -75,11 +75,21 @@ export const checkUserEmailSendOTP = async (req, res) => {
   }
 
   try {
-    const OTP = generateOTP();
-    const emailResult = await sendEmail(email, OTP);
+    const isTestBypassActive =
+      process.env.NODE_ENV !== "production" &&
+      process.env.TEST_OTP_ENABLED === "true" &&
+      email.endsWith("@test.conectabem.com");
 
     const salt = await bcrypt.genSalt(saltRounds);
-    const hashedOTP = await bcrypt.hash(String(OTP), salt);
+    let hashedOTP;
+
+    if (isTestBypassActive) {
+      hashedOTP = await bcrypt.hash("0000", salt);
+    } else {
+      const OTP = generateOTP();
+      await sendEmail(email, OTP);
+      hashedOTP = await bcrypt.hash(String(OTP), salt);
+    }
 
     const userExists = await User.findOne({ email: email });
     if (!userExists) {
@@ -109,7 +119,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
           status: userExists.status,
         },
         message: "User OTP updated and sent",
-        sendgridStatus: emailResult?.status,
       });
     }
   } catch (error) {
@@ -223,18 +232,18 @@ export const completeSignUpPatient = async (req, res) => {
 */
 
   try {
+    const userId = req.userId;
     const {
-      userId,
       name,
       birthdayDate,
       residentialAddress,
       userSpecialties,
       userServicePreferences,
-      userAcessibilityPreferences,
+      userAccessibilityPreferences,
     } = req.body;
 
-    validatePatientData(req.body);
-    await validateUserExists(userId);
+    UserValidationService.validatePatientData(req.body);
+    await UserValidationService.validateUserExists(userId);
 
     const update = {
       name,
@@ -257,8 +266,8 @@ export const completeSignUpPatient = async (req, res) => {
       profilePhoto: req.body.profilePhoto,
     };
 
-    if (userAcessibilityPreferences !== undefined) {
-      update.userAcessibilityPreferences = userAcessibilityPreferences;
+    if (userAccessibilityPreferences !== undefined) {
+      update.userAccessibilityPreferences = userAccessibilityPreferences;
     }
 
     const result = await User.updateOne(
@@ -341,8 +350,8 @@ export const completeSignUpProfessional = async (req, res) => {
 */
 
   try {
+    const userId = req.userId;
     const {
-      userId,
       name,
       birthdayDate,
       CNPJCPFProfissional,
@@ -352,8 +361,8 @@ export const completeSignUpProfessional = async (req, res) => {
       otherProfessionalSpecialties,
     } = req.body;
 
-    validateProfessionalData(req.body);
-    await validateUserExists(userId);
+    UserValidationService.validateProfessionalData(req.body);
+    await UserValidationService.validateUserExists(userId);
 
     const update = {
       name,
