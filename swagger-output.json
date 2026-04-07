@@ -3281,7 +3281,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": ["cep", "address", "neighborhood", "city", "state"],
+                  "example": ["cep", "address", "neighborhood", "number", "city", "state"],
                   "items": {
                     "type": "string"
                   }
@@ -3558,7 +3558,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": ["cep", "address", "neighborhood", "city", "state"],
+                  "example": ["cep", "address", "neighborhood", "number", "city", "state"],
                   "items": {
                     "type": "string"
                   }

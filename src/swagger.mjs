@@ -82,7 +82,7 @@ const doc = {
         ...sharedProperties,
         residentialAddress: {
           type: "object",
-          required: ["cep", "address", "neighborhood", "city", "state"],
+          required: ["cep", "address", "neighborhood", "number", "city", "state"],
           properties: {
             cep: { type: "string", example: "13295-000" },
             address: { type: "string", example: "Rua das Orquídeas" },
@@ -135,7 +135,7 @@ const doc = {
         },
         residentialAddress: {
           type: "object",
-          required: ["cep", "address", "neighborhood", "city", "state"],
+          required: ["cep", "address", "neighborhood", "number", "city", "state"],
           properties: {
             cep: { type: "string", example: "12345-678" },
             address: { type: "string", example: "Avenida Paulista" },
