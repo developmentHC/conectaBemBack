@@ -5,7 +5,7 @@
     "title": "ConectaBem APIs",
     "description": "APIs para o projeto ConectaBem"
   },
-  "host": "localhost:3000",
+  "host": "conecta-bem-back.vercel.app",
   "basePath": "/",
   "tags": [
     {
@@ -39,72 +39,10 @@
     {
       "name": "Webhooks",
       "description": "Eventos enviados pelo servidor (documentação)"
-    },
-    {
-      "name": "Cleanup",
-      "description": "Endpoints para limpar dados de teste"
     }
   ],
-  "schemes": ["http"],
+  "schemes": ["https"],
   "paths": {
-    "/cleanup": {
-      "delete": {
-        "tags": ["Cleanup"],
-        "summary": "Limpar dados de teste",
-        "description": "Remove todos os documentos das coleções. **Disponível apenas em dev/teste.**",
-        "responses": {
-          "200": {
-            "description": "Banco de dados limpo com sucesso",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "Banco de dados limpo com sucesso!"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "403": {
-            "description": "Operação não permitida em produção ou com flag desativada",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Operação não permitida"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "500": {
-            "description": "Erro interno ao limpar banco de dados",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Erro ao limpar banco de dados"
-                },
-                "details": {
-                  "type": "string",
-                  "example": "Mensagem de erro"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          }
-        }
-      }
-    },
     "/auth/sendOTP": {
       "post": {
         "tags": ["Authentication"],
@@ -343,6 +281,11 @@
         "description": "Este endpoint finaliza o cadastro do paciente após o fluxo de sendOTP e checkOTP. É necessário já existir um usuário pendente antes da chamada.",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Dados obrigatórios para completar o cadastro do paciente. Necessário ter passado antes por sendOTP e checkOTP.",
@@ -386,6 +329,12 @@
                 "name": "main"
               }
             }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "404": {
             "description": "Usuário não encontrado",
@@ -442,6 +391,11 @@
         "description": "Finaliza o cadastro do profissional após os passos de sendOTP e checkOTP. É necessário que o usuário já exista como pendente antes de chamar este endpoint.",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Dados obrigatórios para completar o cadastro do profissional. Necessário ter passado antes por sendOTP e checkOTP.",
@@ -485,6 +439,12 @@
                 "name": "main"
               }
             }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "404": {
             "description": "Usuário não encontrado",
@@ -3461,7 +3421,7 @@
                 }
               }
             },
-            "userAcessibilityPreferences": {
+            "userAccessibilityPreferences": {
               "type": "object",
               "properties": {
                 "type": {

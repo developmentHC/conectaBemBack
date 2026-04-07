@@ -12,7 +12,6 @@ export async function validateUserExists(userId) {
 
 export function validatePatientData(data) {
   const requiredFields = [
-    "userId",
     "name",
     "birthdayDate",
     "residentialAddress",
@@ -29,7 +28,6 @@ export function validatePatientData(data) {
 
 export function validateProfessionalData(data) {
   const requiredFields = [
-    "userId",
     "name",
     "birthdayDate",
     "CNPJCPFProfissional",

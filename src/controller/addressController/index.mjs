@@ -1,4 +1,5 @@
 import User from "../../models/User.mjs";
+import { validateToken } from "../../services/validationService.mjs";
 
 export const changeAddress = async (req, res) => {
   /*
@@ -58,17 +59,17 @@ export const changeAddress = async (req, res) => {
     }
   }
 
-  #swagger.responses[200] = { 
+  #swagger.responses[200] = {
     description: 'Endereço atualizado com sucesso',
     schema: { msg: "Atualização bem sucedida!" }
   }
 
-  #swagger.responses[304] = { 
+  #swagger.responses[304] = {
     description: 'Endereço está idêntico ao banco de dados (nenhuma modificação realizada)',
     schema: { msg: "Não há nada para atualizar no endereço" }
   }
 
-  #swagger.responses[422] = { 
+  #swagger.responses[422] = {
     description: 'Parâmetros obrigatórios não enviados no body',
     schema: { error: "Existem alguns parâmetros faltando para completar o cadastro do profissional" }
   }
@@ -81,7 +82,7 @@ export const changeAddress = async (req, res) => {
 
   const { addressId, name, cep, endereco, bairro, estado, complemento, active } = req.body;
 
-  const decoded = UserValidationService.validateToken(req.cookies.jwt);
+  const decoded = validateToken(req.cookies.jwt);
 
   if (!addressId || !cep || !endereco || !bairro || !estado || !complemento) {
     return res.status(422).json({
@@ -124,7 +125,7 @@ export const getAddresses = async (req, res) => {
   #swagger.summary = 'Retorna todos os endereços do usuário'
   #swagger.description = 'Endpoint protegido que retorna todos os endereços cadastrados do usuário logado.'
 
-  #swagger.responses[200] = { 
+  #swagger.responses[200] = {
     description: 'Endereços encontrados com sucesso',
     schema: {
       addresses: [
@@ -141,12 +142,12 @@ export const getAddresses = async (req, res) => {
     }
   }
 
-  #swagger.responses[401] = { 
+  #swagger.responses[401] = {
     description: 'Não autorizado (token inválido ou ausente)',
     schema: { error: "Não autorizado" }
   }
 
-  #swagger.responses[404] = { 
+  #swagger.responses[404] = {
     description: 'Usuário não encontrado',
     schema: { error: "Usuário não encontrado" }
   }
@@ -157,7 +158,7 @@ export const getAddresses = async (req, res) => {
   }
 */
 
-  const decoded = UserValidationService.validateToken(req.cookies.jwt);
+  const decoded = validateToken(req.cookies.jwt);
   try {
     const user = await User.findOne({ _id: decoded.userId }, { address: 1, _id: 0 }).lean();
 
@@ -194,22 +195,22 @@ export const changeActiveAddress = async (req, res) => {
     }
   }
 
-  #swagger.responses[200] = { 
+  #swagger.responses[200] = {
     description: 'Endereço principal atualizado com sucesso',
     schema: { msg: "Endereço principal atualizado com sucesso!" }
   }
 
-  #swagger.responses[304] = { 
+  #swagger.responses[304] = {
     description: 'Não houve alteração no endereço principal',
     schema: { msg: "Não houve alteração no endereço principal" }
   }
 
-  #swagger.responses[404] = { 
+  #swagger.responses[404] = {
     description: 'Usuário ou endereço não encontrado',
     schema: { error: "Endereço não encontrado para este usuário" }
   }
 
-  #swagger.responses[422] = { 
+  #swagger.responses[422] = {
     description: 'ID do endereço não fornecido',
     schema: { error: "ID do endereço é obrigatório" }
   }
@@ -229,7 +230,7 @@ export const changeActiveAddress = async (req, res) => {
   }
 
   try {
-    const decoded = UserValidationService.validateToken(req.cookies.jwt);
+    const decoded = validateToken(req.cookies.jwt);
 
     const user = await User.findOne({ _id: decoded.userId });
 

@@ -75,11 +75,21 @@ export const checkUserEmailSendOTP = async (req, res) => {
   }
 
   try {
-    const OTP = generateOTP();
-    const emailResult = await sendEmail(email, OTP);
+    const isTestBypassActive =
+      process.env.NODE_ENV !== "production" &&
+      process.env.TEST_OTP_ENABLED === "true" &&
+      email.endsWith("@test.conectabem.com");
 
     const salt = await bcrypt.genSalt(saltRounds);
-    const hashedOTP = await bcrypt.hash(String(OTP), salt);
+    let hashedOTP;
+
+    if (isTestBypassActive) {
+      hashedOTP = await bcrypt.hash("0000", salt);
+    } else {
+      const OTP = generateOTP();
+      await sendEmail(email, OTP);
+      hashedOTP = await bcrypt.hash(String(OTP), salt);
+    }
 
     const userExists = await User.findOne({ email: email });
     if (!userExists) {
@@ -109,7 +119,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
           status: userExists.status,
         },
         message: "User OTP updated and sent",
-        sendgridStatus: emailResult?.status,
       });
     }
   } catch (error) {
@@ -223,14 +232,14 @@ export const completeSignUpPatient = async (req, res) => {
 */
 
   try {
+    const userId = req.userId;
     const {
-      userId,
       name,
       birthdayDate,
       residentialAddress,
       userSpecialties,
       userServicePreferences,
-      userAcessibilityPreferences,
+      userAccessibilityPreferences,
     } = req.body;
 
     validatePatientData(req.body);
@@ -257,8 +266,8 @@ export const completeSignUpPatient = async (req, res) => {
       profilePhoto: req.body.profilePhoto,
     };
 
-    if (userAcessibilityPreferences !== undefined) {
-      update.userAcessibilityPreferences = userAcessibilityPreferences;
+    if (userAccessibilityPreferences !== undefined) {
+      update.userAccessibilityPreferences = userAccessibilityPreferences;
     }
 
     const result = await User.updateOne(
@@ -341,15 +350,17 @@ export const completeSignUpProfessional = async (req, res) => {
 */
 
   try {
+    const userId = req.userId;
     const {
-      userId,
       name,
       birthdayDate,
       CNPJCPFProfissional,
       clinic,
+      residentialAddress,
       professionalSpecialties,
       professionalServicePreferences,
       otherProfessionalSpecialties,
+      userAccessibilityPreferences,
     } = req.body;
 
     validateProfessionalData(req.body);
@@ -359,18 +370,20 @@ export const completeSignUpProfessional = async (req, res) => {
       name,
       birthdayDate,
       CNPJCPFProfissional,
-      address: [
-        {
-          cep: req.body.residentialAddress?.cep,
-          address: req.body.residentialAddress?.address,
-          neighborhood: req.body.residentialAddress?.neighborhood,
-          number: req.body.residentialAddress?.number,
-          city: req.body.residentialAddress?.city,
-          state: req.body.residentialAddress?.state,
-          active: true,
-        },
-      ],
       clinic,
+      address: residentialAddress
+        ? [
+            {
+              cep: residentialAddress.cep,
+              address: residentialAddress.address,
+              neighborhood: residentialAddress.neighborhood,
+              number: residentialAddress.number,
+              city: residentialAddress.city,
+              state: residentialAddress.state,
+              active: true,
+            },
+          ]
+        : undefined,
       professionalSpecialties,
       professionalServicePreferences,
       otherProfessionalSpecialties,
@@ -378,6 +391,10 @@ export const completeSignUpProfessional = async (req, res) => {
       status: "completed",
       profilePhoto: req.body.profilePhoto,
     };
+
+    if (userAccessibilityPreferences !== undefined) {
+      update.userAccessibilityPreferences = userAccessibilityPreferences;
+    }
 
     const result = await User.updateOne({ _id: userId }, { $set: update });
 

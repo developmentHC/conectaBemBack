@@ -15,7 +15,7 @@ const addressSchema = new mongoose.Schema({
   },
   number: {
     type: String,
-    required: true,
+    required: false,
   },
   city: {
     type: String,
