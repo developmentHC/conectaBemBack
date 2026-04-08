@@ -5,7 +5,7 @@
     "title": "ConectaBem APIs",
     "description": "APIs para o projeto ConectaBem"
   },
-  "host": "localhost:3000",
+  "host": "conecta-bem-back.vercel.app",
   "basePath": "/",
   "tags": [
     {
@@ -39,72 +39,10 @@
     {
       "name": "Webhooks",
       "description": "Eventos enviados pelo servidor (documentação)"
-    },
-    {
-      "name": "Cleanup",
-      "description": "Endpoints para limpar dados de teste"
     }
   ],
-  "schemes": ["http"],
+  "schemes": ["https"],
   "paths": {
-    "/cleanup": {
-      "delete": {
-        "tags": ["Cleanup"],
-        "summary": "Limpar dados de teste",
-        "description": "Remove todos os documentos das coleções. **Disponível apenas em dev/teste.**",
-        "responses": {
-          "200": {
-            "description": "Banco de dados limpo com sucesso",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "Banco de dados limpo com sucesso!"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "403": {
-            "description": "Operação não permitida em produção ou com flag desativada",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Operação não permitida"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "500": {
-            "description": "Erro interno ao limpar banco de dados",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Erro ao limpar banco de dados"
-                },
-                "details": {
-                  "type": "string",
-                  "example": "Mensagem de erro"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          }
-        }
-      }
-    },
     "/auth/sendOTP": {
       "post": {
         "tags": ["Authentication"],
@@ -343,6 +281,11 @@
         "description": "Este endpoint finaliza o cadastro do paciente após o fluxo de sendOTP e checkOTP. É necessário já existir um usuário pendente antes da chamada.",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Dados obrigatórios para completar o cadastro do paciente. Necessário ter passado antes por sendOTP e checkOTP.",
@@ -386,6 +329,12 @@
                 "name": "main"
               }
             }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "404": {
             "description": "Usuário não encontrado",
@@ -442,6 +391,11 @@
         "description": "Finaliza o cadastro do profissional após os passos de sendOTP e checkOTP. É necessário que o usuário já exista como pendente antes de chamar este endpoint.",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Dados obrigatórios para completar o cadastro do profissional. Necessário ter passado antes por sendOTP e checkOTP.",
@@ -485,6 +439,12 @@
                 "name": "main"
               }
             }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
           },
           "404": {
             "description": "Usuário não encontrado",
@@ -1512,6 +1472,166 @@
                 "error": {
                   "type": "string",
                   "example": "Erro interno"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/professionals": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Lista profissionais com filtros combinados",
+        "description": "Retorna profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).",
+        "parameters": [
+          {
+            "name": "specialty",
+            "in": "query",
+            "description": "Especialidade do profissional",
+            "required": false,
+            "type": "string",
+            "example": "Reiki"
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "description": "Tipo de serviço oferecido",
+            "required": false,
+            "type": "string",
+            "example": "Pet Friendly"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Número da página",
+            "required": false,
+            "type": "integer",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissionais encontrados com sucesso"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
+    "/search/professional/{id}": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Busca detalhes de um profissional por ID",
+        "description": "Retorna os dados públicos de um profissional específico.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do profissional",
+            "example": "66d98e1f7c19f5f7a0f4c1d3"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profissional encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "66d98e1f7c19f5f7a0f4c1d3"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "João Silva"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "example": "https://..."
+                },
+                "professionalSpecialties": {
+                  "type": "array",
+                  "example": ["Cardiologia"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "professionalServicePreferences": {
+                  "type": "array",
+                  "example": ["Consulta"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "clinic": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Clínica Saúde"
+                    },
+                    "city": {
+                      "type": "string",
+                      "example": "São Paulo"
+                    },
+                    "state": {
+                      "type": "string",
+                      "example": "SP"
+                    }
+                  }
+                },
+                "location": {
+                  "type": "object",
+                  "properties": {
+                    "city": {
+                      "type": "string",
+                      "example": "São Paulo"
+                    },
+                    "state": {
+                      "type": "string",
+                      "example": "SP"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitação Inválida"
+          },
+          "404": {
+            "description": "Profissional não encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Profissional não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno no Servidor"
                 }
               },
               "xml": {
@@ -3161,7 +3281,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": ["cep", "address", "neighborhood", "city", "state"],
+                  "example": ["cep", "address", "neighborhood", "number", "city", "state"],
                   "items": {
                     "type": "string"
                   }
@@ -3205,6 +3325,19 @@
                         "example": {
                           "type": "string",
                           "example": "Centro"
+                        }
+                      }
+                    },
+                    "number": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "123"
                         }
                       }
                     },
@@ -3288,7 +3421,7 @@
                 }
               }
             },
-            "userAcessibilityPreferences": {
+            "userAccessibilityPreferences": {
               "type": "object",
               "properties": {
                 "type": {
@@ -3425,7 +3558,7 @@
                 },
                 "required": {
                   "type": "array",
-                  "example": ["cep", "address", "neighborhood", "city", "state"],
+                  "example": ["cep", "address", "neighborhood", "number", "city", "state"],
                   "items": {
                     "type": "string"
                   }
@@ -3469,6 +3602,23 @@
                         "example": {
                           "type": "string",
                           "example": "Bela Vista"
+                        }
+                      }
+                    },
+                    "number": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "1000"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Opcional"
                         }
                       }
                     },

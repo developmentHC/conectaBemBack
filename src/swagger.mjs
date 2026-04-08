@@ -82,11 +82,12 @@ const doc = {
         ...sharedProperties,
         residentialAddress: {
           type: "object",
-          required: ["cep", "address", "neighborhood", "city", "state"],
+          required: ["cep", "address", "neighborhood", "number", "city", "state"],
           properties: {
             cep: { type: "string", example: "13295-000" },
             address: { type: "string", example: "Rua das Orquídeas" },
             neighborhood: { type: "string", example: "Centro" },
+            number: { type: "string", example: "123" },
             city: { type: "string", example: "Itupeva" },
             state: { type: "string", example: "SP" },
           },
@@ -101,7 +102,7 @@ const doc = {
           items: { type: "string" },
           example: ["Consulta", "Exame"],
         },
-        userAcessibilityPreferences: {
+        userAccessibilityPreferences: {
           type: "array",
           items: { type: "string" },
           example: ["Cadeira de rodas", "Deficiência visual"],
@@ -134,11 +135,12 @@ const doc = {
         },
         residentialAddress: {
           type: "object",
-          required: ["cep", "address", "neighborhood", "city", "state"],
+          required: ["cep", "address", "neighborhood", "number", "city", "state"],
           properties: {
             cep: { type: "string", example: "12345-678" },
             address: { type: "string", example: "Avenida Paulista" },
             neighborhood: { type: "string", example: "Bela Vista" },
+            number: { type: "string", example: "1000", description: "Opcional" },
             city: { type: "string", example: "São Paulo" },
             state: { type: "string", example: "SP" },
           },
@@ -226,8 +228,6 @@ let routes = [
   }),
   path.resolve(__dirname, "./controllers/**/*.mjs"),
   path.resolve(__dirname, "../controllers/**/*.mjs"),
-
-  path.resolve(__dirname, "../controller/**/*.mjs"),
 ];
 
 if (isProduction) {

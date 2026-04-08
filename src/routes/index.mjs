@@ -21,6 +21,7 @@ import {
 } from "../controller/messageController/index.mjs";
 
 import {
+  getProfessionalById,
   getProfessionals,
   searchBar,
   searchProfessionalBySpeciality,
@@ -41,7 +42,7 @@ import { uploadPhoto } from "../middleware/uploadPhoto.mjs";
 import { validatePhotoUpload } from "../middleware/validatePhotoUpload.js";
 
 export const allowedOrigins = [
-  "http://localhost:3000",
+  /^http:\/\/localhost(:\d+)?$/,
   "https://conecta-bem-front.vercel.app",
   "https://conecta-bem-back.vercel.app",
   /^https:\/\/.*\.vercel\.app$/,
@@ -78,8 +79,8 @@ router.use(express.json());
 
 router.post("/auth/sendOTP", checkUserEmailSendOTP);
 router.post("/auth/checkOTP", checkOTP);
-router.post("/auth/createPatient", uploadPhoto, completeSignUpPatient);
-router.post("/auth/createProfessional", uploadPhoto, completeSignUpProfessional);
+router.post("/auth/createPatient", authenticateToken, uploadPhoto, completeSignUpPatient);
+router.post("/auth/createProfessional", authenticateToken, uploadPhoto, completeSignUpProfessional);
 
 router.post("/auth/uploadPhoto", uploadPhoto, validatePhotoUpload, uploadProfilePhoto);
 
@@ -93,6 +94,7 @@ router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);
 router.get("/search/searchBar/:terms", searchBar);
 router.get("/search/professionals", getProfessionals);
+router.get("/search/professional/:id", getProfessionalById);
 
 router.post("/appointments", authenticateToken, createAppointment);
 router.post("/appointments/:id/actions", authenticateToken, actOnAppointment);
@@ -166,11 +168,6 @@ router.post("/webhooks/message-created", (_req, res) => {
   */
   return res.status(200).json({ received: true });
 });
-
-if (process.env.NODE_ENV !== "production") {
-  const testOtpRoutes = await import("../dev/routes/testOtpRoutes.mjs");
-  router.use("/", testOtpRoutes.default);
-}
 
 if (process.env.NODE_ENV !== "production") {
   const cleanupRoutes = await import("./cleanup.mjs");

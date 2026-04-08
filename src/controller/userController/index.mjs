@@ -2,8 +2,13 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import cloudinary from "../../config/cloudinary.mjs";
 import { User } from "../../models/index.mjs";
-import AuthService from "../../services/authService.mjs";
-import { UserValidationService, ValidationError } from "../../services/validationService.mjs";
+import { loginWithOtp } from "../../services/authService.mjs";
+import {
+  ValidationError,
+  validatePatientData,
+  validateProfessionalData,
+  validateUserExists,
+} from "../../services/validationService.mjs";
 import { generateOTP } from "../../utils/generateOTP.mjs";
 import { sendEmail } from "../../utils/sendEmail.mjs";
 import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
@@ -70,11 +75,21 @@ export const checkUserEmailSendOTP = async (req, res) => {
   }
 
   try {
-    const OTP = generateOTP();
-    const emailResult = await sendEmail(email, OTP);
+    const isTestBypassActive =
+      process.env.NODE_ENV !== "production" &&
+      process.env.TEST_OTP_ENABLED === "true" &&
+      email.endsWith("@test.conectabem.com");
 
     const salt = await bcrypt.genSalt(saltRounds);
-    const hashedOTP = await bcrypt.hash(String(OTP), salt);
+    let hashedOTP;
+
+    if (isTestBypassActive) {
+      hashedOTP = await bcrypt.hash("0000", salt);
+    } else {
+      const OTP = generateOTP();
+      await sendEmail(email, OTP);
+      hashedOTP = await bcrypt.hash(String(OTP), salt);
+    }
 
     const userExists = await User.findOne({ email: email });
     if (!userExists) {
@@ -104,7 +119,6 @@ export const checkUserEmailSendOTP = async (req, res) => {
           status: userExists.status,
         },
         message: "User OTP updated and sent",
-        sendgridStatus: emailResult?.status,
       });
     }
   } catch (error) {
@@ -162,7 +176,7 @@ export const checkOTP = async (req, res) => {
   }
 
   try {
-    const result = await AuthService.loginWithOtp(email, OTP);
+    const result = await loginWithOtp(email, OTP);
 
     return res.status(200).json(result);
   } catch (error) {
@@ -218,18 +232,18 @@ export const completeSignUpPatient = async (req, res) => {
 */
 
   try {
+    const userId = req.userId;
     const {
-      userId,
       name,
       birthdayDate,
       residentialAddress,
       userSpecialties,
       userServicePreferences,
-      userAcessibilityPreferences,
+      userAccessibilityPreferences,
     } = req.body;
 
-    UserValidationService.validatePatientData(req.body);
-    UserValidationService.validateUserExists(userId);
+    validatePatientData(req.body);
+    await validateUserExists(userId);
 
     const update = {
       name,
@@ -239,6 +253,7 @@ export const completeSignUpPatient = async (req, res) => {
           cep: residentialAddress.cep,
           address: residentialAddress.address,
           neighborhood: residentialAddress.neighborhood,
+          number: residentialAddress.number,
           city: residentialAddress.city,
           state: residentialAddress.state,
           active: true,
@@ -251,8 +266,8 @@ export const completeSignUpPatient = async (req, res) => {
       profilePhoto: req.body.profilePhoto,
     };
 
-    if (userAcessibilityPreferences !== undefined) {
-      update.userAcessibilityPreferences = userAcessibilityPreferences;
+    if (userAccessibilityPreferences !== undefined) {
+      update.userAccessibilityPreferences = userAccessibilityPreferences;
     }
 
     const result = await User.updateOne(
@@ -335,25 +350,40 @@ export const completeSignUpProfessional = async (req, res) => {
 */
 
   try {
+    const userId = req.userId;
     const {
-      userId,
       name,
       birthdayDate,
       CNPJCPFProfissional,
       clinic,
+      residentialAddress,
       professionalSpecialties,
       professionalServicePreferences,
       otherProfessionalSpecialties,
+      userAccessibilityPreferences,
     } = req.body;
 
-    UserValidationService.validateProfessionalData(req.body);
-    UserValidationService.validateUserExists(userId);
+    validateProfessionalData(req.body);
+    await validateUserExists(userId);
 
     const update = {
       name,
       birthdayDate,
       CNPJCPFProfissional,
       clinic,
+      address: residentialAddress
+        ? [
+            {
+              cep: residentialAddress.cep,
+              address: residentialAddress.address,
+              neighborhood: residentialAddress.neighborhood,
+              number: residentialAddress.number,
+              city: residentialAddress.city,
+              state: residentialAddress.state,
+              active: true,
+            },
+          ]
+        : undefined,
       professionalSpecialties,
       professionalServicePreferences,
       otherProfessionalSpecialties,
@@ -361,6 +391,10 @@ export const completeSignUpProfessional = async (req, res) => {
       status: "completed",
       profilePhoto: req.body.profilePhoto,
     };
+
+    if (userAccessibilityPreferences !== undefined) {
+      update.userAccessibilityPreferences = userAccessibilityPreferences;
+    }
 
     const result = await User.updateOne({ _id: userId }, { $set: update });
 
