@@ -352,27 +352,27 @@ export const getProfessionals = async (req, res) => {
   */
 
   try {
-    let { specialty, service, page = 1 } = req.query;
+    let { specialty, service, accessibility, page = 1 } = req.query;
     page = Math.max(1, parseInt(page, 10) || 1);
     const limit = 10;
 
-    const filters = { userType: "professional" };
+    const filters = { userType: { $in: ["professional"] } };
 
     if (specialty) {
       filters.professionalSpecialties = {
-        $elemMatch: { $regex: `^${escapeRegex(specialty)}$`, $options: "i" },
+        $in: [new RegExp(`^${escapeRegex(specialty)}$`, "i")],
       };
     }
 
     if (service) {
       filters.professionalServicePreferences = {
-        $elemMatch: { $regex: `^${escapeRegex(service)}$`, $options: "i" },
+        $in: [new RegExp(`^${escapeRegex(service)}$`, "i")],
       };
     }
 
     if (accessibility) {
-      filters.acessibilityPreferences = {
-        $elemMatch: { $regex: `^${escapeRegex(accessibility)}$`, $options: "i" },
+      filters.userAccessibilityPreferences = {
+        $in: [new RegExp(`^${escapeRegex(accessibility)}$`, "i")],
       };
     }
 
