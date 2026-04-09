@@ -175,6 +175,12 @@ const doc = {
           example: ["Acupuntura"],
           description: "Opcional",
         },
+        accessibility: {
+          type: "array",
+          items: { type: "string" },
+          example: ["Rampa de acesso", "Banheiro adaptado"],
+          description: "Preferências de acessibilidade do profissional (opcional)",
+        },
         profilePhoto: {
           type: "string",
           example: "https://res.cloudinary.com/.../foto.png",

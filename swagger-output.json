@@ -3856,6 +3856,35 @@
                 }
               }
             },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": ["Rampa de acesso", "Banheiro adaptado"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Preferências de acessibilidade do profissional (opcional)"
+                }
+              }
+            },
             "profilePhoto": {
               "type": "object",
               "properties": {
