@@ -35,7 +35,7 @@ export const getSpecialties = async (req, res) => {
     res.set("Cache-Control", "public, max-age=86400");
 
     return res.status(200).json(specialties);
-  } catch (error) {
-    return res.status(500).json({ error: error });
+  } catch (_error) {
+    return res.status(500).json({ error: "Erro interno no servidor." });
   }
 };
