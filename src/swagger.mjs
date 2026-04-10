@@ -102,11 +102,11 @@ const doc = {
           items: { type: "string" },
           example: ["Consulta", "Exame"],
         },
-        userAccessibilityPreferences: {
+        accessibility: {
           type: "array",
           items: { type: "string" },
           example: ["Cadeira de rodas", "Deficiência visual"],
-          description: "Opcional",
+          description: "Preferências de acessibilidade do paciente (opcional)",
         },
         profilePhoto: {
           type: "string",

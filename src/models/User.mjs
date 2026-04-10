@@ -98,7 +98,6 @@ const userSchema = new mongoose.Schema({
   professionalServicePreferences: [String],
   userSpecialties: [String],
   userServicePreferences: [String],
-  userAccessibilityPreferences: [String],
   accessibility: {
     type: [String],
     default: [],
