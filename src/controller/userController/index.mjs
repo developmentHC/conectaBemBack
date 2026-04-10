@@ -239,7 +239,7 @@ export const completeSignUpPatient = async (req, res) => {
       residentialAddress,
       userSpecialties,
       userServicePreferences,
-      userAccessibilityPreferences,
+      accessibility,
     } = req.body;
 
     validatePatientData(req.body);
@@ -266,8 +266,8 @@ export const completeSignUpPatient = async (req, res) => {
       profilePhoto: req.body.profilePhoto,
     };
 
-    if (userAccessibilityPreferences !== undefined) {
-      update.userAccessibilityPreferences = userAccessibilityPreferences;
+    if (accessibility !== undefined) {
+      update.accessibility = accessibility;
     }
 
     const result = await User.updateOne(
@@ -360,7 +360,7 @@ export const completeSignUpProfessional = async (req, res) => {
       professionalSpecialties,
       professionalServicePreferences,
       otherProfessionalSpecialties,
-      userAccessibilityPreferences,
+      accessibility,
     } = req.body;
 
     validateProfessionalData(req.body);
@@ -392,8 +392,8 @@ export const completeSignUpProfessional = async (req, res) => {
       profilePhoto: req.body.profilePhoto,
     };
 
-    if (userAccessibilityPreferences !== undefined) {
-      update.userAccessibilityPreferences = userAccessibilityPreferences;
+    if (accessibility !== undefined) {
+      update.accessibility = accessibility;
     }
 
     const result = await User.updateOne({ _id: userId }, { $set: update });

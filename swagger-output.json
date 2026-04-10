@@ -5,7 +5,7 @@
     "title": "ConectaBem APIs",
     "description": "APIs para o projeto ConectaBem"
   },
-  "host": "conecta-bem-back.vercel.app",
+  "host": "localhost:3000",
   "basePath": "/",
   "tags": [
     {
@@ -39,10 +39,72 @@
     {
       "name": "Webhooks",
       "description": "Eventos enviados pelo servidor (documentação)"
+    },
+    {
+      "name": "Cleanup",
+      "description": "Endpoints para limpar dados de teste"
     }
   ],
-  "schemes": ["https"],
+  "schemes": ["http"],
   "paths": {
+    "/cleanup": {
+      "delete": {
+        "tags": ["Cleanup"],
+        "summary": "Limpar dados de teste",
+        "description": "Remove todos os documentos das coleções. **Disponível apenas em dev/teste.**",
+        "responses": {
+          "200": {
+            "description": "Banco de dados limpo com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Banco de dados limpo com sucesso!"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "403": {
+            "description": "Operação não permitida em produção ou com flag desativada",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Operação não permitida"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao limpar banco de dados",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro ao limpar banco de dados"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "Mensagem de erro"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/sendOTP": {
       "post": {
         "tags": ["Authentication"],
@@ -3429,7 +3491,7 @@
                 }
               }
             },
-            "userAccessibilityPreferences": {
+            "accessibility": {
               "type": "object",
               "properties": {
                 "type": {
@@ -3454,7 +3516,7 @@
                 },
                 "description": {
                   "type": "string",
-                  "example": "Opcional"
+                  "example": "Preferências de acessibilidade do paciente (opcional)"
                 }
               }
             },
@@ -3861,6 +3923,35 @@
                 "description": {
                   "type": "string",
                   "example": "Opcional"
+                }
+              }
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "type": "array",
+                  "example": ["Rampa de acesso", "Banheiro adaptado"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Preferências de acessibilidade do profissional (opcional)"
                 }
               }
             },
