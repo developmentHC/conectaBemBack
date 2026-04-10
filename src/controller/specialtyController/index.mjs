@@ -32,6 +32,8 @@ export const getSpecialties = async (req, res) => {
       { id: "yoga", name: "Yoga" },
     ];
 
+    res.set("Cache-Control", "public, max-age=86400");
+
     return res.status(200).json(specialties);
   } catch (error) {
     return res.status(500).json({ error: error });
