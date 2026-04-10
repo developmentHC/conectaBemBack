@@ -8,7 +8,11 @@ export const getSpecialties = async (req, res) => {
     description: 'Lista de especialidades retornada com sucesso',
     schema: [
       { id: "reiki", name: "Reiki" },
-      { id: "acupuntura", name: "Acupuntura" }
+      { id: "acupuntura", name: "Acupuntura" },
+      { id: "aromaterapia", name: "Aromaterapia" },
+      { id: "massoterapia", name: "Massoterapia" },
+      { id: "meditacao", name: "Meditação" },
+      { id: "yoga", name: "Yoga" },
     ]
   }
 
