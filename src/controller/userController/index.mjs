@@ -97,6 +97,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
         email: email,
         hashedOTP: hashedOTP,
         status: "pending",
+        otpCreatedAt: new Date(),
       });
 
       return res.status(201).json({
@@ -110,7 +111,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
         message: "User created and OTP sent through email",
       });
     } else {
-      await User.updateOne({ email }, { hashedOTP });
+      await User.updateOne({ email }, { hashedOTP, otpCreatedAt: new Date() });
       return res.status(200).json({
         id: userExists._id,
         email: {
@@ -161,6 +162,11 @@ export const checkOTP = async (req, res) => {
   #swagger.responses[422] = {
     description: 'Parâmetros obrigatórios não enviados',
     schema: { message: "Email e OTP são obrigatórios." }
+  }
+
+  #swagger.responses[429] = {
+    description: 'Muitas tentativas. Tente novamente em 15 minutos.',
+    schema: { message: "Muitas tentativas. Tente novamente em 15 minutos." }
   }
 
   #swagger.responses[500] = {

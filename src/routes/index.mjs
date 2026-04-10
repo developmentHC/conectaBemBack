@@ -38,6 +38,7 @@ import {
 } from "../controller/userController/index.mjs";
 
 import { authenticateToken } from "../middleware/authMiddleware.mjs";
+import { otpLimiter } from "../middleware/rateLimit.mjs";
 import { uploadPhoto } from "../middleware/uploadPhoto.mjs";
 import { validatePhotoUpload } from "../middleware/validatePhotoUpload.js";
 
@@ -78,7 +79,7 @@ const router = express.Router();
 router.use(express.json());
 
 router.post("/auth/sendOTP", checkUserEmailSendOTP);
-router.post("/auth/checkOTP", checkOTP);
+router.post("/auth/checkOTP", otpLimiter, checkOTP);
 router.post("/auth/createPatient", authenticateToken, uploadPhoto, completeSignUpPatient);
 router.post("/auth/createProfessional", authenticateToken, uploadPhoto, completeSignUpProfessional);
 

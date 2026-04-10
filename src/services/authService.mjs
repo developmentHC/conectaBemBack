@@ -9,6 +9,11 @@ export async function loginWithOtp(email, otp) {
     throw createApiError("Usuário não encontrado.", 404);
   }
 
+  const TEN_MINUTES = 10 * 60 * 1000;
+  if (!user.otpCreatedAt || Date.now() - new Date(user.otpCreatedAt).getTime() > TEN_MINUTES) {
+    throw createApiError("Código expirado, solicite um novo", 401);
+  }
+
   const isTestBypassActive =
     process.env.NODE_ENV !== "production" &&
     process.env.TEST_OTP_ENABLED === "true" &&
@@ -47,6 +52,11 @@ export async function verifyRegistrationOtp(email, otp) {
 
   if (user.status !== "pending") {
     throw createApiError("Esta conta não está mais pendente de verificação.", 400);
+  }
+
+  const TEN_MINUTES = 10 * 60 * 1000;
+  if (!user.otpCreatedAt || Date.now() - new Date(user.otpCreatedAt).getTime() > TEN_MINUTES) {
+    throw createApiError("Código expirado, solicite um novo", 401);
   }
 
   const isTestBypassActive =

@@ -83,6 +83,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  otpCreatedAt: {
+    type: Date,
+  },
   status: {
     type: String,
     required: true,
