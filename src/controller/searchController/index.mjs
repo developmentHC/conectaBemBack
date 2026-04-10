@@ -334,6 +334,14 @@ export const getProfessionals = async (req, res) => {
     example: 'Pet Friendly'
   }
 
+  #swagger.parameters['accessibility'] = {
+    in: 'query',
+    description: 'Filtro de acessibilidade oferecida pelo profissional',
+    required: false,
+    type: 'string',
+    example: 'Libras'
+  }
+
   #swagger.parameters['page'] = {
     in: 'query',
     description: 'Número da página',
@@ -371,7 +379,7 @@ export const getProfessionals = async (req, res) => {
     }
 
     if (accessibility) {
-      filters.userAccessibilityPreferences = {
+      filters.accessibility = {
         $in: [new RegExp(`^${escapeRegex(accessibility)}$`, "i")],
       };
     }
