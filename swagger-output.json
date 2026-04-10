@@ -5,7 +5,7 @@
     "title": "ConectaBem APIs",
     "description": "APIs para o projeto ConectaBem"
   },
-  "host": "conecta-bem-back.vercel.app",
+  "host": "localhost:3000",
   "basePath": "/",
   "tags": [
     {
@@ -25,6 +25,10 @@
       "description": "Endpoints relacionados a busca de dados"
     },
     {
+      "name": "Specialties",
+      "description": "Lista de especialidades disponíveis no sistema"
+    },
+    {
       "name": "Agendamentos",
       "description": "Endpoints relacionados a agendamentos de consultas"
     },
@@ -39,10 +43,72 @@
     {
       "name": "Webhooks",
       "description": "Eventos enviados pelo servidor (documentação)"
+    },
+    {
+      "name": "Cleanup",
+      "description": "Endpoints para limpar dados de teste"
     }
   ],
-  "schemes": ["https"],
+  "schemes": ["http"],
   "paths": {
+    "/cleanup": {
+      "delete": {
+        "tags": ["Cleanup"],
+        "summary": "Limpar dados de teste",
+        "description": "Remove todos os documentos das coleções. **Disponível apenas em dev/teste.**",
+        "responses": {
+          "200": {
+            "description": "Banco de dados limpo com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Banco de dados limpo com sucesso!"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "403": {
+            "description": "Operação não permitida em produção ou com flag desativada",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Operação não permitida"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao limpar banco de dados",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro ao limpar banco de dados"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "Mensagem de erro"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/sendOTP": {
       "post": {
         "tags": ["Authentication"],
@@ -1640,6 +1706,52 @@
                 "error": {
                   "type": "string",
                   "example": "Erro interno no Servidor"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/specialties": {
+      "get": {
+        "tags": ["Specialties"],
+        "summary": "Lista todas as especialidades",
+        "description": "Retorna a lista canônica de especialidades disponíveis no sistema. Essa lista é utilizada como fonte única (single source of truth) para cadastro e filtros.",
+        "responses": {
+          "200": {
+            "description": "Lista de especialidades retornada com sucesso",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "yoga"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Yoga"
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno no servidor",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Erro interno"
                 }
               },
               "xml": {

@@ -55,7 +55,7 @@ const doc = {
     },
     {
       name: "Specialties",
-      description: "Lista de especialidades disponíveis no sistema",
+      description: "Endpoints relacionados a especialidades",
     },
     { name: "Agendamentos", description: "Endpoints relacionados a agendamentos de consultas" },
     {
