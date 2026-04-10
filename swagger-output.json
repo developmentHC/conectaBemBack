@@ -1486,7 +1486,7 @@
       "get": {
         "tags": ["Search"],
         "summary": "Lista profissionais com filtros combinados",
-        "description": "Retorna profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).",
+        "description": "Retorna até 10 profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).",
         "parameters": [
           {
             "name": "specialty",
@@ -1503,6 +1503,14 @@
             "required": false,
             "type": "string",
             "example": "Pet Friendly"
+          },
+          {
+            "name": "accessibility",
+            "in": "query",
+            "description": "Filtro de acessibilidade oferecida pelo profissional",
+            "required": false,
+            "type": "string",
+            "example": "Libras"
           },
           {
             "name": "page",

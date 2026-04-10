@@ -316,7 +316,7 @@ export const getProfessionals = async (req, res) => {
   /*
   #swagger.tags = ['Search']
   #swagger.summary = 'Lista profissionais com filtros combinados'
-  #swagger.description = 'Retorna profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).'
+  #swagger.description = 'Retorna até 10 profissionais com filtros opcionais de especialidade, acessibilidade e tipo de serviço. Os filtros podem ser combinados (AND).'
 
   #swagger.parameters['specialty'] = {
     in: 'query',
@@ -332,6 +332,14 @@ export const getProfessionals = async (req, res) => {
     required: false,
     type: 'string',
     example: 'Pet Friendly'
+  }
+
+  #swagger.parameters['accessibility'] = {
+    in: 'query',
+    description: 'Filtro de acessibilidade oferecida pelo profissional',
+    required: false,
+    type: 'string',
+    example: 'Libras'
   }
 
   #swagger.parameters['page'] = {
@@ -352,21 +360,27 @@ export const getProfessionals = async (req, res) => {
   */
 
   try {
-    let { specialty, service, page = 1 } = req.query;
+    let { specialty, service, accessibility, page = 1 } = req.query;
     page = Math.max(1, parseInt(page, 10) || 1);
     const limit = 10;
 
-    const filters = { userType: "professional" };
+    const filters = { userType: { $in: ["professional"] } };
 
     if (specialty) {
       filters.professionalSpecialties = {
-        $elemMatch: { $regex: `^${escapeRegex(specialty)}$`, $options: "i" },
+        $in: [new RegExp(`^${escapeRegex(specialty)}$`, "i")],
       };
     }
 
     if (service) {
       filters.professionalServicePreferences = {
-        $elemMatch: { $regex: `^${escapeRegex(service)}$`, $options: "i" },
+        $in: [new RegExp(`^${escapeRegex(service)}$`, "i")],
+      };
+    }
+
+    if (accessibility) {
+      filters.accessibility = {
+        $in: [new RegExp(`^${escapeRegex(accessibility)}$`, "i")],
       };
     }
 
