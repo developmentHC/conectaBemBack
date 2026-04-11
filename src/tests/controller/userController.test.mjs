@@ -67,21 +67,25 @@ vi.mock("../../lib/ratelimit.mjs", () => ({
   },
 }));
 
-const { testEmailSyntax } = await import("../../utils/testEmailSyntax.mjs");
-const { generateOTP } = await import("../../utils/generateOTP.mjs");
-const User = (await import("../../models/User.mjs")).default;
-const bcrypt = (await import("bcrypt")).default;
-const { loginWithOtp } = await import("../../services/authService.mjs");
-const { checkUserEmailSendOTP, checkOTP, completeSignUpPatient, completeSignUpProfessional } =
-  await import("../../controller/userController/index.mjs");
-const {
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import {
+  checkOTP,
+  checkUserEmailSendOTP,
+  completeSignUpPatient,
+  completeSignUpProfessional,
+} from "../../controller/userController/index.mjs";
+import User from "../../models/User.mjs";
+import { loginWithOtp } from "../../services/authService.mjs";
+import {
+  ValidationError,
   validatePatientData,
   validateProfessionalData,
   validateProfilePhoto,
   validateUserExists,
-  ValidationError,
-} = await import("../../services/validationService.mjs");
-const jwt = (await import("jsonwebtoken")).default;
+} from "../../services/validationService.mjs";
+import { generateOTP } from "../../utils/generateOTP.mjs";
+import { testEmailSyntax } from "../../utils/testEmailSyntax.mjs";
 
 const makeRes = () => ({
   status: vi.fn().mockReturnThis(),
