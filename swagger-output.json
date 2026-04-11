@@ -154,6 +154,21 @@
               }
             }
           },
+          "429": {
+            "description": "Muitas tentativas. Tente novamente em 15 minutos.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Muitas tentativas. Tente novamente em 15 minutos."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
           "500": {
             "description": "Erro interno no servidor",
             "schema": {

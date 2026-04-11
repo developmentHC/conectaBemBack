@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import cloudinary from "../../config/cloudinary.mjs";
+import { checkOtpLimiter, sendOtpLimiter } from "../../lib/rateLimit.mjs";
 import { User } from "../../models/index.mjs";
 import { loginWithOtp } from "../../services/authService.mjs";
 import {
@@ -62,6 +63,11 @@ export const checkUserEmailSendOTP = async (req, res) => {
     schema: { message: "Um e-mail é exigido" }
   }
 
+  #swagger.responses[429] = {
+    description: 'Muitas tentativas. Tente novamente em 15 minutos.',
+    schema: { message: "Muitas tentativas. Tente novamente em 15 minutos." }
+  }
+
   #swagger.responses[500] = {
     description: 'Erro interno no servidor',
     schema: { message: "Server error" }
@@ -72,6 +78,14 @@ export const checkUserEmailSendOTP = async (req, res) => {
 
   if (!email || testEmailSyntax(email) === false) {
     return res.status(422).json({ message: "Um e-mail é exigido" });
+  }
+
+  const key = `${req.ip}-${email.toLowerCase()}`;
+  const { success } = await sendOtpLimiter.limit(key);
+  if (!success) {
+    return res.status(429).json({
+      message: "Muitas tentativas. Tente novamente em 15 minutos.",
+    });
   }
 
   try {
@@ -179,6 +193,14 @@ export const checkOTP = async (req, res) => {
 
   if (!email || !OTP || testEmailSyntax(email) === false) {
     return res.status(422).json({ message: "Email e OTP são obrigatórios." });
+  }
+
+  const key = `${req.ip}-${email.toLowerCase()}`;
+  const { success } = await checkOtpLimiter.limit(key);
+  if (!success) {
+    return res.status(429).json({
+      message: "Muitas tentativas. Tente novamente em 15 minutos.",
+    });
   }
 
   try {

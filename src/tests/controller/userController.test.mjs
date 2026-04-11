@@ -58,6 +58,14 @@ vi.mock("../../lib/gridFs.mjs", () => ({
     }),
   },
 }));
+vi.mock("../../lib/ratelimit.mjs", () => ({
+  sendOtpLimiter: {
+    limit: vi.fn().mockResolvedValue({ success: true }),
+  },
+  checkOtpLimiter: {
+    limit: vi.fn().mockResolvedValue({ success: true }),
+  },
+}));
 
 const { testEmailSyntax } = await import("../../utils/testEmailSyntax.mjs");
 const { generateOTP } = await import("../../utils/generateOTP.mjs");

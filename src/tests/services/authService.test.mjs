@@ -208,7 +208,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     expect(bcrypt.compare).not.toHaveBeenCalled();
     expect(User.updateOne).toHaveBeenCalledWith(
       { _id: user._id },
-      { $set: { status: "verified" }, $unset: { hashedOTP: "" } },
+      { $set: { status: "verified" }, $unset: { hashedOTP: "", otpCreatedAt: "" } },
     );
   });
 
@@ -273,8 +273,10 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
 
     User.findOne.mockResolvedValue(user);
 
-    await expect(loginWithOtp("patient@test.conectabem.com", "0000")).rejects.toMatchObject({
-      statusCode: 401,
+    await expect(
+      verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
+    ).rejects.toMatchObject({
+      statusCode: 400,
     });
   });
 });

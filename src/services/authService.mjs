@@ -33,7 +33,7 @@ export async function loginWithOtp(email, otp) {
 
   const updatedUser = await User.findByIdAndUpdate(
     user._id,
-    { $unset: { hashedOTP: "" } },
+    { $unset: { hashedOTP: "", otpCreatedAt: "" } },
     { new: true, select: "-hashedOTP -__v" },
   );
 
@@ -74,7 +74,7 @@ export async function verifyRegistrationOtp(email, otp) {
 
   await User.updateOne(
     { _id: user._id },
-    { $set: { status: "verified" }, $unset: { hashedOTP: "" } },
+    { $set: { status: "verified" }, $unset: { hashedOTP: "", otpCreatedAt: "" } },
   );
 
   return;
