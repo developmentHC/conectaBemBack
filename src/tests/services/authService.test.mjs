@@ -268,6 +268,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
   });
   it("deve rejeitar OTP expirado", async () => {
     const user = mockUser({
+      status: "pending",
       otpCreatedAt: new Date(Date.now() - 11 * 60 * 1000),
     });
 
@@ -276,7 +277,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     await expect(
       verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({
-      statusCode: 400,
+      statusCode: 401,
     });
   });
 });

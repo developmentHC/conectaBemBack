@@ -58,7 +58,7 @@ vi.mock("../../lib/gridFs.mjs", () => ({
     }),
   },
 }));
-vi.mock("../../lib/ratelimit.mjs", () => ({
+vi.mock("../../lib/rateLimit.mjs", () => ({
   sendOtpLimiter: {
     limit: vi.fn().mockResolvedValue({ success: true }),
   },
