@@ -9,6 +9,11 @@ export async function loginWithOtp(email, otp) {
     throw createApiError("Usuário não encontrado.", 404);
   }
 
+  const TEN_MINUTES = 10 * 60 * 1000;
+  if (!user.otpCreatedAt || Date.now() - new Date(user.otpCreatedAt).getTime() > TEN_MINUTES) {
+    throw createApiError("Código expirado, solicite um novo", 401);
+  }
+
   const isTestBypassActive =
     process.env.NODE_ENV !== "production" &&
     process.env.TEST_OTP_ENABLED === "true" &&
@@ -28,7 +33,7 @@ export async function loginWithOtp(email, otp) {
 
   const updatedUser = await User.findByIdAndUpdate(
     user._id,
-    { $unset: { hashedOTP: "" } },
+    { $unset: { hashedOTP: "", otpCreatedAt: "" } },
     { new: true, select: "-hashedOTP -__v" },
   );
 
@@ -49,6 +54,11 @@ export async function verifyRegistrationOtp(email, otp) {
     throw createApiError("Esta conta não está mais pendente de verificação.", 400);
   }
 
+  const TEN_MINUTES = 10 * 60 * 1000;
+  if (!user.otpCreatedAt || Date.now() - new Date(user.otpCreatedAt).getTime() > TEN_MINUTES) {
+    throw createApiError("Código expirado, solicite um novo", 401);
+  }
+
   const isTestBypassActive =
     process.env.NODE_ENV !== "production" &&
     process.env.TEST_OTP_ENABLED === "true" &&
@@ -64,7 +74,7 @@ export async function verifyRegistrationOtp(email, otp) {
 
   await User.updateOne(
     { _id: user._id },
-    { $set: { status: "verified" }, $unset: { hashedOTP: "" } },
+    { $set: { status: "verified" }, $unset: { hashedOTP: "", otpCreatedAt: "" } },
   );
 
   return;

@@ -5,7 +5,7 @@
     "title": "ConectaBem APIs",
     "description": "APIs para o projeto ConectaBem"
   },
-  "host": "localhost:3000",
+  "host": "conecta-bem-back.vercel.app",
   "basePath": "/",
   "tags": [
     {
@@ -39,72 +39,10 @@
     {
       "name": "Webhooks",
       "description": "Eventos enviados pelo servidor (documentação)"
-    },
-    {
-      "name": "Cleanup",
-      "description": "Endpoints para limpar dados de teste"
     }
   ],
-  "schemes": ["http"],
+  "schemes": ["https"],
   "paths": {
-    "/cleanup": {
-      "delete": {
-        "tags": ["Cleanup"],
-        "summary": "Limpar dados de teste",
-        "description": "Remove todos os documentos das coleções. **Disponível apenas em dev/teste.**",
-        "responses": {
-          "200": {
-            "description": "Banco de dados limpo com sucesso",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "Banco de dados limpo com sucesso!"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "403": {
-            "description": "Operação não permitida em produção ou com flag desativada",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Operação não permitida"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "500": {
-            "description": "Erro interno ao limpar banco de dados",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "Erro ao limpar banco de dados"
-                },
-                "details": {
-                  "type": "string",
-                  "example": "Mensagem de erro"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          }
-        }
-      }
-    },
     "/auth/sendOTP": {
       "post": {
         "tags": ["Authentication"],
@@ -216,6 +154,21 @@
               }
             }
           },
+          "429": {
+            "description": "Muitas tentativas. Tente novamente em 15 minutos.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Muitas tentativas. Tente novamente em 15 minutos."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
           "500": {
             "description": "Erro interno no servidor",
             "schema": {
@@ -311,6 +264,21 @@
                 "message": {
                   "type": "string",
                   "example": "Email e OTP são obrigatórios."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "429": {
+            "description": "Muitas tentativas. Tente novamente em 15 minutos.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Muitas tentativas. Tente novamente em 15 minutos."
                 }
               },
               "xml": {
