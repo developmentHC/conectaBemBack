@@ -4,3 +4,4 @@ compose.yaml
 emailInsert.json
 requests.rest
 .vercel
+swagger-output.json
