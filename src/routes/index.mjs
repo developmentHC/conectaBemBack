@@ -27,7 +27,7 @@ import {
   searchProfessionalBySpeciality,
   searchProfessionalsHighlightsWeek,
 } from "../controller/searchController/index.mjs";
-
+import { getSpecialties } from "../controller/specialtyController/index.mjs";
 import {
   checkOTP,
   checkUserEmailSendOTP,
@@ -36,7 +36,6 @@ import {
   uploadProfilePhoto,
   userInfo,
 } from "../controller/userController/index.mjs";
-
 import { authenticateToken } from "../middleware/authMiddleware.mjs";
 import { uploadPhoto } from "../middleware/uploadPhoto.mjs";
 import { validatePhotoUpload } from "../middleware/validatePhotoUpload.js";
@@ -95,6 +94,8 @@ router.get("/search/professionalBySpeciality/:speciality", searchProfessionalByS
 router.get("/search/searchBar/:terms", searchBar);
 router.get("/search/professionals", getProfessionals);
 router.get("/search/professional/:id", getProfessionalById);
+
+router.get("/specialties", getSpecialties);
 
 router.post("/appointments", authenticateToken, createAppointment);
 router.post("/appointments/:id/actions", authenticateToken, actOnAppointment);

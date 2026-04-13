@@ -53,6 +53,10 @@ const doc = {
       name: "Search",
       description: "Endpoints relacionados a busca de dados",
     },
+    {
+      name: "Specialties",
+      description: "Endpoints relacionados a especialidades",
+    },
     { name: "Agendamentos", description: "Endpoints relacionados a agendamentos de consultas" },
     {
       name: "Messages",
