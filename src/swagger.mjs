@@ -106,11 +106,11 @@ const doc = {
           items: { type: "string" },
           example: ["Consulta", "Exame"],
         },
-        userAccessibilityPreferences: {
+        accessibility: {
           type: "array",
           items: { type: "string" },
           example: ["Cadeira de rodas", "Deficiência visual"],
-          description: "Opcional",
+          description: "Preferências de acessibilidade do paciente (opcional)",
         },
         profilePhoto: {
           type: "string",
@@ -178,6 +178,12 @@ const doc = {
           items: { type: "string" },
           example: ["Acupuntura"],
           description: "Opcional",
+        },
+        accessibility: {
+          type: "array",
+          items: { type: "string" },
+          example: ["Rampa de acesso", "Banheiro adaptado"],
+          description: "Preferências de acessibilidade do profissional (opcional)",
         },
         profilePhoto: {
           type: "string",

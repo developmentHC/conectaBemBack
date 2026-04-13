@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import cloudinary from "../../config/cloudinary.mjs";
+import { checkOtpLimiter, sendOtpLimiter } from "../../lib/rateLimit.mjs";
 import { User } from "../../models/index.mjs";
 import { loginWithOtp } from "../../services/authService.mjs";
 import {
@@ -62,6 +63,11 @@ export const checkUserEmailSendOTP = async (req, res) => {
     schema: { message: "Um e-mail é exigido" }
   }
 
+  #swagger.responses[429] = {
+    description: 'Muitas tentativas. Tente novamente em 15 minutos.',
+    schema: { message: "Muitas tentativas. Tente novamente em 15 minutos." }
+  }
+
   #swagger.responses[500] = {
     description: 'Erro interno no servidor',
     schema: { message: "Server error" }
@@ -72,6 +78,14 @@ export const checkUserEmailSendOTP = async (req, res) => {
 
   if (!email || testEmailSyntax(email) === false) {
     return res.status(422).json({ message: "Um e-mail é exigido" });
+  }
+
+  const key = `${req.ip}-${email.toLowerCase()}`;
+  const { success } = await sendOtpLimiter.limit(key);
+  if (!success) {
+    return res.status(429).json({
+      message: "Muitas tentativas. Tente novamente em 15 minutos.",
+    });
   }
 
   try {
@@ -97,6 +111,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
         email: email,
         hashedOTP: hashedOTP,
         status: "pending",
+        otpCreatedAt: new Date(),
       });
 
       return res.status(201).json({
@@ -110,7 +125,7 @@ export const checkUserEmailSendOTP = async (req, res) => {
         message: "User created and OTP sent through email",
       });
     } else {
-      await User.updateOne({ email }, { hashedOTP });
+      await User.updateOne({ email }, { hashedOTP, otpCreatedAt: new Date() });
       return res.status(200).json({
         id: userExists._id,
         email: {
@@ -163,6 +178,11 @@ export const checkOTP = async (req, res) => {
     schema: { message: "Email e OTP são obrigatórios." }
   }
 
+  #swagger.responses[429] = {
+    description: 'Muitas tentativas. Tente novamente em 15 minutos.',
+    schema: { message: "Muitas tentativas. Tente novamente em 15 minutos." }
+  }
+
   #swagger.responses[500] = {
     description: 'Erro interno no servidor',
     schema: { message: "Ocorreu um erro no servidor." }
@@ -173,6 +193,14 @@ export const checkOTP = async (req, res) => {
 
   if (!email || !OTP || testEmailSyntax(email) === false) {
     return res.status(422).json({ message: "Email e OTP são obrigatórios." });
+  }
+
+  const key = `${req.ip}-${email.toLowerCase()}`;
+  const { success } = await checkOtpLimiter.limit(key);
+  if (!success) {
+    return res.status(429).json({
+      message: "Muitas tentativas. Tente novamente em 15 minutos.",
+    });
   }
 
   try {
@@ -239,7 +267,7 @@ export const completeSignUpPatient = async (req, res) => {
       residentialAddress,
       userSpecialties,
       userServicePreferences,
-      userAccessibilityPreferences,
+      accessibility,
     } = req.body;
 
     validatePatientData(req.body);
@@ -266,8 +294,8 @@ export const completeSignUpPatient = async (req, res) => {
       profilePhoto: req.body.profilePhoto,
     };
 
-    if (userAccessibilityPreferences !== undefined) {
-      update.userAccessibilityPreferences = userAccessibilityPreferences;
+    if (accessibility !== undefined) {
+      update.accessibility = accessibility;
     }
 
     const result = await User.updateOne(
@@ -360,7 +388,7 @@ export const completeSignUpProfessional = async (req, res) => {
       professionalSpecialties,
       professionalServicePreferences,
       otherProfessionalSpecialties,
-      userAccessibilityPreferences,
+      accessibility,
     } = req.body;
 
     validateProfessionalData(req.body);
@@ -392,8 +420,8 @@ export const completeSignUpProfessional = async (req, res) => {
       profilePhoto: req.body.profilePhoto,
     };
 
-    if (userAccessibilityPreferences !== undefined) {
-      update.userAccessibilityPreferences = userAccessibilityPreferences;
+    if (accessibility !== undefined) {
+      update.accessibility = accessibility;
     }
 
     const result = await User.updateOne({ _id: userId }, { $set: update });

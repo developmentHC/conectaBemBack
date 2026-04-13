@@ -28,6 +28,7 @@ const mockUser = (overrides = {}) => ({
   _id: "user123",
   email: "patient@test.conectabem.com",
   hashedOTP: "hashed-real-otp",
+  otpCreatedAt: new Date(),
   ...overrides,
 });
 
@@ -207,7 +208,7 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     expect(bcrypt.compare).not.toHaveBeenCalled();
     expect(User.updateOne).toHaveBeenCalledWith(
       { _id: user._id },
-      { $set: { status: "verified" }, $unset: { hashedOTP: "" } },
+      { $set: { status: "verified" }, $unset: { hashedOTP: "", otpCreatedAt: "" } },
     );
   });
 
@@ -264,5 +265,19 @@ describe("verifyRegistrationOtp — bypass ativo", () => {
     await expect(
       verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
     ).rejects.toMatchObject({ statusCode: 400 });
+  });
+  it("deve rejeitar OTP expirado", async () => {
+    const user = mockUser({
+      status: "pending",
+      otpCreatedAt: new Date(Date.now() - 11 * 60 * 1000),
+    });
+
+    User.findOne.mockResolvedValue(user);
+
+    await expect(
+      verifyRegistrationOtp("patient@test.conectabem.com", "0000"),
+    ).rejects.toMatchObject({
+      statusCode: 401,
+    });
   });
 });
