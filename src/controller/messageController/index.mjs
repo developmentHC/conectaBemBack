@@ -20,29 +20,32 @@ export async function createMessage(req, res) {
     example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   }
 
-  #swagger.parameters['body'] = {
-    in: 'body',
+  #swagger.requestBody = {
     required: true,
     description: 'Dados da mensagem a ser enviada',
-    schema: {
-      type: 'object',
-      required: ['content'],
-      properties: {
-        conversation: { 
-          type: 'string', 
-          example: 'a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab', 
-          description: 'Identificador único da conversa. Opcional — se não enviado, será criado automaticamente.'
-        },
-        content: { 
-          type: 'string', 
-          example: 'Olá, tudo bem?', 
-          description: 'Conteúdo da mensagem enviada'
-        },
-        participants: {
-          type: 'array',
-          items: { type: 'string' },
-          example: ['66b9f4e2f4a5a7d6f4b9c123', '66b9f4e2f4a5a7d6f4b9c456'],
-          description: 'Lista de participantes da conversa. Obrigatório se conversation não for informado.'
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          required: ['content'],
+          properties: {
+            conversation: {
+              type: 'string',
+              example: 'a7b3c1d4-5e6f-7g8h-9i0j-1234567890ab',
+              description: 'Identificador único da conversa. Opcional — se não enviado, será criado automaticamente.'
+            },
+            content: {
+              type: 'string',
+              example: 'Olá, tudo bem?',
+              description: 'Conteúdo da mensagem enviada'
+            },
+            participants: {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['66b9f4e2f4a5a7d6f4b9c123', '66b9f4e2f4a5a7d6f4b9c456'],
+              description: 'Lista de participantes da conversa. Obrigatório se conversation não for informado.'
+            }
+          }
         }
       }
     }

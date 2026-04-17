@@ -16,38 +16,41 @@ export const createAppointment = async (req, res) => {
     example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   }
 
-  #swagger.parameters['body'] = {
-    in: 'body',
+  #swagger.requestBody = {
     required: true,
     description: 'Dados necessários para criar um agendamento',
-    schema: {
-      type: 'object',
-      required: ['professionalId','dateTime','address'],
-      properties: {
-        professionalId: {
-          type: 'string',
-          example: '6876317147871e2d7f74dd90',
-          description: 'ID do profissional com quem o paciente deseja agendar'
-        },
-        notes: {
-          type: 'string',
-          example: 'Trazer exames anteriores',
-          description: 'Observações adicionais para o profissional'
-        },
-        dateTime: {
-          type: 'string',
-          format: 'date-time',
-          example: '2025-09-10T10:00:00Z',
-          description: 'Data/hora do agendamento no formato ISO 8601'
-        },
-        address: {
+    content: {
+      'application/json': {
+        schema: {
           type: 'object',
-          required: ['clinicId'],
+          required: ['professionalId','dateTime','address'],
           properties: {
-            clinicId: {
+            professionalId: {
               type: 'string',
-              example: '688d1507f086e02085acf44c',
-              description: 'ID da clínica/endereço onde ocorrerá o atendimento'
+              example: '6876317147871e2d7f74dd90',
+              description: 'ID do profissional com quem o paciente deseja agendar'
+            },
+            notes: {
+              type: 'string',
+              example: 'Trazer exames anteriores',
+              description: 'Observações adicionais para o profissional'
+            },
+            dateTime: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-09-10T10:00:00Z',
+              description: 'Data/hora do agendamento no formato ISO 8601'
+            },
+            address: {
+              type: 'object',
+              required: ['clinicId'],
+              properties: {
+                clinicId: {
+                  type: 'string',
+                  example: '688d1507f086e02085acf44c',
+                  description: 'ID da clínica/endereço onde ocorrerá o atendimento'
+                }
+              }
             }
           }
         }
@@ -172,38 +175,41 @@ export const actOnAppointment = async (req, res) => {
     example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   }
 
-  #swagger.parameters['body'] = {
-    in: 'body',
+  #swagger.requestBody = {
     required: true,
     description: 'Dados necessários para criar um agendamento',
-    schema: {
-      type: 'object',
-      required: ['professionalId','dateTime','address'],
-      properties: {
-        professionalId: {
-          type: 'string',
-          example: '6876317147871e2d7f74dd90',
-          description: 'ID do profissional com quem o paciente deseja agendar'
-        },
-        notes: {
-          type: 'string',
-          example: 'Trazer exames anteriores',
-          description: 'Observações adicionais para o profissional'
-        },
-        dateTime: {
-          type: 'string',
-          format: 'date-time',
-          example: '2025-09-10T10:00:00Z',
-          description: 'Data/hora do agendamento no formato ISO 8601'
-        },
-        address: {
+    content: {
+      'application/json': {
+        schema: {
           type: 'object',
-          required: ['clinicId'],
+          required: ['professionalId','dateTime','address'],
           properties: {
-            clinicId: {
+            professionalId: {
               type: 'string',
-              example: '688d1507f086e02085acf44c',
-              description: 'ID da clínica/endereço onde ocorrerá o atendimento'
+              example: '6876317147871e2d7f74dd90',
+              description: 'ID do profissional com quem o paciente deseja agendar'
+            },
+            notes: {
+              type: 'string',
+              example: 'Trazer exames anteriores',
+              description: 'Observações adicionais para o profissional'
+            },
+            dateTime: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-09-10T10:00:00Z',
+              description: 'Data/hora do agendamento no formato ISO 8601'
+            },
+            address: {
+              type: 'object',
+              required: ['clinicId'],
+              properties: {
+                clinicId: {
+                  type: 'string',
+                  example: '688d1507f086e02085acf44c',
+                  description: 'ID da clínica/endereço onde ocorrerá o atendimento'
+                }
+              }
             }
           }
         }

@@ -59,11 +59,13 @@ export function validateBirthDate(birthdayDate) {
   }
 }
 
+export const ADDRESS_TYPES = ["Casa", "Trabalho", "Outros"];
+
 export function validateAddressData(residentialAddress) {
   if (!residentialAddress || typeof residentialAddress !== "object") {
     throw new ValidationError("Dados do endereço residencial inválidos", 422);
   }
-  const requiredFields = ["cep", "address", "neighborhood", "city", "state"];
+  const requiredFields = ["cep", "endereco", "bairro", "cidade", "estado"];
   const missingFields = requiredFields.filter((field) => !residentialAddress[field]);
   if (missingFields.length > 0) {
     throw new ValidationError(
@@ -72,11 +74,21 @@ export function validateAddressData(residentialAddress) {
     );
   }
   if (
-    residentialAddress.number !== undefined &&
-    residentialAddress.number !== null &&
-    typeof residentialAddress.number !== "string"
+    residentialAddress.numero !== undefined &&
+    residentialAddress.numero !== null &&
+    typeof residentialAddress.numero !== "string"
   ) {
-    throw new ValidationError("O campo 'number' do endereço residencial deve ser uma string", 422);
+    throw new ValidationError("O campo 'numero' do endereço residencial deve ser uma string", 422);
+  }
+  if (
+    residentialAddress.type !== undefined &&
+    residentialAddress.type !== null &&
+    !ADDRESS_TYPES.includes(residentialAddress.type)
+  ) {
+    throw new ValidationError(
+      `O campo 'type' do endereço residencial deve ser um dos valores: ${ADDRESS_TYPES.join(", ")}`,
+      422,
+    );
   }
 }
 

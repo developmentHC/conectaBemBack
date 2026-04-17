@@ -142,10 +142,13 @@ router.post("/webhooks/message-created", (_req, res) => {
       example: 'a8bcf7e31c9d8d...',
       description: 'Assinatura HMAC SHA-256 do corpo com WEBHOOK_SECRET'
     }
-    #swagger.parameters['body'] = {
-      in: 'body',
+    #swagger.requestBody = {
       required: true,
-      schema: { $ref: '#/definitions/WebhookMessageCreated' }
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/WebhookMessageCreated' }
+        }
+      }
     }
     #swagger.responses[200] = {
       description: 'Exemplo de payload recebido pelo webhook',

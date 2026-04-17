@@ -1,59 +1,80 @@
 import User from "../../models/User.mjs";
 import { validateToken } from "../../services/validationService.mjs";
 
+const ADDRESS_TYPES = ["Casa", "Trabalho", "Outros"];
+
 export const changeAddress = async (req, res) => {
   /*
   #swagger.tags = ['Address']
   #swagger.summary = 'Atualiza um endereço do usuário'
   #swagger.description = 'Endpoint protegido que atualiza um endereço existente de um usuário logado. É necessário fornecer o ID do endereço e os novos dados no corpo da requisição.'
 
-  #swagger.parameters['body'] = {
-    in: 'body',
-    description: 'Dados do endereço a ser atualizado',
+  #swagger.requestBody = {
     required: true,
-    schema: {
-      type: 'object',
-      required: ['addressId', 'cep', 'endereco', 'bairro', 'estado', 'complemento'],
-      properties: {
-        addressId: {
-          type: 'string',
-          example: '507f1f77bcf86cd799439011',
-          description: 'ID do endereço a ser atualizado'
-        },
-        cep: {
-          type: 'string',
-          example: '12345678',
-          description: 'CEP do endereço'
-        },
-        name: {
-          type: 'string',
-          example: 'Casa',
-          description: 'Nome do local'
-        },
-        endereco: {
-          type: 'string',
-          example: 'Rua Example, 123',
-          description: 'Logradouro'
-        },
-        bairro: {
-          type: 'string',
-          example: 'Centro',
-          description: 'Bairro'
-        },
-        estado: {
-          type: 'string',
-          example: 'SP',
-          description: 'Estado'
-        },
-        complemento: {
-          type: 'string',
-          example: 'Apto 123',
-          description: 'Complemento do endereço'
-        },
-        active: {
-          type: 'boolean',
-          example: false,
-          description: 'Indica se é o endereço ativo'
+    description: 'Dados do endereço a ser atualizado',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          required: ['addressId', 'cep', 'endereco', 'bairro', 'cidade', 'estado'],
+          properties: {
+            addressId: {
+              type: 'string',
+              example: '507f1f77bcf86cd799439011',
+              description: 'ID do endereço a ser atualizado'
+            },
+            cep: {
+              type: 'string',
+              example: '12345678',
+              description: 'CEP do endereço'
+            },
+            name: {
+              type: 'string',
+              example: 'Minha casa',
+              description: 'Apelido opcional do endereço'
+            },
+            endereco: {
+              type: 'string',
+              example: 'Rua Example, 123',
+              description: 'Logradouro'
+            },
+            bairro: {
+              type: 'string',
+              example: 'Centro',
+              description: 'Bairro'
+            },
+            numero: {
+              type: 'string',
+              example: '123',
+              description: 'Número do imóvel (opcional)'
+            },
+            cidade: {
+              type: 'string',
+              example: 'São Paulo',
+              description: 'Cidade'
+            },
+            estado: {
+              type: 'string',
+              example: 'SP',
+              description: 'Estado'
+            },
+            complemento: {
+              type: 'string',
+              example: 'Apto 123',
+              description: 'Complemento do endereço (opcional)'
+            },
+            type: {
+              type: 'string',
+              enum: ['Casa', 'Trabalho', 'Outros'],
+              example: 'Casa',
+              description: 'Categoria do endereço'
+            },
+            active: {
+              type: 'boolean',
+              example: false,
+              description: 'Indica se é o endereço ativo'
+            }
+          }
         }
       }
     }
@@ -70,8 +91,8 @@ export const changeAddress = async (req, res) => {
   }
 
   #swagger.responses[422] = {
-    description: 'Parâmetros obrigatórios não enviados no body',
-    schema: { error: "Existem alguns parâmetros faltando para completar o cadastro do profissional" }
+    description: 'Parâmetros obrigatórios ausentes ou inválidos no body',
+    schema: { error: "Existem alguns parâmetros faltando para atualizar o endereço" }
   }
 
   #swagger.responses[500] = {
@@ -80,13 +101,31 @@ export const changeAddress = async (req, res) => {
   }
 */
 
-  const { addressId, name, cep, endereco, bairro, estado, complemento, active } = req.body;
+  const {
+    addressId,
+    name,
+    cep,
+    endereco,
+    bairro,
+    numero,
+    cidade,
+    estado,
+    complemento,
+    type,
+    active,
+  } = req.body;
 
   const decoded = validateToken(req.cookies.jwt);
 
-  if (!addressId || !cep || !endereco || !bairro || !estado || !complemento) {
+  if (!addressId || !cep || !endereco || !bairro || !cidade || !estado) {
     return res.status(422).json({
-      error: "Existem alguns parâmetros faltando para completar o cadastro do profissional",
+      error: "Existem alguns parâmetros faltando para atualizar o endereço",
+    });
+  }
+
+  if (type !== undefined && type !== null && !ADDRESS_TYPES.includes(type)) {
+    return res.status(422).json({
+      error: `O campo 'type' deve ser um dos valores: ${ADDRESS_TYPES.join(", ")}`,
     });
   }
 
@@ -94,14 +133,15 @@ export const changeAddress = async (req, res) => {
     cep,
     endereco,
     bairro,
+    cidade,
     estado,
-    complemento,
     active: active ?? false,
   };
 
-  if (name !== undefined) {
-    update.name = name;
-  }
+  if (numero !== undefined) update.numero = numero;
+  if (complemento !== undefined) update.complemento = complemento;
+  if (name !== undefined) update.name = name;
+  if (type !== undefined) update.type = type;
 
   try {
     const result = await User.updateOne(
@@ -134,8 +174,12 @@ export const getAddresses = async (req, res) => {
           cep: "12345678",
           endereco: "Rua Example, 123",
           bairro: "Centro",
+          numero: "123",
+          cidade: "São Paulo",
           estado: "SP",
           complemento: "Apto 123",
+          name: "Minha casa",
+          type: "Casa",
           active: true
         }
       ]
@@ -178,18 +222,21 @@ export const changeActiveAddress = async (req, res) => {
   #swagger.summary = 'Alterar endereço principal do usuário'
   #swagger.description = 'Endpoint protegido que define um endereço como principal (ativo) para o usuário logado. O campo `addressId` é obrigatório.'
 
-  #swagger.parameters['body'] = {
-    in: 'body',
-    description: 'ID do endereço que será definido como principal',
+  #swagger.requestBody = {
     required: true,
-    schema: {
-      type: 'object',
-      required: ['addressId'],
-      properties: {
-        addressId: {
-          type: 'string',
-          example: '507f1f77bcf86cd799439011',
-          description: 'ID do endereço a ser definido como principal'
+    description: 'ID do endereço que será definido como principal',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          required: ['addressId'],
+          properties: {
+            addressId: {
+              type: 'string',
+              example: '507f1f77bcf86cd799439011',
+              description: 'ID do endereço a ser definido como principal'
+            }
+          }
         }
       }
     }
