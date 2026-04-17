@@ -27,15 +27,17 @@ export const sharedProperties = {
   },
 };
 
+const baseUrl = isProduction
+  ? `https://${vercelUrl || "localhost:3000"}`
+  : `http://localhost:${process.env.PORT || 3000}`;
+
 const doc = {
   info: {
     version: "1.0.0",
     title: "ConectaBem APIs",
     description: "APIs para o projeto ConectaBem",
   },
-  host: isProduction ? vercelUrl : "localhost:3000",
-  basePath: "/",
-  schemes: isProduction ? ["https"] : ["http"],
+  servers: [{ url: baseUrl }],
   tags: [
     {
       name: "Authentication",
@@ -71,152 +73,172 @@ const doc = {
       ? []
       : [{ name: "Cleanup", description: "Endpoints para limpar dados de teste" }]),
   ],
-  definitions: {
-    AddUserPatient: {
-      type: "object",
-      required: [
-        "userId",
-        "name",
-        "birthdayDate",
-        "residentialAddress",
-        "userSpecialties",
-        "userServicePreferences",
-      ],
-      properties: {
-        ...sharedProperties,
-        residentialAddress: {
-          type: "object",
-          required: ["cep", "address", "neighborhood", "number", "city", "state"],
-          properties: {
-            cep: { type: "string", example: "13295-000" },
-            address: { type: "string", example: "Rua das Orquídeas" },
-            neighborhood: { type: "string", example: "Centro" },
-            number: { type: "string", example: "123" },
-            city: { type: "string", example: "Itupeva" },
-            state: { type: "string", example: "SP" },
+  components: {
+    schemas: {
+      AddUserPatient: {
+        type: "object",
+        required: [
+          "userId",
+          "name",
+          "birthdayDate",
+          "residentialAddress",
+          "userSpecialties",
+          "userServicePreferences",
+        ],
+        properties: {
+          ...sharedProperties,
+          residentialAddress: {
+            type: "object",
+            required: ["cep", "endereco", "bairro", "numero", "cidade", "estado"],
+            properties: {
+              cep: { type: "string", example: "13295-000" },
+              endereco: { type: "string", example: "Rua das Orquídeas" },
+              bairro: { type: "string", example: "Centro" },
+              numero: { type: "string", example: "123" },
+              cidade: { type: "string", example: "Itupeva" },
+              estado: { type: "string", example: "SP" },
+              complemento: { type: "string", example: "Apto 101" },
+              name: { type: "string", example: "Minha casa" },
+              type: {
+                type: "string",
+                enum: ["Casa", "Trabalho", "Outros"],
+                example: "Casa",
+              },
+            },
+          },
+          userSpecialties: {
+            type: "array",
+            items: { type: "string" },
+            example: ["Cardiologia", "Clínica Geral"],
+          },
+          userServicePreferences: {
+            type: "array",
+            items: { type: "string" },
+            example: ["Consulta", "Exame"],
+          },
+          accessibility: {
+            type: "array",
+            items: { type: "string" },
+            example: ["Cadeira de rodas", "Deficiência visual"],
+            description: "Preferências de acessibilidade do paciente (opcional)",
+          },
+          profilePhoto: {
+            type: "string",
+            example: "https://res.cloudinary.com/.../foto.png",
+            description: "URL da foto enviada anteriormente no upload",
           },
         },
-        userSpecialties: {
-          type: "array",
-          items: { type: "string" },
-          example: ["Cardiologia", "Clínica Geral"],
-        },
-        userServicePreferences: {
-          type: "array",
-          items: { type: "string" },
-          example: ["Consulta", "Exame"],
-        },
-        accessibility: {
-          type: "array",
-          items: { type: "string" },
-          example: ["Cadeira de rodas", "Deficiência visual"],
-          description: "Preferências de acessibilidade do paciente (opcional)",
-        },
-        profilePhoto: {
-          type: "string",
-          example: "https://res.cloudinary.com/.../foto.png",
-          description: "URL da foto enviada anteriormente no upload",
-        },
       },
-    },
-    AddUserProfessional: {
-      type: "object",
-      required: [
-        "userId",
-        "name",
-        "birthdayDate",
-        "CNPJCPFProfissional",
-        "residentialAddress",
-        "clinic",
-        "professionalSpecialties",
-        "professionalServicePreferences",
-      ],
-      properties: {
-        ...sharedProperties,
-        CNPJCPFProfissional: {
-          type: "string",
-          example: "123.456.789-00",
-        },
-        residentialAddress: {
-          type: "object",
-          required: ["cep", "address", "neighborhood", "number", "city", "state"],
-          properties: {
-            cep: { type: "string", example: "12345-678" },
-            address: { type: "string", example: "Avenida Paulista" },
-            neighborhood: { type: "string", example: "Bela Vista" },
-            number: { type: "string", example: "1000", description: "Opcional" },
-            city: { type: "string", example: "São Paulo" },
-            state: { type: "string", example: "SP" },
+      AddUserProfessional: {
+        type: "object",
+        required: [
+          "userId",
+          "name",
+          "birthdayDate",
+          "CNPJCPFProfissional",
+          "residentialAddress",
+          "clinic",
+          "professionalSpecialties",
+          "professionalServicePreferences",
+        ],
+        properties: {
+          ...sharedProperties,
+          CNPJCPFProfissional: {
+            type: "string",
+            example: "123.456.789-00",
+          },
+          residentialAddress: {
+            type: "object",
+            required: ["cep", "endereco", "bairro", "numero", "cidade", "estado"],
+            properties: {
+              cep: { type: "string", example: "12345-678" },
+              endereco: { type: "string", example: "Avenida Paulista" },
+              bairro: { type: "string", example: "Bela Vista" },
+              numero: { type: "string", example: "1000", description: "Opcional" },
+              cidade: { type: "string", example: "São Paulo" },
+              estado: { type: "string", example: "SP" },
+              complemento: { type: "string", example: "Sala 42" },
+              name: { type: "string", example: "Minha casa" },
+              type: {
+                type: "string",
+                enum: ["Casa", "Trabalho", "Outros"],
+                example: "Casa",
+              },
+            },
+          },
+          clinic: {
+            type: "object",
+            required: ["name", "cep", "address", "neighborhood", "number", "city", "state"],
+            properties: {
+              name: { type: "string", example: "Clínica Saúde Total" },
+              cep: { type: "string", example: "12345-678" },
+              address: { type: "string", example: "Avenida Paulista" },
+              neighborhood: { type: "string", example: "Bela Vista" },
+              number: { type: "string", example: "1000" },
+              city: { type: "string", example: "São Paulo" },
+              state: { type: "string", example: "SP" },
+              addition: { type: "string", example: "Sala 123" },
+            },
+          },
+          professionalSpecialties: {
+            type: "array",
+            items: { type: "string" },
+            example: ["Cardiologia", "Clínica Geral"],
+          },
+          professionalServicePreferences: {
+            type: "array",
+            items: { type: "string" },
+            example: ["Consulta", "Exame"],
+          },
+          otherProfessionalSpecialties: {
+            type: "array",
+            items: { type: "string" },
+            example: ["Acupuntura"],
+            description: "Opcional",
+          },
+          accessibility: {
+            type: "array",
+            items: { type: "string" },
+            example: ["Rampa de acesso", "Banheiro adaptado"],
+            description: "Preferências de acessibilidade do profissional (opcional)",
+          },
+          profilePhoto: {
+            type: "string",
+            example: "https://res.cloudinary.com/.../foto.png",
+            description: "URL da foto enviada anteriormente no upload",
           },
         },
-        clinic: {
-          type: "object",
-          required: ["name", "cep", "address", "neighborhood", "number", "city", "state"],
-          properties: {
-            name: { type: "string", example: "Clínica Saúde Total" },
-            cep: { type: "string", example: "12345-678" },
-            address: { type: "string", example: "Avenida Paulista" },
-            neighborhood: { type: "string", example: "Bela Vista" },
-            number: { type: "string", example: "1000" },
-            city: { type: "string", example: "São Paulo" },
-            state: { type: "string", example: "SP" },
-            addition: { type: "string", example: "Sala 123" },
-          },
-        },
-        professionalSpecialties: {
-          type: "array",
-          items: { type: "string" },
-          example: ["Cardiologia", "Clínica Geral"],
-        },
-        professionalServicePreferences: {
-          type: "array",
-          items: { type: "string" },
-          example: ["Consulta", "Exame"],
-        },
-        otherProfessionalSpecialties: {
-          type: "array",
-          items: { type: "string" },
-          example: ["Acupuntura"],
-          description: "Opcional",
-        },
-        accessibility: {
-          type: "array",
-          items: { type: "string" },
-          example: ["Rampa de acesso", "Banheiro adaptado"],
-          description: "Preferências de acessibilidade do profissional (opcional)",
-        },
-        profilePhoto: {
-          type: "string",
-          example: "https://res.cloudinary.com/.../foto.png",
-          description: "URL da foto enviada anteriormente no upload",
+      },
+      Appointment: {
+        type: "object",
+        properties: {
+          _id: { type: "string", example: "64fae32bd00141c1a2eaa321" },
+          patient: { type: "string", example: "64fae24ad00141c1a2eaa320" },
+          professional: { type: "string", example: "64fae109d00141c1a2eaa31f" },
+          dateTime: { type: "string", format: "date-time", example: "2025-08-01T14:00:00.000Z" },
+          status: { type: "string", example: "confirmed" },
         },
       },
-    },
-    Appointment: {
-      type: "object",
-      properties: {
-        _id: { type: "string", example: "64fae32bd00141c1a2eaa321" },
-        patient: { type: "string", example: "64fae24ad00141c1a2eaa320" },
-        professional: { type: "string", example: "64fae109d00141c1a2eaa31f" },
-        dateTime: { type: "string", format: "date-time", example: "2025-08-01T14:00:00.000Z" },
-        status: { type: "string", example: "confirmed" },
-      },
-    },
-    WebhookMessageCreated: {
-      type: "object",
-      properties: {
-        eventId: { type: "string", example: "e5ae2396-ff2c-4a6b-8906-73a4459d42cc" },
-        type: { type: "string", example: "message.created" },
-        occurredAt: { type: "string", format: "date-time", example: "2025-08-05T22:48:13.781Z" },
-        data: {
-          type: "object",
-          properties: {
-            messageId: { type: "string", example: "68928a2d6acdb8a8dd58cc63" },
-            conversation: { type: "string", example: "conv_teste_123" },
-            sender: { type: "string", example: "68928a2d6acdb8a8dd58cc62" },
-            senderName: { type: "string", example: "Testador" },
-            content: { type: "string", example: "Mensagem teste webhook" },
-            createdAt: { type: "string", format: "date-time", example: "2025-08-05T22:48:13.592Z" },
+      WebhookMessageCreated: {
+        type: "object",
+        properties: {
+          eventId: { type: "string", example: "e5ae2396-ff2c-4a6b-8906-73a4459d42cc" },
+          type: { type: "string", example: "message.created" },
+          occurredAt: { type: "string", format: "date-time", example: "2025-08-05T22:48:13.781Z" },
+          data: {
+            type: "object",
+            properties: {
+              messageId: { type: "string", example: "68928a2d6acdb8a8dd58cc63" },
+              conversation: { type: "string", example: "conv_teste_123" },
+              sender: { type: "string", example: "68928a2d6acdb8a8dd58cc62" },
+              senderName: { type: "string", example: "Testador" },
+              content: { type: "string", example: "Mensagem teste webhook" },
+              createdAt: {
+                type: "string",
+                format: "date-time",
+                example: "2025-08-05T22:48:13.592Z",
+              },
+            },
           },
         },
       },
@@ -225,6 +247,7 @@ const doc = {
 };
 
 const options = {
+  openapi: "3.0.0",
   language: "pt-BR",
   autoBody: false,
   ...(isProduction && { ignore: ["/cleanup"] }),

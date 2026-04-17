@@ -5,25 +5,38 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  address: {
+  endereco: {
     type: String,
     required: true,
   },
-  neighborhood: {
+  bairro: {
     type: String,
     required: true,
   },
-  number: {
+  numero: {
     type: String,
     required: false,
   },
-  city: {
+  cidade: {
     type: String,
     required: true,
   },
-  state: {
+  estado: {
     type: String,
     required: true,
+  },
+  complemento: {
+    type: String,
+    required: false,
+  },
+  name: {
+    type: String,
+    required: false,
+  },
+  type: {
+    type: String,
+    enum: ["Casa", "Trabalho", "Outros"],
+    default: "Outros",
   },
   active: {
     type: Boolean,

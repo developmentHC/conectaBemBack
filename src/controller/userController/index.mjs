@@ -22,12 +22,19 @@ export const checkUserEmailSendOTP = async (req, res) => {
   #swagger.summary = 'Envia código OTP para o e-mail informado'
   #swagger.description = 'Fluxo de registro/login: envia um código OTP para o e-mail passado no body da requisição.'
 
-  #swagger.parameters['body'] = {
-    in: 'body',
-    description: 'E-mail do usuário para envio do OTP',
+  #swagger.requestBody = {
     required: true,
-    schema: {
-      email: "usuario@teste.com"
+    description: 'E-mail do usuário para envio do OTP',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          required: ['email'],
+          properties: {
+            email: { type: 'string', example: 'usuario@teste.com' }
+          }
+        }
+      }
     }
   }
 
@@ -148,13 +155,20 @@ export const checkOTP = async (req, res) => {
   #swagger.summary = 'Checa se OTP coincide e realiza login/registro'
   #swagger.description = 'Verifica se o OTP enviado no body corresponde ao OTP encriptado no backend. Se coincidir: se o usuário já existir, é logado; caso contrário, fica liberado para registro.'
 
-  #swagger.parameters['body'] = {
-    in: 'body',
-    description: 'E-mail do usuário e OTP recebido',
+  #swagger.requestBody = {
     required: true,
-    schema: {
-      email: "usuario@teste.com",
-      OTP: "<código enviado por e-mail>"
+    description: 'E-mail do usuário e OTP recebido',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          required: ['email', 'OTP'],
+          properties: {
+            email: { type: 'string', example: 'usuario@teste.com' },
+            OTP: { type: 'string', example: '1234' }
+          }
+        }
+      }
     }
   }
 
@@ -221,11 +235,14 @@ export const completeSignUpPatient = async (req, res) => {
   #swagger.summary = 'Completa o cadastro do usuário paciente'
   #swagger.description = 'Este endpoint finaliza o cadastro do paciente após o fluxo de sendOTP e checkOTP. É necessário já existir um usuário pendente antes da chamada.'
 
-  #swagger.parameters['body'] = {
-    in: 'body',
-    description: 'Dados obrigatórios para completar o cadastro do paciente. Necessário ter passado antes por sendOTP e checkOTP.',
+  #swagger.requestBody = {
     required: true,
-    schema: { $ref: '#/definitions/AddUserPatient' }
+    description: 'Dados obrigatórios para completar o cadastro do paciente. Necessário ter passado antes por sendOTP e checkOTP.',
+    content: {
+      'application/json': {
+        schema: { $ref: '#/components/schemas/AddUserPatient' }
+      }
+    }
   }
 
   #swagger.responses[201] = {
@@ -279,11 +296,14 @@ export const completeSignUpPatient = async (req, res) => {
       address: [
         {
           cep: residentialAddress.cep,
-          address: residentialAddress.address,
-          neighborhood: residentialAddress.neighborhood,
-          number: residentialAddress.number,
-          city: residentialAddress.city,
-          state: residentialAddress.state,
+          endereco: residentialAddress.endereco,
+          bairro: residentialAddress.bairro,
+          numero: residentialAddress.numero,
+          cidade: residentialAddress.cidade,
+          estado: residentialAddress.estado,
+          complemento: residentialAddress.complemento,
+          name: residentialAddress.name,
+          type: residentialAddress.type,
           active: true,
         },
       ],
@@ -341,11 +361,14 @@ export const completeSignUpProfessional = async (req, res) => {
   #swagger.summary = 'Completa o cadastro do usuário profissional'
   #swagger.description = 'Finaliza o cadastro do profissional após os passos de sendOTP e checkOTP. É necessário que o usuário já exista como pendente antes de chamar este endpoint.'
 
-  #swagger.parameters['body'] = {
-    in: 'body',
-    description: 'Dados obrigatórios para completar o cadastro do profissional. Necessário ter passado antes por sendOTP e checkOTP.',
+  #swagger.requestBody = {
     required: true,
-    schema: { $ref: '#/definitions/AddUserProfessional' }
+    description: 'Dados obrigatórios para completar o cadastro do profissional. Necessário ter passado antes por sendOTP e checkOTP.',
+    content: {
+      'application/json': {
+        schema: { $ref: '#/components/schemas/AddUserProfessional' }
+      }
+    }
   }
 
   #swagger.responses[201] = {
@@ -403,11 +426,14 @@ export const completeSignUpProfessional = async (req, res) => {
         ? [
             {
               cep: residentialAddress.cep,
-              address: residentialAddress.address,
-              neighborhood: residentialAddress.neighborhood,
-              number: residentialAddress.number,
-              city: residentialAddress.city,
-              state: residentialAddress.state,
+              endereco: residentialAddress.endereco,
+              bairro: residentialAddress.bairro,
+              numero: residentialAddress.numero,
+              cidade: residentialAddress.cidade,
+              estado: residentialAddress.estado,
+              complemento: residentialAddress.complemento,
+              name: residentialAddress.name,
+              type: residentialAddress.type,
               active: true,
             },
           ]
@@ -551,10 +577,11 @@ export const userInfo = async (req, res) => {
       imageUrl: "https://res.cloudinary.com/seu-cloud-name/image/upload/v123/abc123.jpg",
       residentialAddress: {
         cep: "12345678",
-        address: "Rua Exemplo, 123",
-        neighborhood: "Centro",
-        city: "São Paulo",
-        state: "SP"
+        endereco: "Rua Exemplo, 123",
+        bairro: "Centro",
+        cidade: "São Paulo",
+        estado: "SP",
+        type: "Casa"
       }
     }
   }
