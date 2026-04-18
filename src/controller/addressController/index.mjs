@@ -1,13 +1,21 @@
 import User from "../../models/User.mjs";
-import { validateToken } from "../../services/validationService.mjs";
 
 const ADDRESS_TYPES = ["Casa", "Trabalho", "Outros"];
 
-export const changeAddress = async (req, res) => {
+export const changeAddress = async (req, res, next) => {
   /*
   #swagger.tags = ['Address']
   #swagger.summary = 'Atualiza um endereço do usuário'
   #swagger.description = 'Endpoint protegido que atualiza um endereço existente de um usuário logado. É necessário fornecer o ID do endereço e os novos dados no corpo da requisição.'
+  #swagger.security = [{ "bearerAuth": [] }]
+
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do usuário — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
 
   #swagger.requestBody = {
     required: true,
@@ -97,7 +105,7 @@ export const changeAddress = async (req, res) => {
 
   #swagger.responses[500] = {
     description: 'Erro interno no servidor',
-    schema: { error: "Erro no servidor" }
+    schema: { error: "Erro interno no servidor" }
   }
 */
 
@@ -114,8 +122,6 @@ export const changeAddress = async (req, res) => {
     type,
     active,
   } = req.body;
-
-  const decoded = validateToken(req.cookies.jwt);
 
   if (!addressId || !cep || !endereco || !bairro || !cidade || !estado) {
     return res.status(422).json({
@@ -145,7 +151,7 @@ export const changeAddress = async (req, res) => {
 
   try {
     const result = await User.updateOne(
-      { _id: decoded.userId, "address._id": addressId },
+      { _id: req.user.userId, "address._id": addressId },
       { $set: { "address.$": update } },
     );
 
@@ -154,16 +160,25 @@ export const changeAddress = async (req, res) => {
     } else {
       return res.status(304).json({ msg: "Não há nada para atualizar no endereço" });
     }
-  } catch {
-    return res.status(500).json({ error: "Erro no servidor" });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const getAddresses = async (req, res) => {
+export const getAddresses = async (req, res, next) => {
   /*
   #swagger.tags = ['Address']
   #swagger.summary = 'Retorna todos os endereços do usuário'
   #swagger.description = 'Endpoint protegido que retorna todos os endereços cadastrados do usuário logado.'
+  #swagger.security = [{ "bearerAuth": [] }]
+
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do usuário — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
 
   #swagger.responses[200] = {
     description: 'Endereços encontrados com sucesso',
@@ -198,30 +213,37 @@ export const getAddresses = async (req, res) => {
 
   #swagger.responses[500] = {
     description: 'Erro interno no servidor',
-    schema: { error: "Erro ao buscar endereços" }
+    schema: { error: "Erro Interno do Servidor" }
   }
 */
 
-  const decoded = validateToken(req.cookies.jwt);
   try {
-    const user = await User.findOne({ _id: decoded.userId }, { address: 1, _id: 0 }).lean();
+    const user = await User.findOne({ _id: req.user.userId }, { address: 1, _id: 0 }).lean();
 
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
     return res.status(200).json({ addresses: user.address || [] });
-  } catch {
-    return res.status(500).json({ error: "Erro ao buscar endereços" });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const changeActiveAddress = async (req, res) => {
+export const changeActiveAddress = async (req, res, next) => {
   /*
   #swagger.tags = ['Address']
   #swagger.summary = 'Alterar endereço principal do usuário'
   #swagger.description = 'Endpoint protegido que define um endereço como principal (ativo) para o usuário logado. O campo `addressId` é obrigatório.'
+  #swagger.security = [{ "bearerAuth": [] }]
 
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do paciente — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
   #swagger.requestBody = {
     required: true,
     description: 'ID do endereço que será definido como principal',
@@ -264,7 +286,7 @@ export const changeActiveAddress = async (req, res) => {
 
   #swagger.responses[500] = {
     description: 'Erro interno no servidor',
-    schema: { error: "Erro no servidor" }
+    schema: { error: "Erro interno no servidor" }
   }
 */
 
@@ -277,9 +299,7 @@ export const changeActiveAddress = async (req, res) => {
   }
 
   try {
-    const decoded = validateToken(req.cookies.jwt);
-
-    const user = await User.findOne({ _id: decoded.userId });
+    const user = await User.findOne({ _id: req.user.userId });
 
     if (!user) {
       return res.status(404).json({ error: "Endereço não encontrado para este usuário" });
@@ -297,7 +317,7 @@ export const changeActiveAddress = async (req, res) => {
     }
 
     return res.status(304).json({ msg: "Não houve alteração no endereço principal" });
-  } catch {
-    return res.status(500).json({ error: "Erro no servidor" });
+  } catch (error) {
+    next(error);
   }
 };

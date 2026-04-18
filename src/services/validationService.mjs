@@ -106,27 +106,6 @@ export function validateProfilePhoto(profilePhoto) {
   }
 }
 
-export function validateToken(token) {
-  try {
-    if (!token) {
-      throw new ValidationError("Não autorizado, cookie não encontrado", 422);
-    }
-    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-    if (!decoded.userId) {
-      throw new ValidationError("Token inválido", 401);
-    }
-    return decoded;
-  } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      throw new ValidationError("Token inválido ou expirado", 401);
-    }
-    if (error instanceof ValidationError) {
-      throw error;
-    }
-    throw new ValidationError("Erro na validação do token", 500);
-  }
-}
-
 export class ValidationError extends Error {
   constructor(message, statusCode) {
     super(message);
