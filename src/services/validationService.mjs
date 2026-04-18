@@ -1,5 +1,3 @@
-import jwt from "jsonwebtoken";
-import config from "../config/config.mjs";
 import User from "../models/User.mjs";
 
 export async function validateUserExists(userId) {
