@@ -9,14 +9,6 @@ export const changeAddress = async (req, res, next) => {
   #swagger.description = 'Endpoint protegido que atualiza um endereço existente de um usuário logado. É necessário fornecer o ID do endereço e os novos dados no corpo da requisição.'
   #swagger.security = [{ "bearerAuth": [] }]
 
-  #swagger.parameters['authorization'] = {
-    in: 'header',
-    required: true,
-    type: 'string',
-    description: 'Token JWT do usuário — formato: Bearer <token>',
-    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-  }
-
   #swagger.requestBody = {
     required: true,
     description: 'Dados do endereço a ser atualizado',
@@ -151,7 +143,7 @@ export const changeAddress = async (req, res, next) => {
 
   try {
     const result = await User.updateOne(
-      { _id: req.user.userId, "address._id": addressId },
+      { _id: req.userId, "address._id": addressId },
       { $set: { "address.$": update } },
     );
 
@@ -171,14 +163,6 @@ export const getAddresses = async (req, res, next) => {
   #swagger.summary = 'Retorna todos os endereços do usuário'
   #swagger.description = 'Endpoint protegido que retorna todos os endereços cadastrados do usuário logado.'
   #swagger.security = [{ "bearerAuth": [] }]
-
-  #swagger.parameters['authorization'] = {
-    in: 'header',
-    required: true,
-    type: 'string',
-    description: 'Token JWT do usuário — formato: Bearer <token>',
-    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-  }
 
   #swagger.responses[200] = {
     description: 'Endereços encontrados com sucesso',
@@ -218,7 +202,7 @@ export const getAddresses = async (req, res, next) => {
 */
 
   try {
-    const user = await User.findOne({ _id: req.user.userId }, { address: 1, _id: 0 }).lean();
+    const user = await User.findOne({ _id: req.userId }, { address: 1, _id: 0 }).lean();
 
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
@@ -237,13 +221,6 @@ export const changeActiveAddress = async (req, res, next) => {
   #swagger.description = 'Endpoint protegido que define um endereço como principal (ativo) para o usuário logado. O campo `addressId` é obrigatório.'
   #swagger.security = [{ "bearerAuth": [] }]
 
-  #swagger.parameters['authorization'] = {
-    in: 'header',
-    required: true,
-    type: 'string',
-    description: 'Token JWT do paciente — formato: Bearer <token>',
-    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-  }
   #swagger.requestBody = {
     required: true,
     description: 'ID do endereço que será definido como principal',
@@ -275,8 +252,8 @@ export const changeActiveAddress = async (req, res, next) => {
   }
 
   #swagger.responses[404] = {
-    description: 'Usuário ou endereço não encontrado',
-    schema: { error: "Endereço não encontrado para este usuário" }
+    description: 'Usuário não encontrado',
+    schema: { error: "Usuário não encontrado" }
   }
 
   #swagger.responses[422] = {
@@ -299,10 +276,10 @@ export const changeActiveAddress = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findOne({ _id: req.user.userId });
+    const user = await User.findOne({ _id: req.userId });
 
     if (!user) {
-      return res.status(404).json({ error: "Endereço não encontrado para este usuário" });
+      return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
     await User.updateOne({ "address._id": addressId }, { $set: { "address.$[].active": false } });
