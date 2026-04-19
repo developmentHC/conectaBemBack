@@ -1,5 +1,3 @@
-import jwt from "jsonwebtoken";
-import config from "../config/config.mjs";
 import User from "../models/User.mjs";
 
 export async function validateUserExists(userId) {
@@ -103,27 +101,6 @@ export function validateClinicData(clinic) {
 export function validateProfilePhoto(profilePhoto) {
   if (!profilePhoto.startsWith("data:image")) {
     throw new ValidationError("String Base64 inválida para foto do perfil", 400);
-  }
-}
-
-export function validateToken(token) {
-  try {
-    if (!token) {
-      throw new ValidationError("Não autorizado, cookie não encontrado", 422);
-    }
-    const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
-    if (!decoded.userId) {
-      throw new ValidationError("Token inválido", 401);
-    }
-    return decoded;
-  } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      throw new ValidationError("Token inválido ou expirado", 401);
-    }
-    if (error instanceof ValidationError) {
-      throw error;
-    }
-    throw new ValidationError("Erro na validação do token", 500);
   }
 }
 

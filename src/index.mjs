@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import { connectDB } from "./lib/db.mjs";
+import errorHandler from "./middleware/errorHandler.mjs";
 import router, { corsOptions } from "./routes/index.mjs";
 import { startInboxMessageWatcher } from "./watchers/inboxMessageWatcher.mjs";
 
@@ -58,6 +59,7 @@ app.get("/docs", (_req, res) => {
 app.get("/", (_req, res) => res.redirect("/docs"));
 
 app.use("/", router);
+app.use(errorHandler);
 
 connectDB()
   .then(() => {

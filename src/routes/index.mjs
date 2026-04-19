@@ -85,9 +85,9 @@ router.post("/auth/uploadPhoto", uploadPhoto, validatePhotoUpload, uploadProfile
 
 router.get("/user", authenticateToken, userInfo);
 
-router.put("/address", changeAddress);
-router.get("/address", getAddresses);
-router.put("/active-address", changeActiveAddress);
+router.put("/address", authenticateToken, changeAddress);
+router.get("/address", authenticateToken, getAddresses);
+router.put("/active-address", authenticateToken, changeActiveAddress);
 
 router.get("/search/highlightsWeek", searchProfessionalsHighlightsWeek);
 router.get("/search/professionalBySpeciality/:speciality", searchProfessionalBySpeciality);

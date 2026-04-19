@@ -1,4 +1,9 @@
-export default function errorHandler(err, _req, res) {
+export default function errorHandler(err, _req, res, _next) {
   console.error(err.stack);
-  res.status(err.httpStatus || 500).json({ error: err.message || "Erro Interno do Servidor" });
+
+  const status = err.statusCode || 500;
+
+  res.status(status).json({
+    error: status === 500 ? "Erro Interno do Servidor" : err.message,
+  });
 }
