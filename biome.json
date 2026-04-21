@@ -33,6 +33,7 @@
     }
   },
   "files": {
-    "ignoreUnknown": true
+    "ignoreUnknown": true,
+    "includes": ["**", "!swagger-output.json"]
   }
 }
