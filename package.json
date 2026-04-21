@@ -20,7 +20,8 @@
     "dev:prod": "cross-env-shell NODE_ENV=production VERCEL=1 VERCEL_URL=conecta-bem-back.vercel.app node ./src/swagger.mjs && nodemon ./src/index.mjs",
     "start": "cross-env NODE_ENV=production node ./src/index.mjs",
     "swagger": "cross-env NODE_ENV=development node ./src/swagger.mjs",
-    "prepare": "husky",
+    "swagger:prod": "cross-env NODE_ENV=production VERCEL=1 VERCEL_URL=conecta-bem-back.vercel.app node ./src/swagger.mjs",
+    "prepare": "husky && git config merge.ours.driver true",
     "seed:test-users": "node scripts/seedTestUsers.mjs"
   },
   "keywords": [],
