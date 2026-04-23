@@ -491,7 +491,6 @@ export const uploadProfilePhoto = async (req, res) => {
   }
 
   #swagger.consumes = ['multipart/form-data']
-  #swagger.security = [{}]
   #swagger.ignore = ['body']
 
   #swagger.parameters['profilePhoto'] = {
@@ -512,6 +511,11 @@ export const uploadProfilePhoto = async (req, res) => {
   #swagger.responses[400] = {
     description: 'Requisição inválida',
     schema: { error: "Nenhuma imagem enviada." }
+  }
+
+  #swagger.responses[404] = {
+    description: 'Usuário não encontrado',
+    schema: { error: "Usuário não encontrado." }
   }
 
   #swagger.responses[422] = {
@@ -545,6 +549,11 @@ export const uploadProfilePhoto = async (req, res) => {
       return res.status(422).json({ error: "Imagem muito grande. Máximo 2MB." });
     }
 
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+
     const base64Image = `data:${mimeType};base64,${buffer.toString("base64")}`;
 
     const upload = await cloudinary.uploader.upload(base64Image, {
@@ -552,9 +561,8 @@ export const uploadProfilePhoto = async (req, res) => {
       resource_type: "image",
     });
 
-    await User.findByIdAndUpdate(userId, {
-      imageUrl: upload.secure_url,
-    });
+    user.imageUrl = upload.secure_url;
+    await user.save();
 
     return res.status(201).json({
       msg: "Upload realizado com sucesso",
