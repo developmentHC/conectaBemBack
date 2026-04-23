@@ -985,6 +985,16 @@
         "description": "Recebe uma imagem via multipart/form-data e atualiza o campo imageUrl do usuário no banco.",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "description": "Token JWT do usuário — formato: Bearer <token>",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "profilePhoto",
             "in": "formData",
             "required": true,
@@ -1069,6 +1079,45 @@
               }
             }
           },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Acesso Negado"
+          },
+          "404": {
+            "description": "Usuário não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Usuário não encontrado."
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Usuário não encontrado."
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Erro de validação",
             "content": {
@@ -1137,7 +1186,9 @@
           }
         },
         "security": [
-          {}
+          {
+            "bearerAuth": []
+          }
         ]
       }
     },

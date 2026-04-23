@@ -480,9 +480,17 @@ export const uploadProfilePhoto = async (req, res) => {
   #swagger.tags = ['Authentication']
   #swagger.summary = 'Upload de foto de perfil'
   #swagger.description = 'Recebe uma imagem via multipart/form-data e atualiza o campo imageUrl do usuário no banco.'
+  #swagger.security = [{ "bearerAuth": [] }]
+
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do usuário — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
 
   #swagger.consumes = ['multipart/form-data']
-  #swagger.security = [{}]
   #swagger.ignore = ['body']
 
   #swagger.parameters['profilePhoto'] = {
@@ -505,6 +513,11 @@ export const uploadProfilePhoto = async (req, res) => {
     schema: { error: "Nenhuma imagem enviada." }
   }
 
+  #swagger.responses[404] = {
+    description: 'Usuário não encontrado',
+    schema: { error: "Usuário não encontrado." }
+  }
+
   #swagger.responses[422] = {
     description: 'Erro de validação',
     schema: { error: "Tipo de imagem inválido. Use JPG, PNG ou WEBP." }
@@ -517,6 +530,8 @@ export const uploadProfilePhoto = async (req, res) => {
   */
 
   try {
+    const userId = req.userId;
+
     if (!req.file) {
       return res.status(400).json({ error: "Nenhuma imagem enviada." });
     }
@@ -534,12 +549,20 @@ export const uploadProfilePhoto = async (req, res) => {
       return res.status(422).json({ error: "Imagem muito grande. Máximo 2MB." });
     }
 
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+
     const base64Image = `data:${mimeType};base64,${buffer.toString("base64")}`;
 
     const upload = await cloudinary.uploader.upload(base64Image, {
       folder: "conectabem",
       resource_type: "image",
     });
+
+    user.imageUrl = upload.secure_url;
+    await user.save();
 
     return res.status(201).json({
       msg: "Upload realizado com sucesso",
