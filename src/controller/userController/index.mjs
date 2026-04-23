@@ -480,6 +480,15 @@ export const uploadProfilePhoto = async (req, res) => {
   #swagger.tags = ['Authentication']
   #swagger.summary = 'Upload de foto de perfil'
   #swagger.description = 'Recebe uma imagem via multipart/form-data e atualiza o campo imageUrl do usuário no banco.'
+  #swagger.security = [{ "bearerAuth": [] }]
+
+  #swagger.parameters['authorization'] = {
+    in: 'header',
+    required: true,
+    type: 'string',
+    description: 'Token JWT do usuário — formato: Bearer <token>',
+    example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  }
 
   #swagger.consumes = ['multipart/form-data']
   #swagger.security = [{}]
@@ -517,6 +526,8 @@ export const uploadProfilePhoto = async (req, res) => {
   */
 
   try {
+    const userId = req.userId;
+
     if (!req.file) {
       return res.status(400).json({ error: "Nenhuma imagem enviada." });
     }
@@ -539,6 +550,10 @@ export const uploadProfilePhoto = async (req, res) => {
     const upload = await cloudinary.uploader.upload(base64Image, {
       folder: "conectabem",
       resource_type: "image",
+    });
+
+    await User.findByIdAndUpdate(userId, {
+      imageUrl: upload.secure_url,
     });
 
     return res.status(201).json({

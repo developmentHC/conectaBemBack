@@ -81,7 +81,13 @@ router.post("/auth/checkOTP", checkOTP);
 router.post("/auth/createPatient", authenticateToken, uploadPhoto, completeSignUpPatient);
 router.post("/auth/createProfessional", authenticateToken, uploadPhoto, completeSignUpProfessional);
 
-router.post("/auth/uploadPhoto", uploadPhoto, validatePhotoUpload, uploadProfilePhoto);
+router.post(
+  "/auth/uploadPhoto",
+  authenticateToken,
+  uploadPhoto,
+  validatePhotoUpload,
+  uploadProfilePhoto,
+);
 
 router.get("/user", authenticateToken, userInfo);
 
