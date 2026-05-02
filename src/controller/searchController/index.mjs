@@ -6,17 +6,17 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
   /*
   #swagger.tags = ['Search']
   #swagger.summary = 'Pesquisa os profissionais destaques da semana'
-  #swagger.description = 'Retorna uma lista paginada de até 10 profissionais que são destaques da semana. A paginação é controlada pelo parâmetro `page` na rota.'
+  #swagger.description = 'Retorna uma lista paginada de até 10 profissionais que são destaques da semana. A paginação é controlada pelo query param `page`.'
 
   #swagger.parameters['page'] = {
-    in: 'path',
+    in: 'query',
     description: 'Número da página para paginação (cada página retorna até 10 profissionais)',
     required: false,
     type: 'integer',
     example: 1
   }
 
-  #swagger.responses[200] = { 
+  #swagger.responses[200] = {
     description: 'Profissionais encontrados com sucesso',
     schema: {
       professionals: [
@@ -47,7 +47,7 @@ export const searchProfessionalsHighlightsWeek = async (req, res) => {
 */
 
   try {
-    let page = parseInt(req.params.page, 10) || 1;
+    let page = parseInt(req.query.page, 10) || 1;
 
     if (Number.isNaN(page)) {
       return res.status(400).json({ error: "Página inválida" });
@@ -108,7 +108,7 @@ export const searchProfessionalBySpeciality = async (req, res) => {
   }
 
   #swagger.parameters['page'] = {
-    in: 'path',
+    in: 'query',
     description: 'Número da página para paginação (cada página retorna até 10 profissionais)',
     required: false,
     type: 'integer',
@@ -153,7 +153,7 @@ export const searchProfessionalBySpeciality = async (req, res) => {
   }
 
   try {
-    let page = parseInt(req.params.page, 10) || 1;
+    let page = parseInt(req.query.page, 10) || 1;
 
     if (Number.isNaN(page)) {
       return res.status(400).json({ error: "Página inválida" });
@@ -214,7 +214,7 @@ export const searchBar = async (req, res) => {
   }
 
   #swagger.parameters['page'] = {
-    in: 'path',
+    in: 'query',
     description: 'Número da página para paginação (cada página retorna até 10 profissionais)',
     required: false,
     type: 'integer',
@@ -256,7 +256,7 @@ export const searchBar = async (req, res) => {
   const limit = 10;
 
   try {
-    let page = parseInt(req.params.page, 10) || 1;
+    let page = parseInt(req.query.page, 10) || 1;
 
     if (!terms) {
       return res.status(400).json({ error: "Parâmetros são obrigatórios para realizar a busca" });
