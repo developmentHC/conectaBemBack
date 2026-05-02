@@ -2094,13 +2094,13 @@
           "Search"
         ],
         "summary": "Pesquisa os profissionais destaques da semana",
-        "description": "Retorna uma lista paginada de até 10 profissionais que são destaques da semana. A paginação é controlada pelo parâmetro `page` na rota.",
+        "description": "Retorna uma lista paginada de até 10 profissionais que são destaques da semana. A paginação é controlada pelo query param `page`.",
         "parameters": [
           {
             "name": "page",
-            "in": "path",
+            "in": "query",
             "description": "Número da página para paginação (cada página retorna até 10 profissionais)",
-            "required": true,
+            "required": false,
             "example": 1,
             "schema": {
               "type": "integer"
@@ -2310,9 +2310,9 @@
           },
           {
             "name": "page",
-            "in": "path",
+            "in": "query",
             "description": "Número da página para paginação (cada página retorna até 10 profissionais)",
-            "required": true,
+            "required": false,
             "example": 1,
             "schema": {
               "type": "integer"
@@ -2540,9 +2540,9 @@
           },
           {
             "name": "page",
-            "in": "path",
+            "in": "query",
             "description": "Número da página para paginação (cada página retorna até 10 profissionais)",
-            "required": true,
+            "required": false,
             "example": 1,
             "schema": {
               "type": "integer"
