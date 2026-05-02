@@ -13,6 +13,15 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Express's default ETag handling responds with `304 Not Modified` on
+// matching `If-None-Match` and skips the rest of the middleware chain —
+// which means the `cors` middleware never gets to set
+// `Access-Control-Allow-Origin` on the 304 response. Browsers then block
+// the response as a CORS failure even though the cached body would have
+// been used. The cheapest fix that doesn't break correctness on a small
+// JSON API is to drop ETag generation entirely.
+app.disable("etag");
+
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(cookieParser());
