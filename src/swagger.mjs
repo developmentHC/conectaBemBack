@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import glob from "glob";
@@ -273,4 +274,30 @@ routes.forEach((routeGlob) => {
   } catch (_err) {}
 });
 
-swaggerAutogen(options)(outputFile, routes, doc);
+// swagger-autogen treats every value passed to `components.schemas` as a
+// "sample object" and re-runs its type-inference pass on it. When we hand
+// it a real OpenAPI schema (`{ type: "object", required: [...], properties: {...} }`),
+// the inference pass converts every property of the schema itself
+// (`type`, `required`, `properties`) into JSON Schema metadata, producing
+// nonsense like `properties.type.example = "object"`. The generated
+// frontend client (Kubb) then receives a useless type and the consumer
+// has to fall back to `any`.
+//
+// Workaround: after the autogen finishes, overwrite the affected schemas
+// in `swagger-output.json` with the literal definitions we wrote in `doc`.
+// Deep clone so the autogen pass does not mutate the original literal
+// schema definitions before we re-apply them.
+const RAW_SCHEMAS = JSON.parse(JSON.stringify(doc.components.schemas));
+const outputPath = path.resolve(__dirname, outputFile);
+
+await swaggerAutogen(options)(outputFile, routes, doc);
+
+if (fs.existsSync(outputPath)) {
+  const generated = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+  generated.components = generated.components ?? {};
+  generated.components.schemas = {
+    ...generated.components.schemas,
+    ...RAW_SCHEMAS,
+  };
+  fs.writeFileSync(outputPath, `${JSON.stringify(generated, null, 2)}\n`);
+}
