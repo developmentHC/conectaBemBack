@@ -2761,31 +2761,43 @@
           {
             "name": "specialty",
             "in": "query",
-            "description": "Especialidade do profissional",
+            "description": "Especialidade do profissional. Pode ser repetido para filtrar por múltiplas especialidades (ex: ?specialty=Reiki&specialty=Acupuntura). Match com OR dentro do filtro.",
             "required": false,
+            "collectionFormat": "multi",
+            "items": {
+              "type": "string"
+            },
             "example": "Reiki",
             "schema": {
-              "type": "string"
+              "type": "array"
             }
           },
           {
             "name": "service",
             "in": "query",
-            "description": "Tipo de serviço oferecido",
+            "description": "Tipo de serviço oferecido. Pode ser repetido para múltiplos serviços (ex: ?service=Pet+Friendly&service=LGBTQIAP%2B+Friendly). Match com OR.",
             "required": false,
+            "collectionFormat": "multi",
+            "items": {
+              "type": "string"
+            },
             "example": "Pet Friendly",
             "schema": {
-              "type": "string"
+              "type": "array"
             }
           },
           {
             "name": "accessibility",
             "in": "query",
-            "description": "Filtro de acessibilidade oferecida pelo profissional",
+            "description": "Filtro de acessibilidade oferecida pelo profissional. Pode ser repetido para múltiplos itens (ex: ?accessibility=Libras&accessibility=Rampas). Match com OR.",
             "required": false,
+            "collectionFormat": "multi",
+            "items": {
+              "type": "string"
+            },
             "example": "Libras",
             "schema": {
-              "type": "string"
+              "type": "array"
             }
           },
           {
@@ -2796,6 +2808,55 @@
             "example": 1,
             "schema": {
               "type": "integer"
+            }
+          },
+          {
+            "name": "in",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "required",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "collectionFormat",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "items",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "example",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
