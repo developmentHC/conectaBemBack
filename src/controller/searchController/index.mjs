@@ -320,25 +320,31 @@ export const getProfessionals = async (req, res) => {
 
   #swagger.parameters['specialty'] = {
     in: 'query',
-    description: 'Especialidade do profissional',
+    description: 'Especialidade do profissional. Pode ser repetido para filtrar por múltiplas especialidades (ex: ?specialty=Reiki&specialty=Acupuntura). Match com OR dentro do filtro.',
     required: false,
-    type: 'string',
+    type: 'array',
+    collectionFormat: 'multi',
+    items: { type: 'string' },
     example: 'Reiki'
   }
 
   #swagger.parameters['service'] = {
     in: 'query',
-    description: 'Tipo de serviço oferecido',
+    description: 'Tipo de serviço oferecido. Pode ser repetido para múltiplos serviços (ex: ?service=Pet+Friendly&service=LGBTQIAP%2B+Friendly). Match com OR.',
     required: false,
-    type: 'string',
+    type: 'array',
+    collectionFormat: 'multi',
+    items: { type: 'string' },
     example: 'Pet Friendly'
   }
 
   #swagger.parameters['accessibility'] = {
     in: 'query',
-    description: 'Filtro de acessibilidade oferecida pelo profissional',
+    description: 'Filtro de acessibilidade oferecida pelo profissional. Pode ser repetido para múltiplos itens (ex: ?accessibility=Libras&accessibility=Rampas). Match com OR.',
     required: false,
-    type: 'string',
+    type: 'array',
+    collectionFormat: 'multi',
+    items: { type: 'string' },
     example: 'Libras'
   }
 
@@ -366,22 +372,31 @@ export const getProfessionals = async (req, res) => {
 
     const filters = { userType: { $in: ["professional"] } };
 
-    if (specialty) {
-      filters.professionalSpecialties = {
-        $in: [new RegExp(`^${escapeRegex(specialty)}$`, "i")],
-      };
+    // Normalize each filter to an array of regex matchers so the same code
+    // path handles `?specialty=A`, `?specialty=A&specialty=B` and absent.
+    const toRegexList = (value) => {
+      if (value === undefined || value === null) return null;
+      const list = Array.isArray(value) ? value : [value];
+      const cleaned = list
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter((item) => item.length > 0);
+      if (cleaned.length === 0) return null;
+      return cleaned.map((item) => new RegExp(`^${escapeRegex(item)}$`, "i"));
+    };
+
+    const specialtyRegexes = toRegexList(specialty);
+    if (specialtyRegexes) {
+      filters.professionalSpecialties = { $in: specialtyRegexes };
     }
 
-    if (service) {
-      filters.professionalServicePreferences = {
-        $in: [new RegExp(`^${escapeRegex(service)}$`, "i")],
-      };
+    const serviceRegexes = toRegexList(service);
+    if (serviceRegexes) {
+      filters.professionalServicePreferences = { $in: serviceRegexes };
     }
 
-    if (accessibility) {
-      filters.accessibility = {
-        $in: [new RegExp(`^${escapeRegex(accessibility)}$`, "i")],
-      };
+    const accessibilityRegexes = toRegexList(accessibility);
+    if (accessibilityRegexes) {
+      filters.accessibility = { $in: accessibilityRegexes };
     }
 
     const totalProfessionals = await User.countDocuments(filters);
