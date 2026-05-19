@@ -3112,26 +3112,65 @@
         "tags": [
           "Specialties"
         ],
-        "summary": "Lista todas as especialidades",
-        "description": "Retorna a lista canônica de especialidades disponíveis no sistema. Essa lista é utilizada como fonte única (single source of truth) para cadastro e filtros.",
+        "summary": "Lista especialidades (paginada, com filtro de destaque)",
+        "description": "Retorna a lista canônica de especialidades disponíveis no sistema. Essa lista é utilizada como fonte única (single source of truth) para cadastro e filtros. A paginação é controlada pelo query param `page` (cada página retorna até 10 itens). Use `featured=true` para restringir aos destaques exibidos na Home.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Número da página para paginação (cada página retorna até 10 especialidades)",
+            "required": false,
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "featured",
+            "in": "query",
+            "description": "Quando true, retorna apenas as especialidades marcadas como destaque",
+            "required": false,
+            "example": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de especialidades retornada com sucesso",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "example": "yoga"
-                      },
-                      "name": {
-                        "type": "string",
-                        "example": "Yoga"
+                  "type": "object",
+                  "properties": {
+                    "specialties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "yoga"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Yoga"
+                          },
+                          "featured": {
+                            "type": "boolean",
+                            "example": true
+                          }
+                        }
                       }
+                    },
+                    "page": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "pageCount": {
+                      "type": "number",
+                      "example": 1
                     }
                   },
                   "xml": {
@@ -3141,18 +3180,68 @@
               },
               "application/xml": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "example": "yoga"
-                      },
-                      "name": {
-                        "type": "string",
-                        "example": "Yoga"
+                  "type": "object",
+                  "properties": {
+                    "specialties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "yoga"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Yoga"
+                          },
+                          "featured": {
+                            "type": "boolean",
+                            "example": true
+                          }
+                        }
                       }
+                    },
+                    "page": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "pageCount": {
+                      "type": "number",
+                      "example": 1
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Página inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Página inválida"
+                    }
+                  },
+                  "xml": {
+                    "name": "main"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Página inválida"
                     }
                   },
                   "xml": {
