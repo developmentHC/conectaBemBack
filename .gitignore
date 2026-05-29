@@ -4,3 +4,4 @@ compose.yaml
 emailInsert.json
 requests.rest
 .vercel
+.claude/settings.local.json
